@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/libraries/GPS_NMEA
+END
+GPS_NMEA.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/2/trunk/libraries/GPS_NMEA/GPS_NMEA.h
+END
+keywords.txt
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/2/trunk/libraries/GPS_NMEA/keywords.txt
+END
+GPS_NMEA.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/2/trunk/libraries/GPS_NMEA/GPS_NMEA.cpp
+END

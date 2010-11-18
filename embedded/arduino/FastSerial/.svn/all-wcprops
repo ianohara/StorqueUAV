@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/761/trunk/libraries/FastSerial
+END
+BetterStream.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/715/trunk/libraries/FastSerial/BetterStream.cpp
+END
+FastSerial.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/715/trunk/libraries/FastSerial/FastSerial.h
+END
+keywords.txt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/276/trunk/libraries/FastSerial/keywords.txt
+END
+BetterStream.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/761/trunk/libraries/FastSerial/BetterStream.h
+END
+FastSerial.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/715/trunk/libraries/FastSerial/FastSerial.cpp
+END

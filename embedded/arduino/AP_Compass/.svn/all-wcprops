@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/353/trunk/libraries/AP_Compass
+END
+keywords.txt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/347/trunk/libraries/AP_Compass/keywords.txt
+END
+AP_Compass.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/353/trunk/libraries/AP_Compass/AP_Compass.cpp
+END
+Compass.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/348/trunk/libraries/AP_Compass/Compass.h
+END
+AP_Compass.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/347/trunk/libraries/AP_Compass/AP_Compass.h
+END

@@ -1,0 +1,100 @@
+10
+
+dir
+769
+http://arducopter.googlecode.com/svn/trunk/libraries
+http://arducopter.googlecode.com/svn
+
+
+
+2010-11-03T07:49:37.247503Z
+766
+rmackay9@yahoo.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+f9c3cf11-9bcb-44bc-f272-b75c42450872
+
+AP_Navigation
+dir
+
+APM_BinComm
+dir
+
+AP_DCM
+dir
+
+APM_ADC
+dir
+
+AP_Compass
+dir
+
+DataFlash
+dir
+
+GPS_NMEA
+dir
+
+APM_FastSerial
+dir
+
+FastSerial
+dir
+
+Waypoints
+dir
+
+APM_RC
+dir
+
+APM_Compass
+dir
+
+GPS_UBLOX
+dir
+
+GPS_IMU
+dir
+
+APM_PerfMon
+dir
+
+GPS_MTK
+dir
+
+RC
+dir
+
+AP_Common
+dir
+
+APM_BMP085
+dir
+
+AP_GPS
+dir
+
+AP_Math
+dir
+
+AP_IMU
+dir
+
+APM_RC_QUAD
+dir
+
+PID
+dir
+
