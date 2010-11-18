@@ -16,19 +16,10 @@
         - IMU is freaking awesome!!!
 */
 
-/* maybe
-typedef struct imu_ {
-   uint8_t imu_rx_flag;
-   char imu_rx;
-} IMU_t;
-
-IMU_t *imu;
-*/
-
-
-
+/* ------------------------------------------------------------------------ */
 /* IMU definitions */
 /* ------------------------------------------------------------------------ */
+
 /* Transmit Definitions */
 #define SET_ACTIVE_CHANNELS 0x80
 #define SET_SILENT_MODE 0x81
@@ -100,6 +91,14 @@ IMU_t *imu;
 #define MAG_BIAS_REPORT 0xC7
 #define BROADCAST_MODE_REPORT 0xC8
 
+/* Define Output Scale Factors */ 
+#define SCALE_ANGLES      0.0109863F  // degrees/LSB
+#define SCALE_ANGLE_RATES 0.0137329F  // degrees/second/LSB
+#define SCALE_MAG         0.061035F   // mGauss/LSB
+#define SCALE_GYRO        0.01812F    // degrees/second/LSB
+#define SCALE_ACCEL       0.106812F   // mg/LSB
+
+
 
 /* IMU Serial */
 #define imuBau 115200
@@ -112,6 +111,8 @@ IMU_t *imu;
 #define imuPort "CHR-6dm AHRS"
  
 
+
+/* ------------------------------------------------------------------------ */
 /* IMU struct set-up:
    - the purpose of this struct configuration is to allow 
      the IMU to act like a directory structure.
@@ -131,7 +132,7 @@ typedef struct imu_rx_ {
   uint8_t D1;
   uint8_t D2;
   uint16_t active_channels;
-  uint16_t data[15];
+  float data[15];
   uint8_t rx_complete;
   uint8_t index;
 } imu_rx_t;
@@ -146,19 +147,22 @@ imu_t imu;
 
 
 
-
+/* ------------------------------------------------------------------------ */
 /* Initialize IMU */
 /* ------------------------------------------------------------------------ */
 void IMU_Init(){
   
   SerPri("Initializing IMU");
   
-  imu.settings.broadcast_rate = 125;
-  imu.settings.active_channels = 0b1000000000000000;
+  imu.settings.broadcast_rate = 0;
+  imu.settings.active_channels = 0b1111111111111110;  // All on
   transmit_imu_packet(SET_ACTIVE_CHANNELS);
   transmit_imu_packet(SET_BROADCAST_MODE);
+  transmit_imu_packet(ZERO_RATE_GYROS);
 } 
 
+
+/* ------------------------------------------------------------------------ */
 /* Receive IMU packet */
 /* Gives feedback for failed packet sends, etc... */
 /* ------------------------------------------------------------------------ */
@@ -174,6 +178,8 @@ uint8_t receive_imu_packet(){
         /* Receive cases */
         /* Read packet type */
         uint8_t PT = imuRead();
+        uint8_t msb = 0;
+        uint8_t lsb = 0;
         /* Update checksum */
         CHK += 's' + 'n' + 'p' + PT;
         switch(PT){
@@ -184,7 +190,7 @@ uint8_t receive_imu_packet(){
             imuRead();
             while(!imuAvailable());
             SerPriln((uint16_t)(imuRead()));
-            return COMMAND_COMPLETE;
+            break;
           
           case COMMAND_FAILED:
             SerPri("command failed \n \r");
@@ -192,11 +198,11 @@ uint8_t receive_imu_packet(){
             imuRead();
             while(!imuAvailable());
             SerPriln((uint16_t)(imuRead()));
-            return COMMAND_FAILED;
+            break;
           
           case BAD_CHECKSUM:
             SerPri("bad checksum \n \r");
-            return BAD_CHECKSUM;
+            break;
           
           case BAD_DATA_LENGTH:
             SerPri("bad data length \n \r");
@@ -204,17 +210,24 @@ uint8_t receive_imu_packet(){
             imuRead();
             while(!imuAvailable());
             SerPriln((uint16_t)(imuRead()));
-            return BAD_DATA_LENGTH;
+            break;
           
           case UNRECOGNIZED_PACKET:
             SerPri("unrecognized packet \n \r");
             while(!imuAvailable());
             SerPriln(imuRead());
-            return UNRECOGNIZED_PACKET;
+            break;
+          
+          case BUFFER_OVERFLOW:
+            /* UNIMPLEMENTED */
+            break;
+            
+          case STATUS_REPORT:
+            /* UNIMPLEMENTED */
+            break;
           
           case SENSOR_DATA:
             // We just received a SENSOR_DATA message so lets parse it!!!
-            SerPri("yay! \n \r");
             while(!imuAvailable());
             imu.rx.N = imuRead();
             while(!imuAvailable());
@@ -222,11 +235,7 @@ uint8_t receive_imu_packet(){
             while(!imuAvailable());
             imu.rx.D2 = imuRead();
             imu.rx.active_channels = (uint16_t)((imu.rx.D1)<<8) | (imu.rx.D2);
-            SerPriln((uint16_t)(imu.rx.D1));
-            SerPriln((uint16_t)(imu.rx.D1));
-            CHK += imu.rx.N + imu.rx.D1 + imu.rx.D2;
-            uint8_t msb = 0;
-            uint8_t lsb = 0;         
+            CHK += imu.rx.N + imu.rx.D1 + imu.rx.D2;         
             for(uint8_t i = 0; i<15; i++){
               /* NOTE get this working !!!!!!!!!! */
              if ((imu.rx.active_channels>>(15-i) & 1) == 1){
@@ -234,14 +243,88 @@ uint8_t receive_imu_packet(){
                 msb = imuRead();
                 while(!imuAvailable());
                 lsb = imuRead();
-                imu.rx.data[i] = (uint16_t)((msb)<<8) | (lsb);
+                if (i<3){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLES;
+                }else if (i>2 && i<6){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLE_RATES;
+                }else if (i>5 && i<9){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_MAG;
+                }else if (i>8 && i<12){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_GYRO;
+                }else if (i>11 && i<15){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ACCEL;
+                }
               }else{
                 imu.rx.data[i] = 0x0000;
               }
-              i++;
+              SerPri(imu.rx.data[i]);
+              SerPri(",");
             }
-              return SENSOR_DATA;    
+            SerPriln();
+            break;
+         
+          case GYRO_BIAS_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case GYRO_SCALE_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case START_CAL_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case ACCEL_BIAS_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case ACCEL_REF_VECTOR_REPORT:
+                      /* UNIMPLEMENTED */
+            break;
+         
+          case MAG_COVARIANCE_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case PROCESS_COVARIANCE_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case STATE_COVARIANCE_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case EKF_CONFIG_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case GYRO_ALIGNMENT_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case ACCEL_ALIGNMENT_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case MAG_REF_VECTOR_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case MAG_CAL_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case MAG_BIAS_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+         
+          case BROADCAST_MODE_REPORT:
+            /* UNIMPLEMENTED */
+            break;
+                
         }
+        return PT;
       }
     }
   }
@@ -249,6 +332,10 @@ uint8_t receive_imu_packet(){
 }
    
    
+   
+   
+   
+/* ------------------------------------------------------------------------ */   
 /* Transmit IMU packet, sends a packet to the imu defining IMU parameters.
    ... note: currently most commands are not supported
 */
@@ -264,15 +351,16 @@ void transmit_imu_packet(uint8_t command){
   
   SerPriln(imu.settings.broadcast_rate);
   switch(command){
-  
+    
     case SET_ACTIVE_CHANNELS:
       SerPri("Setting Active Channels: ");
       SerPriln(imu.settings.active_channels);
       N = 2;
       imuPrint((uint8_t)(N));
+      imuPrint((uint8_t)(((imu.settings.active_channels)>>8) & 0x00FF));
       imuPrint((uint8_t)((imu.settings.active_channels) & 0x00FF));
-      imuPrint((uint8_t)((imu.settings.active_channels) & 0x00FF));
-      CHK += imu.settings.active_channels;
+      CHK += (uint8_t)(((imu.settings.active_channels)>>8) & 0x00FF) + \
+             (uint8_t)((imu.settings.active_channels) & 0x00FF);
       break;
       
     case SET_SILENT_MODE:
@@ -290,6 +378,163 @@ void transmit_imu_packet(uint8_t command){
       imuPrint((uint8_t)(N));
       imuPrint((uint8_t)(imu.settings.broadcast_rate));
       CHK += imu.settings.broadcast_rate;
+      break;
+    
+    case SET_GYRO_BIAS:
+      /* UNIMPLEMENTED */
+      break;
+    
+    case SET_ACCEL_BIAS:  
+      /* UNIMPLEMENTED */
+      break;
+    
+    case SET_ACCEL_REF_VECTOR:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case AUTO_SET_ACCEL_REF:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case ZERO_RATE_GYROS:
+      SerPriln("Zeroing Rate Gyros");
+          /* UNIMPLEMENTED */
+      break;
+    
+    case SELF_TEST:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case SET_START_CAL:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case SET_PROCESS_COVARIANCE:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case SET_MAG_COVARIANCE:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case SET_ACCEL_COVARIANCE:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case SET_EKF_CONFIG:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case SET_GYRO_ALIGNMENT:
+          /* UNIMPLEMENTED */
+    break;
+  
+    case SET_ACCEL_ALIGNMENT:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case SET_MAG_REF_VECTOR:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case AUTO_SET_MAG_REF:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case SET_MAG_CAL:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case SET_MAG_BIAS:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case SET_GYRO_SCALE:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case EKF_RESET:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case RESET_TO_FACTORY:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case WRITE_TO_FLASH:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_DATA:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_ACTIVE_CHANNELS:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_BROADCAST_MODE:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_ACCEL_BIAS:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_ACCEL_REF_VECTOR:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_GYRO_BIAS:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_GYRO_SCALE:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_START_CAL:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_EKF_CONFIG:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_ACCEL_COVARIANCE:
+          /* UNIMPLEMENTED */
+      break;
+  
+    case GET_MAG_COVARIANCE:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case GET_PROCESS_COVARIANCE:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case GET_STATE_COVARIANCE:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case GET_GYRO_ALIGNMENT:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case GET_ACCEL_ALIGNMENT:
+          /* UNIMPLEMENTED */
+      break;
+    
+    case GET_MAG_REF_VECTOR:
+          /* UNIMPLEMENTED */
+      break;
+ 
+    case GET_MAG_CAL:
+          /* UNIMPLEMENTED */
+      break;
+ 
+    case GET_MAG_BIAS:
+          /* UNIMPLEMENTED */
       break;
   }
   CHK += 's' + 'n' + 'p' + command + N;
