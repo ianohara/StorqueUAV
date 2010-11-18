@@ -155,11 +155,22 @@ void Read_Ports(){
   }
   /*
   if (Serial1.available()){
-    // ......
+    // UNIMPLEMENTED
   }*/
-  // imu port (imu->ardupilot mega)
+  /* Receive IMU data.
+     - We really only care about our IMU data at the moment,
+       perhaps more complicated behaviors will become preferable,
+       but until then errors will be posted to the console, or 
+       to whatever structs / functions check such errors
+  */
   if (imuAvailable()){
-    receive_imu_packet();  
+    if (receive_imu_packet() == SENSOR_DATA){
+      imu.rx.data_received_flag = 1;
+      SerPriln("Successs");
+    }else{
+      imu.rx.data_received_flag = 0;
+      SerPriln("Not Success");
+    }   
   }
   // xbee port (from host to xbee->ardupilot mega)
   if (xbeeAvailable()){ 

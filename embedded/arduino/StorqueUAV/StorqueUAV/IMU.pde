@@ -131,9 +131,10 @@ typedef struct imu_rx_ {
   uint8_t N;
   uint8_t D1;
   uint8_t D2;
+  uint16_t CHK;
   uint16_t active_channels;
   float data[15];
-  uint8_t rx_complete;
+  uint8_t data_received_flag;
   uint8_t index;
 } imu_rx_t;
 
@@ -187,17 +188,17 @@ uint8_t receive_imu_packet(){
           case COMMAND_COMPLETE:
             SerPri("command complete \n \r");
             while(!imuAvailable());
-            imuRead();
+            CHK += imuRead();
             while(!imuAvailable());
-            SerPriln((uint16_t)(imuRead()));
+            CHK += imuRead();
             break;
           
           case COMMAND_FAILED:
             SerPri("command failed \n \r");
             while(!imuAvailable());
-            imuRead();
+            CHK += imuRead();
             while(!imuAvailable());
-            SerPriln((uint16_t)(imuRead()));
+            CHK += imuRead();
             break;
           
           case BAD_CHECKSUM:
@@ -207,15 +208,15 @@ uint8_t receive_imu_packet(){
           case BAD_DATA_LENGTH:
             SerPri("bad data length \n \r");
             while(!imuAvailable());
-            imuRead();
+            CHK += imuRead();
             while(!imuAvailable());
-            SerPriln((uint16_t)(imuRead()));
+            CHK += imuRead();
             break;
           
           case UNRECOGNIZED_PACKET:
             SerPri("unrecognized packet \n \r");
             while(!imuAvailable());
-            SerPriln(imuRead());
+            CHK += imuRead();
             break;
           
           case BUFFER_OVERFLOW:
@@ -254,8 +255,10 @@ uint8_t receive_imu_packet(){
                 }else if (i>11 && i<15){
                   imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ACCEL;
                 }
+                CHK += msb + lsb;
               }else{
                 imu.rx.data[i] = 0x0000;
+                CHK += 0x00;
               }
               SerPri(imu.rx.data[i]);
               SerPri(",");
@@ -324,7 +327,18 @@ uint8_t receive_imu_packet(){
             break;
                 
         }
-        return PT;
+        
+        
+        while(!imuAvailable());
+        imu.rx.CHK = (((uint16_t)imuRead())<<8);
+        while(!imuAvailable());
+        imu.rx.CHK |= imuRead();
+        
+        if (imu.rx.CHK == CHK){
+          return PT;
+        }else{
+          return 0;
+        }
       }
     }
   }
