@@ -156,16 +156,19 @@ void IMU_Init(){
   SerPri("Initializing IMU");
   
   imu.settings.broadcast_rate = 0;
-  imu.settings.active_channels = 0b1111111111111110;  // All on
+  imu.settings.active_channels = 0b1111111111111110;  // All channels on
   transmit_imu_packet(SET_ACTIVE_CHANNELS);
   transmit_imu_packet(SET_BROADCAST_MODE);
   transmit_imu_packet(ZERO_RATE_GYROS);
+  delay(1000);
 } 
 
 
 /* ------------------------------------------------------------------------ */
-/* Receive IMU packet */
-/* Gives feedback for failed packet sends, etc... */
+/* Receive IMU packet:
+    - gives feedback from the IMU
+    - contains switch with all possible packet receives.
+*/
 /* ------------------------------------------------------------------------ */
 uint8_t receive_imu_packet(){
   uint16_t CHK = 0;
@@ -238,7 +241,6 @@ uint8_t receive_imu_packet(){
             imu.rx.active_channels = (uint16_t)((imu.rx.D1)<<8) | (imu.rx.D2);
             CHK += imu.rx.N + imu.rx.D1 + imu.rx.D2;         
             for(uint8_t i = 0; i<15; i++){
-              /* NOTE get this working !!!!!!!!!! */
              if ((imu.rx.active_channels>>(15-i) & 1) == 1){
                 while(!imuAvailable());
                 msb = imuRead();
