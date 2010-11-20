@@ -146,8 +146,6 @@ typedef struct imu_ {
 
 imu_t imu;
 
-
-
 /* ------------------------------------------------------------------------ */
 /* Initialize IMU */
 /* ------------------------------------------------------------------------ */
@@ -264,8 +262,11 @@ uint8_t receive_imu_packet(){
               }
               SerPri(imu.rx.data[i]);
               SerPri(",");
+              xbeePrint(imu.rx.data[i]);
+              xbeePrint(",");
             }
             SerPriln();
+            xbeePrintln();
             break;
          
           case GYRO_BIAS_REPORT:

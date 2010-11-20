@@ -67,27 +67,37 @@
 
 #define CONFIGURATOR  // Do se use Configurator or normal text output over serial link
 
-// Quick and easy hack to change FTDI Serial output to Telemetry port. Just activate #define IsXBEE some lines earlier
-#ifndef IsXBEE
+/* Communication Port Definitions */
+/* ------------------------------------------------------------------------------------ */
+
+/* Config */
 #define SerBau  115200
 #define SerPri  Serial.print
 #define SerPriln Serial.println
 #define SerAva  Serial.available
 #define SerRea  Serial.read
 #define SerFlu  Serial.flush
-#define SerBeg  Serial.begin
+#define SerInit  Serial.begin
 #define SerPor  "FTDI"
-#else
-#define SerBau  115200
-#define SerPri  Serial1.print
-#define SerPriln Serial1.println
-#define SerAva  Serial1.available
-#define SerRea  Serial1.read
-#define SerFlu  Serial1.flush
-#define SerBeg  Serial1.begin
-#define SerPor  "Xbee"
-#endif
 
+/* IMU */
+#define imuBau 115200
+#define imuPrint Serial2.print
+#define imuPrintln Serial2.println
+#define imuFlush Serial2.flush
+#define imuAvailable Serial2.available
+#define imuRead Serial2.read
+#define imuInit Serial2.begin
+#define imuPort "CHR-6dm AHRS"
+
+/* Xbee - telemetry */
+#define xbeeBau 57600
+#define xbeePrint Serial3.print
+#define xbeePrintln Serial3.println
+#define xbeeAvailable Serial3.available
+#define xbeeRead Serial3.read
+#define xbeeInit Serial3.begin
+#define xbeePort "Xbee"
 
 
 /* ****************************************************************************** */
