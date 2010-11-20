@@ -1,0 +1,10 @@
+'''
+   Storque Console interface.
+   - Serves as interactivity layer between the User and the ArduPilot Mega 
+     usb/xbee -> serial interface.
+   - Implements the following features:
+     - Switching priority communication interface between XBee (wireless) and 
+       USB (wired). 
+     - 
+
+'''
