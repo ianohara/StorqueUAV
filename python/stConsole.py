@@ -167,7 +167,9 @@ class stConsole(object):
       (channel, addr) = self.serverSocket.accept()
       print 'Client is at', addr
       streamOut = channel.makefile('w', 0)
-      streamOut.writelines(streamIn.readlines())
+      for line in streamIn:
+        streamOut.writelines(streamIn.readline())
+      
       streamOut.close()
       channel.close()
 
@@ -175,4 +177,4 @@ class stConsole(object):
       #print input
       #log.write(input)
    
-    return
+    

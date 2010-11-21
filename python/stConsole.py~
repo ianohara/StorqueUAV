@@ -60,6 +60,7 @@ def mkdir_p(path):
 # ------------------------------------------------------------------------------
 import sys, os, errno, time
 import serial
+import socket
 import pygame
 
 
@@ -77,9 +78,16 @@ class stConsole(object):
 
   '''
   
-  def __init__(self, *args, **kwargs):
+  def __init__(self, port, *args, **kwargs):
     # Ensure that there exists a communication log directory 
     mkdir_p('com_log')
+    print
+    print "Initializing stream on port: %s" %port 
+
+    self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.serverSocket.bind(('', port))
+    self.serverSocket.listen(1)
+
     print
     print "Welcome to the Storque UAV interactive console"
     
@@ -102,7 +110,6 @@ class stConsole(object):
       # Set up serial on Wired interface, baudrate 115200, timeout 1 [second]
       # Also initialize log file for given communication session
       self.wired = serial.Serial(comName, 115200, timeout=1)
-      self.wired.nonblocking()
       self.wired_log = open('com_log/Wired_%s-%s-%s-%s-%s' \
                         %(date.tm_mon, date.tm_mday, date.tm_year, \
                           date.tm_hour, date.tm_min), 'wr')
@@ -110,7 +117,6 @@ class stConsole(object):
     elif comType == 'XBee' or comType == 'Xbee' or comType == 'xbee':
       # Set up serial on Xbee interface, baudrate 57600, timeout 1 [second]
       self.xbee = serial.Serial(comName, 57600, timeout=1)
-      self.xbee.nonblocking()
       self.xbee_log = open('com_log/XBee_%s-%s-%s-%s-%s' \
                         %(date.tm_mon, date.tm_mday, date.tm_year, \
                           date.tm_hour, date.tm_min), 'wr')
@@ -149,15 +155,24 @@ class stConsole(object):
   def readStream(self, comType):
     
     if comType == 'wired' or comType == 'Wired':
-      stream = self.wired
+      streamIn = self.wired
       log = self.wired_log
     elif comType == 'XBee' or comType == 'Xbee' or comType == 'xbee':
-      stream = self.xbee 
+      streamIn = self.xbee 
       log = self.xbee_log
 
     while(1):
-      input = stream.readline()
-      print input
-      log.write(input)
+
+      self.serverSocket.listen(1)
+      (channel, addr) = self.serverSocket.accept()
+      print 'Client is at', addr
+      streamOut = channel.makefile('w', 0)
+      streamOut.writelines(streamIn.readlines())
+      streamOut.close()
+      channel.close()
+
+      #input = stream.readline()
+      #print input
+      #log.write(input)
    
     return

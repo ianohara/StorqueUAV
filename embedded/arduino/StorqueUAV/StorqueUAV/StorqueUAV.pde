@@ -114,7 +114,7 @@
 //#include <APM_BMP085.h>
 #endif
 
-#include <GPS_NMEA.h>   // General NMEA GPS 
+//#include <GPS_NMEA.h>   // General NMEA GPS 
 //#include <GPS_MTK.h>      // MediaTEK DIY Drones GPS. 
 //#include <GPS_UBLOX.h>  // uBlox GPS
 
