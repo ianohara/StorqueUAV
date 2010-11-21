@@ -60,6 +60,7 @@ def mkdir_p(path):
 # ------------------------------------------------------------------------------
 import sys, os, errno, time
 import serial
+import socket
 import pygame
 
 
@@ -77,9 +78,16 @@ class stConsole(object):
 
   '''
   
-  def __init__(self, *args, **kwargs):
+  def __init__(self, port, *args, **kwargs):
     # Ensure that there exists a communication log directory 
     mkdir_p('com_log')
+    print
+    print "Initializing stream on port: %s" %port 
+
+    self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.serverSocket.bind(('', port))
+    self.serverSocket.listen(1)
+
     print
     print "Welcome to the Storque UAV interactive console"
     
@@ -147,15 +155,24 @@ class stConsole(object):
   def readStream(self, comType):
     
     if comType == 'wired' or comType == 'Wired':
-      stream = self.wired
+      streamIn = self.wired
       log = self.wired_log
     elif comType == 'XBee' or comType == 'Xbee' or comType == 'xbee':
-      stream = self.xbee 
+      streamIn = self.xbee 
       log = self.xbee_log
 
     while(1):
-      input = stream.readline()
-      print input
-      log.write(input)
+
+      self.serverSocket.listen(1)
+      (channel, addr) = self.serverSocket.accept()
+      print 'Client is at', addr
+      streamOut = channel.makefile('w', 0)
+      streamOut.writelines(streamIn.readlines())
+      streamOut.close()
+      channel.close()
+
+      #input = stream.readline()
+      #print input
+      #log.write(input)
    
     return

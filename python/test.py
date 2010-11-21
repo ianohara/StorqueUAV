@@ -1,3 +1,7 @@
 '''
-  get a cool curses console up and running 
+   playing around with python sockets
 '''
+
+import socket, sys, os
+
+
