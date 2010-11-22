@@ -1,8 +1,11 @@
-#wps.py
-
+#client.py
+# This code allows one to write data to the server 
+# when an empty line is sent then the client sends 'close'
+# to the server asking it to close the connect between the
+# client and the server
 #client
 
-import socket, sys
+import socket, select, sys
 
 def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -13,14 +16,21 @@ def main():
     # create file like object flo
     flo = s.makefile('w', 0)
     fli = s.makefile('r', 0)
+    input = [s, sys.stdin]
     run = True
     while(run):
-        input = sys.stdin.readline()
-        flo.write(input)
-        if (input == "\n"):
-            flo.write("close\n")
-            flo.write("close\n")
-            run = False
+        inputready, outputready, exceptready = select.select(input, [], [])
+        
+        for sel in inputready:
+            
+            if sel = sys.stdin:
+                userInput = sys.stdin.readline()
+                if userInput == "":
+                    run False
+                else:
+                    flo.write(userInput)
+
+                                     
     s.close()
             
 

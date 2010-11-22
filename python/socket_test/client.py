@@ -22,16 +22,14 @@ def main():
         inputready, outputready, exceptready = select.select(input, [], [])
         
         for sel in inputready:
-            if sel == s:
-                sys.stdout.write(fli.readline())
-              
-            elif  sel == sys.stdin:
-                input = sel.readline()
-                flo.write(input)
-                if (input == "\n"):
-                    flo.write("close\n")
-                    flo.write("close\n")
+            
+            if sel == sys.stdin:
+                userInput = sys.stdin.readline()
+                if userInput == "\n":
                     run = False
+                else:
+                    flo.write(userInput)
+
                                      
     s.close()
             
