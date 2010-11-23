@@ -1,6 +1,0 @@
-'''
-  ser_svr.py:
-     This code takes a given serial input and port number,
-     reads in the data and streams it to a given number
-     of clients. It has a 'primary' client which it 
-     will read data from and transmit to 
