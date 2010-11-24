@@ -65,14 +65,14 @@ float readFloatSerial() {
 /* ------------------------------------------------------------------------------------ */
 
 /* Config */
-#define SerBau  115200
-#define SerPri  Serial.print
-#define SerPriln Serial.println
-#define SerAva  Serial.available
-#define SerRea  Serial.read
-#define SerFlu  Serial.flush
-#define SerInit  Serial.begin
-#define SerPor  "FTDI"
+#define ftdiBau  57600
+#define ftdiPrint  Serial.print
+#define ftdiPrintln Serial.println
+#define ftdiAvailable  Serial.available
+#define ftdiRead  Serial.read
+#define ftdiFlush  Serial.flush
+#define ftdiInit  Serial.begin
+#define ftdiPort  "FTDI"
 
 /* IMU */
 #define imuBau 115200
@@ -99,16 +99,16 @@ float readFloatSerial() {
 */
 /* ------------------------------------------------------------------------------------ */
 typedef struct com_ports_ {
-  bool config_rx_flag;
+  bool ftdi_rx_flag;
   bool imu_rx_flag;
   bool xbee_rx_flag;
-  uint8_t config_rx_byte;
+  uint8_t ftdi_rx_byte;
   uint8_t imu_rx_byte;
   uint8_t xbee_rx_byte;
   /* .... */
 } com_ports_t;
 
-com_ports_t *com_port;  // <- instantiate pointer to com_flags struct.
+com_ports_t com_port;  // <- instantiate pointer to com_flags struct.
 
 /* Initialize communication ports */
 /* ------------------------------------------------------------------------------------ */
@@ -116,7 +116,7 @@ void Com_Init(){
   
   /* Initialize Serial */
   /* ------------------------------------------------------------------------------------ */
-  Serial.begin(SerBau);                      // Initialize SerialXX.port, IsXBEE define declares which port
+  ftdiInit(SerBau);                      // Initialize SerialXX.port, IsXBEE define declares which port
   Serial1.begin(SerBau);
   imuInit(imuBau);
   xbeeInit(xbeeBau);
@@ -125,12 +125,12 @@ void Com_Init(){
 
   /* Print boot info to host */
   /* ------------------------------------------------------------------------------------ */  
-  SerPri("StorqueUAV v");
-  SerPriln(VER);
-  SerPri("Serial ready on port: ");    // Printout greeting to selecter serial port
-  SerPriln(SerPor);                    // Printout serial port name
-  SerPri("Serial baud rate: ");
-  SerPriln(SerBau);
+  ftdiPrint("StorqueUAV v");
+  ftdiPrintln(VER);
+  ftdiPrint("Serial ready on port: ");    // Printout greeting to selecter serial port
+  ftdiPrintln(SerPor);                    // Printout serial port name
+  ftdiPrint("Serial baud rate: ");
+  ftdiPrintln(SerBau);
   
   xbeePrint("StorqueUAV v");
   xbeePrintln(VER);
@@ -149,8 +149,8 @@ void Com_Init(){
 void Read_Ports(){
   // configuration port (usb->host)
   if (SerAva()){
-    com_port->config_rx_byte = SerRea();
-    com_port->config_rx_flag = true;       // note: remember to set flags to false after com
+    com_port.ftdi_rx_byte = SerRea();
+    com_port.ftdi_rx_flag = true;       // note: remember to set flags to false after com
   }
   /*
   if (Serial1.available()){
@@ -173,8 +173,11 @@ void Read_Ports(){
   }
   // xbee port (from host to xbee->ardupilot mega)
   if (xbeeAvailable()){ 
-    com_port->xbee_rx_byte = xbeeRead();
-    com_port->xbee_rx_flag = true;
+    console.rx_byte = xbeeRead();
+    console.rx_flag = true;
+    //xbeePrint((uint16_t)console.rx_byte);
+    //com_port.xbee_rx_byte = xbeeRead();
+    //com_port.xbee_rx_flag = true;
   }
 }
 

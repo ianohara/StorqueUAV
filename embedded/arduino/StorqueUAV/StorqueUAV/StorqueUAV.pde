@@ -71,14 +71,25 @@
 /* ------------------------------------------------------------------------------------ */
 
 /* Config */
-#define SerBau  115200
-#define SerPri  Serial.print
-#define SerPriln Serial.println
-#define SerAva  Serial.available
-#define SerRea  Serial.read
-#define SerFlu  Serial.flush
-#define SerInit  Serial.begin
-#define SerPor  "FTDI"
+#define ftdiBau  57600
+#define ftdiPrint  Serial.print
+#define ftdiPrintln Serial.println
+#define ftdiAvailable  Serial.available
+#define ftdiRead  Serial.read
+#define ftdiFlush  Serial.flush
+#define ftdiInit  Serial.begin
+#define ftdiPort  "FTDI"
+
+/* Config */
+/* Old defines left in for compatability with older ardupilot mega code */
+#define SerBau ftdiBau  
+#define SerPri ftdiPrint
+#define SerPriln ftdiPrintln
+#define SerAva ftdiAvailable
+#define SerRea ftdiRead
+#define SerFlu ftdiFlush
+#define SerBegin ftdiInit
+#define SerPor ftdiPort
 
 /* IMU */
 #define imuBau 115200
@@ -116,7 +127,7 @@
 
 //#include <GPS_NMEA.h>   // General NMEA GPS 
 //#include <GPS_MTK.h>      // MediaTEK DIY Drones GPS. 
-//#include <GPS_UBLOX.h>  // uBlox GPS
+#include <GPS_UBLOX.h>  // uBlox GPS
 
 // EEPROM storage for user configurable values
 #include <EEPROM.h>
@@ -189,6 +200,7 @@ void setup()
   /* Initialize Communication with Host */
   Com_Init();
   IMU_Init();
+  Console_Init();
   motorArmed = 0;
   
 } 

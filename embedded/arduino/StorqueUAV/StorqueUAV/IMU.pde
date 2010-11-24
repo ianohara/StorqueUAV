@@ -262,11 +262,11 @@ uint8_t receive_imu_packet(){
               }
               SerPri(imu.rx.data[i]);
               SerPri(",");
-              xbeePrint(imu.rx.data[i]);
-              xbeePrint(",");
+              //xbeePrint(imu.rx.data[i]);
+              //xbeePrint(",");
             }
             SerPriln();
-            xbeePrintln();
+            //xbeePrintln();
             break;
          
           case GYRO_BIAS_REPORT:
