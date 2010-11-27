@@ -24,32 +24,20 @@
 */
 /* ------------------------------------------------------------------------------------ */
 
-
 /* ------------------------------------------------------------------------------------ */
-/* Console Struct:
-   - contains all parameters used by the console for interactivity between the host and
-     the ArduPilot Mega
-   - the idea is that the host will do all the complicated parsing of commands:
-       for instance if the host writes configure imu, then some arbitrary values will
-       be sent to the ardupilot mega which will then accomplish that. 
-       
-   - Input data is in the following form:
-     ( 'r', 'c', 'v', cmd, len, data[0], data[1], data[len-1] )   data is currently up to 8 bytes
-*/
+/* Console Defines */
+/* ------------------------------------------------------------------------------------ */
 
-typedef struct console_ {
-  
-  uint8_t index;  
-  uint16_t rx_cmd;
-  uint8_t rx_len;
-  uint8_t dataIn[8];
-  uint8_t rx_flag;
-  uint8_t rx_byte;
-  uint16_t CHK; // Eventually it would be nice to have a checksum, but I want to go play guitar, so thats going to have to wait.
+/* Console Receive Commands */
+#define TEST         't'
+#define IMU_CHANNELS 'c'
+#define IMU_RATE     'r'
+#define IMU_RESET    'R'
 
-} console_t;
+/* Console Transmit Commands */
+#define HEARTBEAT    0x50 
+#define IMU_DATA     0x51
 
-console_t console;
 
 /* ------------------------------------------------------------------------------------ */
 /* Init Console:
@@ -57,12 +45,75 @@ console_t console;
 */
 /* ------------------------------------------------------------------------------------ */
 void Console_Init(){
-    console.index = 0;
-    console.rx_len = 0;
-    console.rx_flag = false;
-    console.rx_byte = 0x00;
+    console.rx.len = 0;
+    console.rx.packet_received_flag = false;
+    console.tx.heartbeat_flag = false;
+    console.tx.imu_data_flag = false;
 }
 
+
+/* ------------------------------------------------------------------------------------ */
+/* Receive Console Packet
+    - Reads in data from the host and sets cosole.rx_flag so that Task Manager can 
+      tell the Console to do something with input data
+/* ------------------------------------------------------------------------------------ */
+uint8_t receive_console_packet(){
+  uint16_t CHK = 0;
+  uint8_t len;
+  uint8_t data = 0;
+  if (xbeeRead() == 'h'){
+    while(!xbeeAvailable());
+    if (xbeeRead() == 's'){
+      while(!xbeeAvailable());
+      if (xbeeRead() == 't'){
+        while(!xbeeAvailable());
+        console.rx.cmd = xbeeRead();
+        while(!xbeeAvailable());
+        console.rx.len = xbeeRead() - 48; // Since we are just sending lengths as characters ... for now
+        
+        // Check and see if rx_len is a reasonable value otherwise error
+        if (console.rx.len > 7){
+          return 0;
+        }
+        
+        CHK |= 'h' + 's' + 't' + console.rx.cmd + console.rx.len;
+        for (uint8_t i = 0; i < console.rx.len; i++){
+          while(!xbeeAvailable());
+          data = xbeeRead();
+          console.rx.data[i] = data;
+          CHK |= data;
+        }
+        
+        /* This is for when the checksum is actually used */
+        /* ============================================== */
+        /*
+        while(!xbeeAvailable());
+        console.rx.CHK = (((uint16_t)xbeeRead())<<8);
+        while(!xbeeAvailable());
+        console.rx.CHK |= xbeeRead();
+        
+        if (console.rx_CHK == CHK){
+          return console.rx_cmd;
+        }else{
+          return 0;
+        }
+        */
+        
+        return console.rx.cmd;
+      }
+    }
+  }
+  return 0;
+}
+
+/* ------------------------------------------------------------------------------------ */
+/* Console Transmit Packet Function:
+   This function implements a switch-case list which handles all ardupilot to 
+   host transmissions. Note: place more time consuming items at the top 
+   rather than bottom of the list.
+*/
+/* ------------------------------------------------------------------------------------ */
+void console_transmit_packet(){}
 
 /* ------------------------------------------------------------------------------------ */
 /* Console:
@@ -74,6 +125,29 @@ void Console_Init(){
 /* ------------------------------------------------------------------------------------ */
 
 void Console(){
+  
+  switch(console.rx.cmd){
+    
+    case TEST:
+      xbeePrint("Test Packet Received \n \r");
+      break;
+    
+    case IMU_RESET:
+      IMU_soft_reset();
+      break;
+    
+    case IMU_RATE:
+      xbeePrint("IMU Rate Packet Received \n \r");
+      imu.settings.broadcast_rate = console.rx.data[0];
+      break; 
+  }
+  
+  return; 
+}
+
+
+
+/* Old console receive left for reference
   if (console.rx_flag == true){
     console.rx_flag = false;
     if (console.index == 0){
@@ -143,8 +217,7 @@ void Console(){
       return;
     }
   }
-}
-
+*/
 /* Old Console program, left mainly for reference */
 /*
 void Console(){

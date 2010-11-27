@@ -109,42 +109,19 @@
 #define imuRead Serial2.read
 #define imuInit Serial2.begin
 #define imuPort "CHR-6dm AHRS"
- 
 
 
 /* ------------------------------------------------------------------------ */
-/* IMU struct set-up:
-   - the purpose of this struct configuration is to allow 
-     the IMU to act like a directory structure.
-   - it allows one to deal with the complexity of the 
-     IMU parameters in a sensible way.
+/* IMU Softward Reset:
+    - This is used for updated IMU parameters that are commonly
+      modified
 */
 /* ------------------------------------------------------------------------ */
-/* IMU settings struct */
-typedef struct imu_settings_ {
-  uint16_t broadcast_rate;      // from 0-255
-  uint16_t active_channels;     // 0b000000000000000 - 0b1111111111111110
-} imu_settings_t;
-
-/* IMU rx struct */
-typedef struct imu_rx_ {
-  uint8_t N;
-  uint8_t D1;
-  uint8_t D2;
-  uint16_t CHK;
-  uint16_t active_channels;
-  float data[15];
-  uint8_t data_received_flag;
-  uint8_t index;
-} imu_rx_t;
-
-/* IMU struct */
-typedef struct imu_ {
-  imu_settings_ settings;
-  imu_rx_ rx;
-} imu_t;
-
-imu_t imu;
+void IMU_soft_reset(){
+  transmit_imu_packet(SET_ACTIVE_CHANNELS);
+  transmit_imu_packet(SET_BROADCAST_MODE);
+  transmit_imu_packet(ZERO_RATE_GYROS);
+}
 
 /* ------------------------------------------------------------------------ */
 /* Initialize IMU */
@@ -155,9 +132,7 @@ void IMU_Init(){
   
   imu.settings.broadcast_rate = 0;
   imu.settings.active_channels = 0b1111111111111110;  // All channels on
-  transmit_imu_packet(SET_ACTIVE_CHANNELS);
-  transmit_imu_packet(SET_BROADCAST_MODE);
-  transmit_imu_packet(ZERO_RATE_GYROS);
+  IMU_soft_reset();
   delay(1000);
 } 
 
@@ -185,6 +160,41 @@ uint8_t receive_imu_packet(){
         /* Update checksum */
         CHK += 's' + 'n' + 'p' + PT;
         switch(PT){
+          
+            case SENSOR_DATA:
+            // We just received a SENSOR_DATA message so lets parse it!!!
+            while(!imuAvailable());
+            imu.rx.N = imuRead();
+            while(!imuAvailable());
+            imu.rx.D1 = imuRead();
+            while(!imuAvailable());
+            imu.rx.D2 = imuRead();
+            imu.rx.active_channels = (uint16_t)((imu.rx.D1)<<8) | (imu.rx.D2);
+            CHK += imu.rx.N + imu.rx.D1 + imu.rx.D2;         
+            for(uint8_t i = 0; i<15; i++){
+             if ((imu.rx.active_channels>>(15-i) & 1) == 1){
+                while(!imuAvailable());
+                msb = imuRead();
+                while(!imuAvailable());
+                lsb = imuRead();
+                if (i<3){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLES;
+                }else if (i>2 && i<6){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLE_RATES;
+                }else if (i>5 && i<9){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_MAG;
+                }else if (i>8 && i<12){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_GYRO;
+                }else if (i>11 && i<15){
+                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ACCEL;
+                }
+                CHK += msb + lsb;
+              }else{
+                imu.rx.data[i] = 0x0000;
+                CHK += 0x00;
+              }
+            }
+            break;
           
           case COMMAND_COMPLETE:
             SerPri("command complete \n \r");
@@ -226,47 +236,6 @@ uint8_t receive_imu_packet(){
             
           case STATUS_REPORT:
             /* UNIMPLEMENTED */
-            break;
-          
-          case SENSOR_DATA:
-            // We just received a SENSOR_DATA message so lets parse it!!!
-            while(!imuAvailable());
-            imu.rx.N = imuRead();
-            while(!imuAvailable());
-            imu.rx.D1 = imuRead();
-            while(!imuAvailable());
-            imu.rx.D2 = imuRead();
-            imu.rx.active_channels = (uint16_t)((imu.rx.D1)<<8) | (imu.rx.D2);
-            CHK += imu.rx.N + imu.rx.D1 + imu.rx.D2;         
-            for(uint8_t i = 0; i<15; i++){
-             if ((imu.rx.active_channels>>(15-i) & 1) == 1){
-                while(!imuAvailable());
-                msb = imuRead();
-                while(!imuAvailable());
-                lsb = imuRead();
-                if (i<3){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLES;
-                }else if (i>2 && i<6){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLE_RATES;
-                }else if (i>5 && i<9){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_MAG;
-                }else if (i>8 && i<12){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_GYRO;
-                }else if (i>11 && i<15){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ACCEL;
-                }
-                CHK += msb + lsb;
-              }else{
-                imu.rx.data[i] = 0x0000;
-                CHK += 0x00;
-              }
-              SerPri(imu.rx.data[i]);
-              SerPri(",");
-              //xbeePrint(imu.rx.data[i]);
-              //xbeePrint(",");
-            }
-            SerPriln();
-            //xbeePrintln();
             break;
          
           case GYRO_BIAS_REPORT:

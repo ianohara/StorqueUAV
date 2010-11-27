@@ -67,6 +67,13 @@
 
 #define CONFIGURATOR  // Do se use Configurator or normal text output over serial link
 
+/* PIN Definitions */
+/* This will be nice for cool LEDs and stuffs */
+#define LOOP_PIN 10
+
+
+
+/* ------------------------------------------------------------------------------------ */
 /* Communication Port Definitions */
 /* ------------------------------------------------------------------------------------ */
 
@@ -134,8 +141,11 @@
 #include "StorqueUAV.h"
 #include "StorqueConfig.h"
 
+// StorqueProperties.h: This is where all 'object' property structs are stored
+#include "StorqueProperties.h"
+
 /* Software version */
-#define VER 0.1    // Current software version (only numeric values)
+#define VER 0.2    // Current software version (only numeric values)
 
 /* ***************************************************************************** */
 /* ************************ CONFIGURATION PART ********************************* */
@@ -175,6 +185,7 @@ void setup()
   float aux_float[3];
 
   pinMode(SW1_pin,INPUT);     //Switch SW1 (pin PG0)
+  pinMode(LOOP_PIN, OUTPUT);
 
   pinMode(RELE_pin,OUTPUT);   // Rele output
   digitalWrite(RELE_pin,LOW);
@@ -210,11 +221,30 @@ void setup()
 /* ************** MAIN PROGRAM - MAIN LOOP ******************** */
 /* ************************************************************ */
 void loop(){
- 
-  Read_Ports();
-  Console();
   
-  /* Port IMU to PC 
+  /* This is a little timing hack just to look at the 
+     cycle rate of our main loop using an o-scope
+  */
+  if (digitalRead(LOOP_PIN) == LOW){
+    digitalWrite(LOOP_PIN, HIGH);
+  }else{
+    digitalWrite(LOOP_PIN, LOW);
+  }
+  
+  Read_Ports();
+  Read_Timers();
+  Manage_Tasks();
+  
+}   // End of void loop()
+
+// END of StorqueUAV.pde
+
+
+
+
+
+
+/* Port IMU to PC 
        - This allows the user to configure and monitor the IMU through
          the provided chrobotics IMU gui
     */
@@ -228,13 +258,6 @@ void loop(){
       Serial.print(imu_input);
     }*/
     
-
-}  // End of void loop()
-
-// END of StorqueUAV.pde
-
-
-
 /* Port PC to XBee */
     /* This is usefull because it allows one to configure the 
        XBee through a com program (like minicom). 

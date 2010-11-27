@@ -151,6 +151,7 @@ void Read_Ports(){
   if (SerAva()){
     com_port.ftdi_rx_byte = SerRea();
     com_port.ftdi_rx_flag = true;       // note: remember to set flags to false after com
+    SerPri("meh \n \r");
   }
   /*
   if (Serial1.available()){
@@ -163,21 +164,28 @@ void Read_Ports(){
        to whatever structs / functions check such errors
   */
   if (imuAvailable()){
+    
+    // Note: receiving full SENSOR_DATA imu packet takes approx: 4[ms] to complete
     if (receive_imu_packet() == SENSOR_DATA){
-      imu.rx.data_received_flag = true;
-      SerPriln("Successs");
+      imu.rx.packet_received_flag = true;
+      SerPriln("S");
     }else{
-      imu.rx.data_received_flag = false;
-      SerPriln("Not Success");
+      imu.rx.packet_received_flag = false;
+      SerPriln("F");
     }   
   }
-  // xbee port (from host to xbee->ardupilot mega)
+  /* Receive data from XBee, which is currently the main port for the 
+     console
+  */
   if (xbeeAvailable()){ 
-    console.rx_byte = xbeeRead();
-    console.rx_flag = true;
-    //xbeePrint((uint16_t)console.rx_byte);
-    //com_port.xbee_rx_byte = xbeeRead();
-    //com_port.xbee_rx_flag = true;
+    if (receive_console_packet()){
+      console.rx.packet_received_flag = true;
+
+      // some cruft to be removed
+      xbeePrint("Command: ");
+      xbeePrint(console.rx.cmd);
+      xbeePrint(" received. \n \r");
+    }
   }
 }
 
