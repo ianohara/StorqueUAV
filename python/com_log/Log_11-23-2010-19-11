@@ -1,0 +1,31 @@
+OUT: test
+IN: Writing data 
+IN:  24Writing data 
+IN:  25Writing data 
+IN:  26Writing data 
+IN:  27Writing data 
+IN:  28Writing data 
+IN:  29Writing data 
+IN:  30Writing data 
+IN:  31OUT: test
+IN: Writing data 
+IN:  32Writing data 
+IN:  33Writing data 
+IN:  34Writing data 
+IN:  35Writing data 
+IN:  36Writing data 
+IN:  37Writing data 
+IN:  38IN: StorqueUAV v0.10
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+OUT: test
+IN: 12OUT: test
+IN: 12345Console length«Writing data 
+IN:  7Writing data 
+IN:  8IN: StorqueUAV v0.10
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+OUT: test
+IN: 12345Console length171Writing data 
+IN:  7Writing data 
+IN:  8

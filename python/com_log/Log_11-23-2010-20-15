@@ -1,0 +1,17 @@
+OUT: Test
+IN: 1
+IN: 2
+IN: 3
+IN: t
+IN: s
+IN: Console length
+IN: 0
+OUT: Test
+IN: 1
+IN: 2
+IN: 3
+IN: t
+IN: s
+IN: Console length
+IN: 0
+OUT: 

@@ -1,0 +1,29 @@
+OUT: Test
+IN: Writing data 
+IN:  24Writing data 
+IN:  25Writing data 
+IN:  26Writing data 
+IN:  27Writing data 
+IN:  28IN: StorqueUAV v0.10
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+OUT: Test
+IN: 12345Console length206OUT: a
+IN: Writing data 
+IN:  7Writing data 
+IN:  8Writing data 
+IN:  9Writing data 
+IN:  10Writing data 
+IN:  11OUT: f
+IN: Writing data 
+IN:  12Writing data 
+IN:  13Writing data 
+IN:  14Writing data 
+IN:  15Writing data 
+IN:  16OUT: kl
+IN: Writing data 
+IN:  17Writing data 
+IN:  18Writing data 
+IN:  19Writing data 
+IN:  20Writing data 
+IN:  21OUT: 
