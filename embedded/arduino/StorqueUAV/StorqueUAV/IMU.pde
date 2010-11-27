@@ -9,6 +9,20 @@
 /* Date : 11-12-2010                                                        */
 /* Version : 0.1 beta                                                       */
 /* Hardware : ArduPilot Mega + CHRobotics CHR-6dm IMU (Production versions) */
+/*
+ This program is free software: you can redistribute it and/or modify 
+ it under the terms of the GNU General Public License as published by 
+ the Free Software Foundation, either version 3 of the License, or 
+ (at your option) any later version. 
+ 
+ This program is distributed in the hope that it will be useful, 
+ but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ GNU General Public License for more details. 
+ 
+ You should have received a copy of the GNU General Public License 
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 /* ------------------------------------------------------------------------ */
 
 /* Notes:
@@ -130,7 +144,10 @@ void IMU_Init(){
   
   SerPri("Initializing IMU");
   
-  imu.settings.broadcast_rate = 0;
+  /* Currently I have halved out the IMU output rate opened 
+     all channels. As we increase the load on the mcu
+     we may need to optimize this */
+  imu.settings.broadcast_rate = 125;
   imu.settings.active_channels = 0b1111111111111110;  // All channels on
   IMU_soft_reset();
   delay(1000);
@@ -161,6 +178,7 @@ uint8_t receive_imu_packet(){
         CHK += 's' + 'n' + 'p' + PT;
         switch(PT){
           
+            // Note: receiving full SENSOR_DATA imu packet takes approx: 4[ms] to complete
             case SENSOR_DATA:
             // We just received a SENSOR_DATA message so lets parse it!!!
             while(!imuAvailable());

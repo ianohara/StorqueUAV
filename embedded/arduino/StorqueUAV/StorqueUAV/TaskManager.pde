@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV Console Interface code:                                      */
-/*                       for CHR6dm_AHRs                                    */
+/* Storque UAV Task Managing Code                                           */
+/*                                                                          */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -49,16 +49,11 @@ task_manager_t task_manager;
 /* ------------------------------------------------------------------------ */
 void Manage_Tasks(){
   
-  /* High Level Priority Functions */
+  /* High Priority Functions */
   if (imu.rx.packet_received_flag){
     imu.rx.packet_received_flag = 0;    // set flag to zero
-    /* Do some cool controls stuff
-       lets say inside function called:
-       
-       InnerPID();
-       
-       or something like that
-    */
+    /* Do some cool controls stuff */   
+    AttitudePID();
     return;
     
   /* A bunch of other necessary
@@ -66,7 +61,7 @@ void Manage_Tasks(){
     elseif (high_etc)
   */ 
   
-  /* Mid Level Priority Functions */
+  /* Mid Priority Functions */
   }else if (console.rx.packet_received_flag){
     console.rx.packet_received_flag = 0;   // set flag to zero
     /* Run Console */
@@ -78,12 +73,10 @@ void Manage_Tasks(){
     elseif (mid_etc)
   */ 
        
-  /* Low Level Priority Functions */
+  /* Low Priority Functions */
   }else if (console.tx.heartbeat_flag){
     console.tx.heartbeat_flag = 0;       // set flag to zero
-    SerPriln("heartbeat");
-  
-  
+    console_transmit_packet(HEARTBEAT);
   return;
   }
   

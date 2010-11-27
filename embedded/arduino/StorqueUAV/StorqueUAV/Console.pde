@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
 /* Storque UAV Console Interface code:                                      */
-/*                       for CHR6dm_AHRs                                    */
+/*                       for Ardupilot Mega                                 */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -9,6 +9,20 @@
 /* Date : 11-12-2010                                                        */
 /* Version : 0.1 beta                                                       */
 /* Hardware : ArduPilot Mega + CHRobotics CHR-6dm IMU (Production versions) */
+/*
+ This program is free software: you can redistribute it and/or modify 
+ it under the terms of the GNU General Public License as published by 
+ the Free Software Foundation, either version 3 of the License, or 
+ (at your option) any later version. 
+ 
+ This program is distributed in the hope that it will be useful, 
+ but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ GNU General Public License for more details. 
+ 
+ You should have received a copy of the GNU General Public License 
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 /* ------------------------------------------------------------------------ */
 
 
@@ -29,10 +43,11 @@
 /* ------------------------------------------------------------------------------------ */
 
 /* Console Receive Commands */
-#define TEST         't'
-#define IMU_CHANNELS 'c'
-#define IMU_RATE     'r'
-#define IMU_RESET    'R'
+#define TEST               't'
+#define IMU_CHANNELS       'c'
+#define IMU_RATE           'r'
+#define IMU_RESET          'R'
+#define IMU_DATA_LOG_RATE  'l' 
 
 /* Console Transmit Commands */
 #define HEARTBEAT    0x50 
@@ -111,9 +126,36 @@ uint8_t receive_console_packet(){
    This function implements a switch-case list which handles all ardupilot to 
    host transmissions. Note: place more time consuming items at the top 
    rather than bottom of the list.
+   
+   I am still considering whether or not it makes sense to use anything other than an
+   indicator of message type. Perhaps it is sensible to send first 'hst' then data then 
+   CHK. But for now, since all interactivity is user based I don't think it too crucial.
 */
 /* ------------------------------------------------------------------------------------ */
-void console_transmit_packet(){}
+void console_transmit_packet(uint8_t command){
+  switch(command){
+    
+    case HEARTBEAT:
+      xbeePrint("<3:");
+      /* These values are just for fun, there is definitely 
+         a better way of decided what should be sent with
+         heartbeats */
+      xbeePrint(" Time:");
+      xbeePrint(millis());
+      xbeePrint(" dt:");
+      xbeePrint(attitude_pid.dt);
+      xbeePrintln();
+      break;
+    
+    case IMU_DATA:
+      xbeePrint('imu');
+      for (uint8_t i = 0; i<15; i++){
+        xbeePrint(imu.rx.data[i]);
+        xbeePrint(",");
+      }
+      xbeePrintln();
+  }
+}
 
 /* ------------------------------------------------------------------------------------ */
 /* Console:

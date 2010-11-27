@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV Read Timers:                                                 */
-/*                       for Ardupilot                                      */
+/* Storque UAV Attitude PID code                                            */
+/*                                                                          */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -26,25 +26,32 @@
 /* ------------------------------------------------------------------------ */
 
 
+
 /* ------------------------------------------------------------------------------------ */
-/* The read timers function checks the global clock [millis()] and sets flags accordingly
-   For instance: the read timers function checks to see if it necessary to send out a 
-     heartbeat message. 
-     
-   Other uses include: periodic sending of data, checking timing between host and ardu, etc...
+/* Attitude PID:
+        This code is just here as a template. It implements a micros() based dt,
+        which should allow our PID loops to operate more smoothly in spite of MCU loop
+        jitter. The micros() call has a resolution of 4 microseconds on the 16 Mhz 
+        ArduPilot board
 */
 /* ------------------------------------------------------------------------------------ */
 
-void Read_Timers(){
-  unsigned long current_time = millis();
-  
-  if ((current_time % 1000) > 990){
-    /* This if is probably too computationally intensive but it works */
-    if ((current_time - console.tx.heartbeat_time) > 50){
-      console.tx.heartbeat_flag = 1;
-      console.tx.heartbeat_time = current_time;
-    }
-  }
-  
+/* See StorqueProperties.h for AttitudePID struct */
+
+/* INIT */
+void AttitudePID_Init(){
+  attitude_pid.current_time = 0;
+  attitude_pid.previous_time = 0;
+  attitude_pid.dt = 0;
 }
-      
+
+/* AttitudePID function */
+void AttitudePID(){
+  attitude_pid.current_time = micros();
+  attitude_pid.dt = attitude_pid.current_time - attitude_pid.previous_time;
+  
+  /* Do some cool maths */  
+  
+  attitude_pid.previous_time = attitude_pid.current_time;  
+}
+  

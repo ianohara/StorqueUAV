@@ -59,6 +59,7 @@ typedef struct imu_ {
 imu_t imu;
 
 
+
 /* ------------------------------------------------------------------------------------ */
 /* Console Struct:
    - contains all parameters used by the console for interactivity between the host and
@@ -70,6 +71,7 @@ imu_t imu;
    - Input data is in the following form:
      ( 'r', 'c', 'v', cmd, len, data[0], data[1], data[len-1] )   data is currently up to 8 bytes
 */
+/* ------------------------------------------------------------------------------------ */
 
 /* Receive struct */
 typedef struct console_rx_ {
@@ -98,6 +100,24 @@ typedef struct console_ {
 
 /* Instantiate console */
 console_t console;
+
+
+
+/* ------------------------------------------------------------------------------------ */
+/* Attitude PID struct for experimental attitude PID micros() dt */
+/* ------------------------------------------------------------------------------------ */
+
+/* Declare */
+typedef struct attitude_pid_ {
+  unsigned long previous_time;
+  unsigned long current_time;
+  unsigned long dt;
+} attitude_pid_t;
+
+/* Instantiate */
+attitude_pid_t attitude_pid;
+
+
 
 
 #endif

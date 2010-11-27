@@ -11,7 +11,8 @@
 /*             Ted Carancho (aeroquad), Jose Julio, Jordi Muñoz,            */
 /*             Jani Hirvinen, Ken McEwans, Roberto Navoni,                  */
 /*             Sandro Benigno, Chris Anderson                               */
-/*           Storque UAV team:                                              */
+/*                                                                          */
+/*             Storque UAV team:                                            */
 /*             Uriah Baalke, Ian O'hara, Sebastian Mauchly,                 */ 
 /*             Alice Yurechko, Emily Fisher                                 */
 /* Date : 08-08-2010                                                        */
@@ -212,6 +213,7 @@ void setup()
   Com_Init();
   IMU_Init();
   Console_Init();
+  AttitudePID_Init();
   motorArmed = 0;
   
 } 
@@ -223,7 +225,7 @@ void setup()
 void loop(){
   
   /* This is a little timing hack just to look at the 
-     cycle rate of our main loop using an o-scope
+     cycle rate of our main loop using an O-scope
   */
   if (digitalRead(LOOP_PIN) == LOW){
     digitalWrite(LOOP_PIN, HIGH);
