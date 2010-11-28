@@ -144,6 +144,10 @@
 
 // StorqueProperties.h: This is where all 'object' property structs are stored
 #include "StorqueProperties.h"
+#include "AttitudePID.h"
+#include "Console.h"
+#include "IMU.h"
+#include "RangeFinder.h"
 
 /* Software version */
 #define VER 0.2    // Current software version (only numeric values)

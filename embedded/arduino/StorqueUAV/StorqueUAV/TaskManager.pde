@@ -56,6 +56,7 @@ void Manage_Tasks(){
     AttitudePID();
     return;
     
+  
   /* A bunch of other necessary
     elseif (high_magic_flag)
     elseif (high_etc)
@@ -67,7 +68,7 @@ void Manage_Tasks(){
     /* Run Console */
     Console();
     return;
-  
+
   /* A bunch of other necessary
     elseif (mid_magic_flag)
     elseif (mid_etc)

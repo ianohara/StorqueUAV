@@ -64,6 +64,7 @@ void Console_Init(){
     console.rx.packet_received_flag = false;
     console.tx.heartbeat_flag = false;
     console.tx.imu_data_flag = false;
+    console.tx.heartbeat_period = 1000;
 }
 
 

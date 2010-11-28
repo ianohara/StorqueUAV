@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV Read Timers:                                                 */
-/*                       for Ardupilot                                      */
+/* Storque UAV Console Interface code:                                      */
+/*                       for Ardupilot Mega                                 */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -25,32 +25,55 @@
 */
 /* ------------------------------------------------------------------------ */
 
+#ifndef CONSOLE_H
+#define CONSOLE_H
 
 /* ------------------------------------------------------------------------------------ */
-/* The read timers function checks the global clock [millis()] and sets flags accordingly
-   For instance: the read timers function checks to see if it necessary to send out a 
-     heartbeat message. 
-     
-   Other uses include: periodic sending of data, checking timing between host and ardu, etc...
+/* Console.h for Console parameters
+/* ------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------ */
+/* Console Struct:
+   - contains all parameters used by the console for interactivity between the host and
+     the ArduPilot Mega
+   - the idea is that the host will do all the complicated parsing of commands:
+       for instance if the host writes configure imu, then some arbitrary values will
+       be sent to the ardupilot mega which will then accomplish that. 
+       
+   - Input data is in the following form:
+     ( 'r', 'c', 'v', cmd, len, data[0], data[1], data[len-1] )   data is currently up to 8 bytes
 */
 /* ------------------------------------------------------------------------------------ */
 
-void Read_Timers(){
-  unsigned long current_time = millis();
+/* Receive struct */
+typedef struct console_rx_ {
+   
+  uint8_t cmd;
+  uint8_t len;
+  uint8_t data[8];
+  uint8_t packet_received_flag;
+} console_rx_t;
+
+/* Transmit struct */
+typedef struct console_tx_ {
   
-  if ((current_time % console.tx.heartbeat_period) > (console.tx.heartbeat_period-10)){
-    /* This is probably too computationally intensive but it works */
-    if ((current_time - console.tx.heartbeat_time) > 50){
-      console.tx.heartbeat_flag = 1;
-      console.tx.heartbeat_time = current_time;
-      ReadRangeFinder();
-    }
-  }else if ((current_time % range.sample_period) > (range.sample_period - 10)){
-    SerPri("Ranger \n \r");
-    ReadRangeFinder();
-    range.rx_flag = 1;
-  }
-  
-  return;
-}
-      
+  unsigned long heartbeat_time;
+  uint16_t heartbeat_period;
+  uint8_t heartbeat_flag;
+  uint8_t imu_data_flag;
+  /* other output flags */  
+} console_tx_t;
+
+/* Full console declaration struct */
+typedef struct console_ {  
+
+  console_tx_t tx;
+  console_rx_t rx;  
+} console_t;
+
+/* Instantiate console */
+console_t console;
+
+
+#endif
+

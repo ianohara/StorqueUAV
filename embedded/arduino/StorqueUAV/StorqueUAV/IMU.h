@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV Read Timers:                                                 */
-/*                       for Ardupilot                                      */
+/* Storque UAV IMU.h interfacing code:                                        */
+/*                       for CHR6dm_AHRs                                    */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -25,32 +25,47 @@
 */
 /* ------------------------------------------------------------------------ */
 
+#ifndef IMU_H
+#define IMU_H
 
-/* ------------------------------------------------------------------------------------ */
-/* The read timers function checks the global clock [millis()] and sets flags accordingly
-   For instance: the read timers function checks to see if it necessary to send out a 
-     heartbeat message. 
-     
-   Other uses include: periodic sending of data, checking timing between host and ardu, etc...
+
+/* ------------------------------------------------------------------------ */
+/* IMU.h for global IMU values
+/* ------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------ */
+/* IMU struct set-up:
+   - the purpose of this struct configuration is to allow 
+     the IMU to act like a directory structure.
+   - it allows one to deal with the complexity of the 
+     IMU parameters in a sensible way.
 */
-/* ------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------ */
+/* IMU settings struct */
+typedef struct imu_settings_ {
+  uint16_t broadcast_rate;      // from 0-255
+  uint16_t active_channels;     // 0b000000000000000 - 0b1111111111111110
+} imu_settings_t;
 
-void Read_Timers(){
-  unsigned long current_time = millis();
-  
-  if ((current_time % console.tx.heartbeat_period) > (console.tx.heartbeat_period-10)){
-    /* This is probably too computationally intensive but it works */
-    if ((current_time - console.tx.heartbeat_time) > 50){
-      console.tx.heartbeat_flag = 1;
-      console.tx.heartbeat_time = current_time;
-      ReadRangeFinder();
-    }
-  }else if ((current_time % range.sample_period) > (range.sample_period - 10)){
-    SerPri("Ranger \n \r");
-    ReadRangeFinder();
-    range.rx_flag = 1;
-  }
-  
-  return;
-}
-      
+/* IMU rx struct */
+typedef struct imu_rx_ {
+  uint8_t N;
+  uint8_t D1;
+  uint8_t D2;
+  uint16_t CHK;
+  uint16_t active_channels;
+  float data[15];
+  uint8_t packet_received_flag;
+  uint8_t index;
+} imu_rx_t;
+
+/* IMU struct */
+typedef struct imu_ {
+  imu_settings_ settings;
+  imu_rx_ rx;
+} imu_t;
+
+imu_t imu;
+
+
+#endif

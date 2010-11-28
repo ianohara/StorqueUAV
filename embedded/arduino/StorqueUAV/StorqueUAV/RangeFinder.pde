@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV Read Timers:                                                 */
-/*                       for Ardupilot                                      */
+/* Storque UAV RangeFinder     code:                                        */
+/*                       for MaxBotics LV Ultrasonic Rangefinder            */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -27,30 +27,29 @@
 
 
 /* ------------------------------------------------------------------------------------ */
-/* The read timers function checks the global clock [millis()] and sets flags accordingly
-   For instance: the read timers function checks to see if it necessary to send out a 
-     heartbeat message. 
-     
-   Other uses include: periodic sending of data, checking timing between host and ardu, etc...
+/* LV Ultrasonic RangeFinder Code:
+             Used for low altitude readings ( less than 6 [meters])
+             Will eventually be mixed with barameter as altitude increases. 
+             Will also have different ping modes
 */
 /* ------------------------------------------------------------------------------------ */
 
-void Read_Timers(){
-  unsigned long current_time = millis();
+void RangeFinder_Init(){
+  uint8_t rx_flag = 0;
+  uint8_t current = 0;
+  uint8_t previous = 0;
+  uint16_t sample_period = 1000; 
   
-  if ((current_time % console.tx.heartbeat_period) > (console.tx.heartbeat_period-10)){
-    /* This is probably too computationally intensive but it works */
-    if ((current_time - console.tx.heartbeat_time) > 50){
-      console.tx.heartbeat_flag = 1;
-      console.tx.heartbeat_time = current_time;
-      ReadRangeFinder();
-    }
-  }else if ((current_time % range.sample_period) > (range.sample_period - 10)){
-    SerPri("Ranger \n \r");
-    ReadRangeFinder();
-    range.rx_flag = 1;
-  }
-  
+  pinMode(RANGEFINDER_PIN, INPUT);
   return;
 }
-      
+
+void ReadRangeFinder(){
+
+  range.current = analogRead(RANGEFINDER_PIN);
+  ftdiPrint("Range: ");
+  ftdiPrintln((uint16_t)range.current);
+  return;
+  
+}
+  
