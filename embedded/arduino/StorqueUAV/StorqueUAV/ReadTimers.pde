@@ -38,17 +38,17 @@
 void Read_Timers(){
   unsigned long current_time = millis();
   
-  if ((current_time % console.tx.heartbeat_period) > (console.tx.heartbeat_period-10)){
-    /* This is probably too computationally intensive but it works */
-    if ((current_time - console.tx.heartbeat_time) > 50){
+  
+  /* Check range finder */
+  if ((current_time - rangefinder.sample_time) > rangefinder.sample_period){
+      rangefinder.flag = 1;
+      rangefinder.sample_time = current_time;
+  }
+  
+  /* This is the other timer option. It drifts, but its simpler */
+  if ((current_time - console.tx.heartbeat_time) > console.tx.heartbeat_period){
       console.tx.heartbeat_flag = 1;
       console.tx.heartbeat_time = current_time;
-      ReadRangeFinder();
-    }
-  }else if ((current_time % range.sample_period) > (range.sample_period - 10)){
-    SerPri("Ranger \n \r");
-    ReadRangeFinder();
-    range.rx_flag = 1;
   }
   
   return;

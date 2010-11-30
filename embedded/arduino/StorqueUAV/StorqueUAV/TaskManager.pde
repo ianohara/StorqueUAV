@@ -55,7 +55,9 @@ void Manage_Tasks(){
     /* Do some cool controls stuff */   
     AttitudePID();
     return;
-    
+  }else if (rangefinder.flag){
+    rangefinder.flag = 0;
+    RangeFinder_Read();  
   
   /* A bunch of other necessary
     elseif (high_magic_flag)

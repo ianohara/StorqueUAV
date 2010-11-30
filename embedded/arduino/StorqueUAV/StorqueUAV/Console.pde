@@ -77,15 +77,15 @@ uint8_t receive_console_packet(){
   uint16_t CHK = 0;
   uint8_t len;
   uint8_t data = 0;
-  if (xbeeRead() == 'h'){
-    while(!xbeeAvailable());
-    if (xbeeRead() == 's'){
-      while(!xbeeAvailable());
-      if (xbeeRead() == 't'){
-        while(!xbeeAvailable());
-        console.rx.cmd = xbeeRead();
-        while(!xbeeAvailable());
-        console.rx.len = xbeeRead() - 48; // Since we are just sending lengths as characters ... for now
+  if (consoleRead() == 'h'){
+    while(!consoleAvailable());
+    if (consoleRead() == 's'){
+      while(!consoleAvailable());
+      if (consoleRead() == 't'){
+        while(!consoleAvailable());
+        console.rx.cmd = consoleRead();
+        while(!consoleAvailable());
+        console.rx.len = consoleRead() - 48; // Since we are just sending lengths as characters ... for now
         
         // Check and see if rx_len is a reasonable value otherwise error
         if (console.rx.len > 7){
@@ -94,8 +94,8 @@ uint8_t receive_console_packet(){
         
         CHK |= 'h' + 's' + 't' + console.rx.cmd + console.rx.len;
         for (uint8_t i = 0; i < console.rx.len; i++){
-          while(!xbeeAvailable());
-          data = xbeeRead();
+          while(!consoleAvailable());
+          data = consoleRead();
           console.rx.data[i] = data;
           CHK |= data;
         }
@@ -137,24 +137,24 @@ void console_transmit_packet(uint8_t command){
   switch(command){
     
     case HEARTBEAT:
-      xbeePrint("<3:");
+      consolePrint("<3:");
       /* These values are just for fun, there is definitely 
          a better way of decided what should be sent with
          heartbeats */
-      xbeePrint(" Time:");
-      xbeePrint(millis());
-      xbeePrint(" dt:");
-      xbeePrint(attitude_pid.dt);
-      xbeePrintln();
+      consolePrint(" Time:");
+      consolePrint(millis());
+      consolePrint(" dt:");
+      consolePrint(attitude_pid.dt);
+      consolePrintln();
       break;
     
     case IMU_DATA:
-      xbeePrint('imu');
+      consolePrint('imu');
       for (uint8_t i = 0; i<15; i++){
-        xbeePrint(imu.rx.data[i]);
-        xbeePrint(",");
+        consolePrint(imu.rx.data[i]);
+        consolePrint(",");
       }
-      xbeePrintln();
+      consolePrintln();
   }
 }
 
@@ -172,7 +172,7 @@ void Console(){
   switch(console.rx.cmd){
     
     case TEST:
-      xbeePrint("Test Packet Received \n \r");
+      consolePrint("Test Packet Received \n \r");
       break;
     
     case IMU_RESET:
@@ -180,7 +180,7 @@ void Console(){
       break;
     
     case IMU_RATE:
-      xbeePrint("IMU Rate Packet Received \n \r");
+      consolePrint("IMU Rate Packet Received \n \r");
       imu.settings.broadcast_rate = console.rx.data[0];
       break; 
   }

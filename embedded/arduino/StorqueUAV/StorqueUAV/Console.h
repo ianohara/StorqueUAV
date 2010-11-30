@@ -32,6 +32,15 @@
 /* Console.h for Console parameters
 /* ------------------------------------------------------------------------------------ */
 
+/* Define Console Abstractions */
+#define consoleBau xbeeBau
+#define consolePrint xbeePrint
+#define consolePrintln xbeePrintln
+#define consoleAvailable xbeeAvailable
+#define consoleRead xbeeRead
+#define consoleInit xbeeInit
+#define consolePort "Console"
+
 /* ------------------------------------------------------------------------------------ */
 /* Console Struct:
    - contains all parameters used by the console for interactivity between the host and

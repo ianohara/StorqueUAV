@@ -118,7 +118,6 @@
 #define xbeeInit Serial3.begin
 #define xbeePort "Xbee"
 
-
 /* ****************************************************************************** */
 /* ****************************** Includes ************************************** */
 /* ****************************************************************************** */
@@ -214,10 +213,12 @@ void setup()
   //DataFlash.StartWrite(1);   // Start a write session on page 1
 
   /* Initialize Communication with Host */
+  /* And all other functions / sensors */
   Com_Init();
   IMU_Init();
   Console_Init();
   AttitudePID_Init();
+  RangeFinder_Init();
   motorArmed = 0;
   
 } 

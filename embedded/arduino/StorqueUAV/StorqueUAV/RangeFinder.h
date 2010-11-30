@@ -32,7 +32,7 @@
 /* Range Finder Defines */
 /* ------------------------------------------------------------------------------------ */
 
-#define RANGEFINDER_PIN 11
+#define RANGEFINDER_PIN 0
 
 /* ------------------------------------------------------------------------------------ */
 /* LV Ultrasonic Rangefinder struct:
@@ -41,14 +41,14 @@
 /* ------------------------------------------------------------------------------------ */
 
 typedef struct ultrasonic_range_finder_ {
-  
-  uint8_t rx_flag;
-  uint8_t current;
-  uint8_t previous;
+
+  unsigned long sample_time;  
+  uint8_t  flag;
+  uint16_t range;
   uint16_t sample_period;
   
 } ultrasonic_range_finder_t;
 
-ultrasonic_range_finder_t range;
+ultrasonic_range_finder_t rangefinder;
 
 #endif

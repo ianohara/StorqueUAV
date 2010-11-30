@@ -35,20 +35,21 @@
 /* ------------------------------------------------------------------------------------ */
 
 void RangeFinder_Init(){
-  uint8_t rx_flag = 0;
-  uint8_t current = 0;
-  uint8_t previous = 0;
-  uint16_t sample_period = 1000; 
-  
+  rangefinder.flag = 0;
+  rangefinder.range = 0;
+  rangefinder.sample_time = 0;
+  rangefinder.sample_period = 50; 
   pinMode(RANGEFINDER_PIN, INPUT);
   return;
 }
 
-void ReadRangeFinder(){
-
-  range.current = analogRead(RANGEFINDER_PIN);
-  ftdiPrint("Range: ");
-  ftdiPrintln((uint16_t)range.current);
+void RangeFinder_Read(){
+  
+  
+  rangefinder.range = analogRead(RANGEFINDER_PIN);
+   
+  xbeePrint("Range: ");
+  xbeePrintln(rangefinder.range);
   return;
   
 }

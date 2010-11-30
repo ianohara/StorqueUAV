@@ -43,6 +43,7 @@ typedef struct com_ports_ {
 
 com_ports_t com_port;  // <- instantiate pointer to com_flags struct.
 
+/* ------------------------------------------------------------------------------------ */
 /* Initialize communication ports */
 /* ------------------------------------------------------------------------------------ */
 void Com_Init(){
