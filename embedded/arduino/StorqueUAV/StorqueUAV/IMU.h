@@ -33,6 +33,10 @@
 /* IMU.h for global IMU values
 /* ------------------------------------------------------------------------ */
 
+/* IMU message types for IMU_Print() */
+#define DATA 'd'
+#define PROPERTIES 'p'
+
 /* ------------------------------------------------------------------------ */
 /* IMU struct set-up:
    - the purpose of this struct configuration is to allow 

@@ -36,8 +36,8 @@
 /* ------------------------------------------------------------------------------------ */
 
 void Read_Timers(){
-  unsigned long current_time = millis();
   
+  unsigned long current_time = millis();
   
   /* Check range finder */
   if ((current_time - rangefinder.sample_time) > rangefinder.sample_period){
@@ -49,6 +49,18 @@ void Read_Timers(){
   if ((current_time - console.tx.heartbeat_time) > console.tx.heartbeat_period){
       console.tx.heartbeat_flag = 1;
       console.tx.heartbeat_time = current_time;
+  }
+  
+  /* Rate at which imu data is printed to console */
+  if ((current_time - console.tx.imu_print_data_time) > console.tx.imu_print_data_period){
+    console.tx.imu_print_data_flag = 1;
+    console.tx.imu_print_data_time = current_time;
+  }
+  
+  /* Rate at which rangefinder data is printed to console */
+  if ((current_time - console.tx.rangefinder_print_data_time) > console.tx.rangefinder_print_data_period){
+    console.tx.rangefinder_print_data_flag = 1;
+    console.tx.rangefinder_print_data_time = current_time;
   }
   
   return;

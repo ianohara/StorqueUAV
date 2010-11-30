@@ -45,12 +45,32 @@ void RangeFinder_Init(){
 
 void RangeFinder_Read(){
   
-  
   rangefinder.range = analogRead(RANGEFINDER_PIN);
-   
-  xbeePrint("Range: ");
-  xbeePrintln(rangefinder.range);
+  
+  /* Note: rangefinder read should probably be in the timer, and should set a flag to
+     update the controls ... or better yet, maybe sensor reads (timer and serial) 
+     should be abstracted to a ReadSensors() function TODO */
+  
   return;
   
 }
+
+void RangeFinder_Print(char which){
   
+  switch(which){
+    
+    case DATA:
+      consolePrint("rng");
+      consolePrint(DATA);
+      consolePrint(rangefinder.range);
+      consolePrintln();    
+      break;
+      
+    case PROPERTIES:
+      consolePrint('rng');
+      consolePrint(PROPERTIES);
+      /* print the rangefinder properties here .... */
+      break;
+  }
+  return;
+}

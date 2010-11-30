@@ -34,6 +34,10 @@
 
 #define RANGEFINDER_PIN 0
 
+/* RangeFinder message types for RangeFinder_Print() */
+#define DATA 'd'
+#define PROPERTIES 'p'
+
 /* ------------------------------------------------------------------------------------ */
 /* LV Ultrasonic Rangefinder struct:
         - Holds all parameters for the Rangefinder

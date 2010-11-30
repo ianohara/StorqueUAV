@@ -112,8 +112,6 @@
 #define SCALE_GYRO        0.01812F    // degrees/second/LSB
 #define SCALE_ACCEL       0.106812F   // mg/LSB
 
-
-
 /* IMU Serial */
 #define imuBau 115200
 #define imuPrint Serial2.print
@@ -154,9 +152,34 @@ void IMU_Init(){
 } 
 
 /* ------------------------------------------------------------------------ */
-/* Print IMU properties or data to console
+/* Print IMU Properties or Data to console
 /* ------------------------------------------------------------------------ */
-void IMU_Print(){}
+void IMU_Print(char which){
+  
+  switch(which){
+    
+    case(DATA):
+      consolePrint("imu");
+      consolePrint(DATA);  
+      for (uint8_t i = 0; i<15; i++){
+        consolePrint(imu.rx.data[i]);
+        consolePrint(",");
+      }
+      consolePrintln();
+      break;
+    
+    case(PROPERTIES):
+      consolePrint("imu");
+      consolePrint(PROPERTIES);
+      consolePrint("::broadcast_rate,");
+      consolePrint(imu.settings.broadcast_rate);
+      consolePrint("::active_channels,");
+      consolePrint(imu.settings.active_channels);
+      consolePrintln();
+      break;
+  }
+  return;
+}
   
 
 

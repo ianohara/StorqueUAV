@@ -50,8 +50,11 @@
 #define IMU_DATA_LOG_RATE  'l' 
 
 /* Console Transmit Commands */
-#define HEARTBEAT    0x50 
-#define IMU_DATA     0x51
+#define HEARTBEAT                0x50 
+#define IMU_DATA                 0x51
+#define IMU_PROPERTIES           0x52
+#define RANGEFINDER_DATA         0x53
+#define RANGEFINDER_PROPERTIES   0x54
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -63,8 +66,14 @@ void Console_Init(){
     console.rx.len = 0;
     console.rx.packet_received_flag = false;
     console.tx.heartbeat_flag = false;
-    console.tx.imu_data_flag = false;
+    console.tx.imu_print_data_flag = false;
+    console.tx.rangefinder_print_data_flag = false;
+
     console.tx.heartbeat_period = 1000;
+    console.tx.imu_print_data_period = 200; // real update rate is 125 Hz, this is 5 Hz
+    console.tx.rangefinder_print_data_period = 100; // half of current update rate
+    
+    return;
 }
 
 
@@ -137,6 +146,7 @@ void console_transmit_packet(uint8_t command){
   switch(command){
     
     case HEARTBEAT:
+      /* Heartbeat_Print() */
       consolePrint("<3:");
       /* These values are just for fun, there is definitely 
          a better way of decided what should be sent with
@@ -149,12 +159,22 @@ void console_transmit_packet(uint8_t command){
       break;
     
     case IMU_DATA:
-      consolePrint('imu');
-      for (uint8_t i = 0; i<15; i++){
-        consolePrint(imu.rx.data[i]);
-        consolePrint(",");
-      }
-      consolePrintln();
+      IMU_Print(DATA);
+      break;
+      
+    case IMU_PROPERTIES:
+      IMU_Print(PROPERTIES);
+      break;
+      
+    case RANGEFINDER_DATA:
+      RangeFinder_Print(DATA);
+      break;
+      
+    case RANGEFINDER_PROPERTIES:
+      RangeFinder_Print(PROPERTIES);
+      break;
+      
+     
   }
 }
 

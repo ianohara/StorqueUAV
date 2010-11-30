@@ -69,7 +69,15 @@ typedef struct console_tx_ {
   unsigned long heartbeat_time;
   uint16_t heartbeat_period;
   uint8_t heartbeat_flag;
-  uint8_t imu_data_flag;
+  
+  unsigned long imu_print_data_time;
+  uint16_t imu_print_data_period;
+  uint8_t imu_print_data_flag;
+  
+  unsigned long rangefinder_print_data_time;
+  uint16_t rangefinder_print_data_period;
+  uint8_t rangefinder_print_data_flag;
+  
   /* other output flags */  
 } console_tx_t;
 

@@ -80,7 +80,17 @@ void Manage_Tasks(){
   }else if (console.tx.heartbeat_flag){
     console.tx.heartbeat_flag = 0;       // set flag to zero
     console_transmit_packet(HEARTBEAT);
-  return;
+    return;
+
+  }else if (console.tx.imu_print_data_flag){
+    console.tx.imu_print_data_flag = 0;
+    console_transmit_packet(IMU_DATA);
+    return;
+
+  }else if (console.tx.rangefinder_print_data_flag){
+    console.tx.rangefinder_print_data_flag = 0;
+    console_transmit_packet(RANGEFINDER_DATA);
+    return;
   }
   
 }
