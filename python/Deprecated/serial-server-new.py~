@@ -31,6 +31,7 @@ A new serial server:
 
 import select
 import socket
+import serial
 import sys, os, time
 
 # ------------------------------------------------------------------------------
@@ -50,16 +51,23 @@ class serialServer(object):
     #   it will accept.
     # ------------------------------------------------------------------------------
     
-    def __init__(self, port, backlog):
-        self.clients = 0
+    def __init__(self, port, backlog, serialFile):
+        
 
+        #Initialize Serial
+        self.seri = serial.Serial(serialFile, 57600, timeout=1)
+        print "Serial initialized from %s" %serialFile
+                
+        # Initialize Server
+        self.clients = 0
+    
         #Output list
-        self.outputs = []
+        self.outputs = [self.seri]
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind(('',port))
         print "Server initialized on port: %s" %(port)
         self.server.listen(backlog)
-
+        
     # ------------------------------------------------------------------------------
     # runServer: using select to multiplex inputs and outputs 
     #
@@ -101,6 +109,16 @@ class serialServer(object):
                         sel.close()
                         inputs.remove(sel)
                         self.outputs.remove(sel)
+            
+            for sel in outputready:
+                
+                if sel == self.seri:
+                    dataOut = self.seri.readline()
+                    print dataOut
+                    #meh = 1
+                else:
+                    sel.write(dataOut)
+                    #meh = 2
         
         self.server.close()
 
@@ -108,4 +126,4 @@ class serialServer(object):
 # If 'run serial-server-new.py' is called then instantiate and run serialServer
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    serialServer(4556, 5).runServer()
+    serialServer(4557, 5, '/dev/tty.usbserial-A700eCpR').runServer()

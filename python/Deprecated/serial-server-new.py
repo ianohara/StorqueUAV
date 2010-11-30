@@ -31,10 +31,11 @@ A new serial server:
 
 import select
 import socket
+import serial
 import sys, os, time
 
 # ------------------------------------------------------------------------------
-# serialServer Class Definition
+# Class Definition
 # ------------------------------------------------------------------------------
 
 class serialServer(object):
@@ -50,16 +51,25 @@ class serialServer(object):
     #   it will accept.
     # ------------------------------------------------------------------------------
     
-    def __init__(self, port, backlog):
+    def __init__(self, port, backlog, serialFile):
+        
+        #Initialize Serial
+        if serialFile != "":
+            self.seri = serial.Serial(serialFile, 57600, timeout=1)
+            print "Serial initialized from %s" %serialFile
+        else:
+            self.seri = 0
+                
+        # Initialize Server
         self.clients = 0
-
+    
         #Output list
-        self.outputs = []
+        self.outputs = [self.seri]
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind(('',port))
         print "Server initialized on port: %s" %(port)
         self.server.listen(backlog)
-
+        
     # ------------------------------------------------------------------------------
     # runServer: using select to multiplex inputs and outputs 
     #
@@ -70,9 +80,15 @@ class serialServer(object):
         inputs = [self.server, sys.stdin]
         self.outputs = []
         Run = True
-        
+        dataOut = ""
+        junk = ""
         while(Run):
-            inputready, outputready, exceptready = select.select(inputs, self.outputs, [])
+            try:
+                inputready, outputready, exceptready = select.select(inputs, self.outputs, [])
+            except: select.error, e:
+                break
+            except: socket.error, e:
+                break
             
             for sel in inputready:
                 
@@ -87,11 +103,11 @@ class serialServer(object):
                     self.outputs.append(pipe)
                     
                 elif sel == sys.stdin:
-                    userInput = sys.stdin.readline()
-                    if userInput == "\n":
+                    junk = sys.stdin.readline()
+                    if junk == "\n":
                         print "Shutting down server"
                         Run = False
-
+                    
                 else:
                     dataIn = sel.readline()
                     if dataIn:
@@ -102,6 +118,16 @@ class serialServer(object):
                         sel.close()
                         inputs.remove(sel)
                         self.outputs.remove(sel)
+            
+            for sel in outputready:
+                
+                if sel == self.seri:
+                    dataOut = self.seri.readline()
+                    print dataOut
+                    #meh = 1
+                else:
+                    sel.write(dataOut)
+                    #meh = 2
         
         self.server.close()
 
@@ -109,4 +135,4 @@ class serialServer(object):
 # If 'run serial-server-new.py' is called then instantiate and run serialServer
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    serialServer(4558, 5).runServer()
+    serialServer(4549, 5, '').runServer()

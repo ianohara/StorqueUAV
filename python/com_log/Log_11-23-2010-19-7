@@ -1,0 +1,6 @@
+IN: StorqueUAV v0.10
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+OUT: test
+IN: 12OUT: test
+IN: 12OUT: 

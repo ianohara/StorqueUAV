@@ -70,7 +70,7 @@ class serialClient(object):
         
     def runClient(self):
         
-        inputs = [self.client, sys.stdin]
+        inputs = [self.client, sys.stdin, self.pipe]
         self.outputs = []
         Run = True
         
@@ -85,10 +85,13 @@ class serialClient(object):
                         Run = False
                     else:
                         self.pipe.write(userInput)
+                elif sel == self.pipe:
+                    dataIn = sel.readline()
+                    print dataIn
 
         self.client.close()
 # ---------------------------------------------------------------------------
 # If 'run client-new.py' is called then instantiate and run serialClient
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    serialClient(4558, 'localhost').runClient()
+    serialClient(4557, 'localhost').runClient()

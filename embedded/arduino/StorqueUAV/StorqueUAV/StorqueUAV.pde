@@ -11,7 +11,8 @@
 /*             Ted Carancho (aeroquad), Jose Julio, Jordi Muñoz,            */
 /*             Jani Hirvinen, Ken McEwans, Roberto Navoni,                  */
 /*             Sandro Benigno, Chris Anderson                               */
-/*           Storque UAV team:                                              */
+/*                                                                          */
+/*             Storque UAV team:                                            */
 /*             Uriah Baalke, Ian O'hara, Sebastian Mauchly,                 */ 
 /*             Alice Yurechko, Emily Fisher                                 */
 /* Date : 08-08-2010                                                        */
@@ -67,18 +68,36 @@
 
 #define CONFIGURATOR  // Do se use Configurator or normal text output over serial link
 
+/* PIN Definitions */
+/* This will be nice for cool LEDs and stuffs */
+#define LOOP_PIN 10
+
+
+
+/* ------------------------------------------------------------------------------------ */
 /* Communication Port Definitions */
 /* ------------------------------------------------------------------------------------ */
 
 /* Config */
-#define SerBau  115200
-#define SerPri  Serial.print
-#define SerPriln Serial.println
-#define SerAva  Serial.available
-#define SerRea  Serial.read
-#define SerFlu  Serial.flush
-#define SerInit  Serial.begin
-#define SerPor  "FTDI"
+#define ftdiBau  57600
+#define ftdiPrint  Serial.print
+#define ftdiPrintln Serial.println
+#define ftdiAvailable  Serial.available
+#define ftdiRead  Serial.read
+#define ftdiFlush  Serial.flush
+#define ftdiInit  Serial.begin
+#define ftdiPort  "FTDI"
+
+/* Config */
+/* Old defines left in for compatability with older ardupilot mega code */
+#define SerBau ftdiBau  
+#define SerPri ftdiPrint
+#define SerPriln ftdiPrintln
+#define SerAva ftdiAvailable
+#define SerRea ftdiRead
+#define SerFlu ftdiFlush
+#define SerBegin ftdiInit
+#define SerPor ftdiPort
 
 /* IMU */
 #define imuBau 115200
@@ -116,15 +135,22 @@
 
 //#include <GPS_NMEA.h>   // General NMEA GPS 
 //#include <GPS_MTK.h>      // MediaTEK DIY Drones GPS. 
-//#include <GPS_UBLOX.h>  // uBlox GPS
+#include <GPS_UBLOX.h>  // uBlox GPS
 
 // EEPROM storage for user configurable values
 #include <EEPROM.h>
 #include "StorqueUAV.h"
 #include "StorqueConfig.h"
 
+// StorqueProperties.h: This is where all 'object' property structs are stored
+#include "StorqueProperties.h"
+#include "AttitudePID.h"
+#include "Console.h"
+#include "IMU.h"
+#include "RangeFinder.h"
+
 /* Software version */
-#define VER 0.1    // Current software version (only numeric values)
+#define VER 0.2    // Current software version (only numeric values)
 
 /* ***************************************************************************** */
 /* ************************ CONFIGURATION PART ********************************* */
@@ -164,6 +190,7 @@ void setup()
   float aux_float[3];
 
   pinMode(SW1_pin,INPUT);     //Switch SW1 (pin PG0)
+  pinMode(LOOP_PIN, OUTPUT);
 
   pinMode(RELE_pin,OUTPUT);   // Rele output
   digitalWrite(RELE_pin,LOW);
@@ -189,6 +216,8 @@ void setup()
   /* Initialize Communication with Host */
   Com_Init();
   IMU_Init();
+  Console_Init();
+  AttitudePID_Init();
   motorArmed = 0;
   
 } 
@@ -198,11 +227,30 @@ void setup()
 /* ************** MAIN PROGRAM - MAIN LOOP ******************** */
 /* ************************************************************ */
 void loop(){
- 
-  Read_Ports();
-  Console();
   
-  /* Port IMU to PC 
+  /* This is a little timing hack just to look at the 
+     cycle rate of our main loop using an O-scope
+  */
+  if (digitalRead(LOOP_PIN) == LOW){
+    digitalWrite(LOOP_PIN, HIGH);
+  }else{
+    digitalWrite(LOOP_PIN, LOW);
+  }
+  
+  Read_Ports();
+  Read_Timers();
+  Manage_Tasks();
+  
+}   // End of void loop()
+
+// END of StorqueUAV.pde
+
+
+
+
+
+
+/* Port IMU to PC 
        - This allows the user to configure and monitor the IMU through
          the provided chrobotics IMU gui
     */
@@ -216,13 +264,6 @@ void loop(){
       Serial.print(imu_input);
     }*/
     
-
-}  // End of void loop()
-
-// END of StorqueUAV.pde
-
-
-
 /* Port PC to XBee */
     /* This is usefull because it allows one to configure the 
        XBee through a com program (like minicom). 
