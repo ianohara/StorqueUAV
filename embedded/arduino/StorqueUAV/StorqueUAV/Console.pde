@@ -71,7 +71,7 @@ void Console_Init(){
 
     console.tx.heartbeat_period = 1000;
     console.tx.imu_print_data_period = 200; // real update rate is 125 Hz, this is 5 Hz
-    console.tx.rangefinder_print_data_period = 100; // half of current update rate
+    console.tx.rangefinder_print_data_period = 500; // half of current update rate
     
     return;
 }
@@ -86,6 +86,12 @@ uint8_t receive_console_packet(){
   uint16_t CHK = 0;
   uint8_t len;
   uint8_t data = 0;
+  
+  /*consolePrint((char)consoleRead());
+  for (uint8_t i = 0; i < 10; i++){
+    while(!consoleAvailable());
+    consolePrint((char)consoleRead());
+  }*/
   if (consoleRead() == 'h'){
     while(!consoleAvailable());
     if (consoleRead() == 's'){
@@ -93,6 +99,10 @@ uint8_t receive_console_packet(){
       if (consoleRead() == 't'){
         while(!consoleAvailable());
         console.rx.cmd = consoleRead();
+        consolePrint("csl");
+        consolePrint((char)console.rx.cmd);
+        consolePrintln();
+        
         while(!consoleAvailable());
         console.rx.len = consoleRead() - 48; // Since we are just sending lengths as characters ... for now
         
@@ -124,7 +134,7 @@ uint8_t receive_console_packet(){
         }
         */
         
-        return console.rx.cmd;
+      return console.rx.cmd;
       }
     }
   }
@@ -192,7 +202,9 @@ void Console(){
   switch(console.rx.cmd){
     
     case TEST:
-      consolePrint("Test Packet Received \n \r");
+      consolePrint("csl");
+      consolePrint("Test Packet Received");
+      consolePrintln();
       break;
     
     case IMU_RESET:
@@ -200,7 +212,7 @@ void Console(){
       break;
     
     case IMU_RATE:
-      consolePrint("IMU Rate Packet Received \n \r");
+      consolePrint("csl IMU Rate Packet Received \n \r");
       imu.settings.broadcast_rate = console.rx.data[0];
       break; 
   }

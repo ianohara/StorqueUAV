@@ -113,12 +113,9 @@ void Read_Ports(){
   if (xbeeAvailable()){ 
     if (receive_console_packet()){
       console.rx.packet_received_flag = true;
-
-      // some cruft to be removed
-      xbeePrint("Command: ");
-      xbeePrint(console.rx.cmd);
-      xbeePrint(" received. \n \r");
     }
   }
+  
+  return;
 }
 

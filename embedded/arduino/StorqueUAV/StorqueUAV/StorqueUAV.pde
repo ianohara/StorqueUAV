@@ -147,6 +147,7 @@
 #include "Console.h"
 #include "IMU.h"
 #include "RangeFinder.h"
+#include "RC_Input.h"
 
 /* Software version */
 #define VER 0.2    // Current software version (only numeric values)
@@ -196,10 +197,11 @@ void setup()
   
   APM_RC.Init();             // APM Radio initialization
   // RC channels Initialization (Quad motors) 
-  motor_0 = MIN_THROTTLE;
-  motor_1 = MIN_THROTTLE;
-  motor_2 = MIN_THROTTLE;
-  motor_3 = MIN_THROTTLE;
+  
+  motor_0 = 1500;
+  motor_1 = 1600;
+  motor_2 = 1700;
+  motor_3 = 1800;
   APM_RC.OutputCh(0,motor_0);  // Motors stopped
   APM_RC.OutputCh(1,motor_1);
   APM_RC.OutputCh(2,motor_2);

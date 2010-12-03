@@ -145,7 +145,7 @@ void IMU_Init(){
   /* Currently I have halved out the IMU output rate opened 
      all channels. As we increase the load on the mcu
      we may need to optimize this */
-  imu.settings.broadcast_rate = 125;
+  imu.settings.broadcast_rate = 100;
   imu.settings.active_channels = 0b1111111111111110;  // All channels on
   IMU_soft_reset();
   delay(1000);
@@ -158,6 +158,9 @@ void IMU_Print(char which){
   
   switch(which){
     
+    
+    /* NOTE: printing DATA takes a long time, perhaps something should be
+             changed about the way that the console posts data to the host */
     case(DATA):
       consolePrint("imu");
       consolePrint(DATA);  

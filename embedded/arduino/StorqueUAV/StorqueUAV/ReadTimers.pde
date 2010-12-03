@@ -40,25 +40,36 @@ void Read_Timers(){
   unsigned long current_time = millis();
   
   /* Check range finder */
-  if ((current_time - rangefinder.sample_time) > rangefinder.sample_period){
+  if (((current_time - rangefinder.sample_time) > rangefinder.sample_period) && \
+       !(rangefinder.sample_period == 0)){
       rangefinder.flag = 1;
       rangefinder.sample_time = current_time;
   }
   
+  /* Check RC Inputs */
+  if (((current_time - rc_input.sample_time) > rc_input.sample_period) && \
+        !(rc_input.sample_period == 0)){
+      rc_input.flag = 1;
+      rc_input.sample_time = current_time;
+  }
+  
   /* This is the other timer option. It drifts, but its simpler */
-  if ((current_time - console.tx.heartbeat_time) > console.tx.heartbeat_period){
+  if (((current_time - console.tx.heartbeat_time) > console.tx.heartbeat_period) && \
+       !(console.tx.heartbeat_period == 0)){
       console.tx.heartbeat_flag = 1;
       console.tx.heartbeat_time = current_time;
   }
   
   /* Rate at which imu data is printed to console */
-  if ((current_time - console.tx.imu_print_data_time) > console.tx.imu_print_data_period){
+  if (((current_time - console.tx.imu_print_data_time) > console.tx.imu_print_data_period) && \
+       !(console.tx.imu_print_data_period == 0)){
     console.tx.imu_print_data_flag = 1;
     console.tx.imu_print_data_time = current_time;
   }
   
   /* Rate at which rangefinder data is printed to console */
-  if ((current_time - console.tx.rangefinder_print_data_time) > console.tx.rangefinder_print_data_period){
+  if (((current_time - console.tx.rangefinder_print_data_time) > console.tx.rangefinder_print_data_period) && \
+       !(console.tx.rangefinder_print_data_period == 0)){
     console.tx.rangefinder_print_data_flag = 1;
     console.tx.rangefinder_print_data_time = current_time;
   }

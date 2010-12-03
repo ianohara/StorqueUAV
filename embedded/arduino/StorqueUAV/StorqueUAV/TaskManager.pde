@@ -58,6 +58,7 @@ void Manage_Tasks(){
   }else if (rangefinder.flag){
     rangefinder.flag = 0;
     RangeFinder_Read();  
+    return;
   
   /* A bunch of other necessary
     elseif (high_magic_flag)
@@ -80,6 +81,8 @@ void Manage_Tasks(){
   }else if (console.tx.heartbeat_flag){
     console.tx.heartbeat_flag = 0;       // set flag to zero
     console_transmit_packet(HEARTBEAT);
+    read_RC_Input();
+    Print_RC_Input();
     return;
 
   }else if (console.tx.imu_print_data_flag){
