@@ -71,7 +71,7 @@ void Console_Init(){
 
     console.tx.heartbeat_period = 1000;
     console.tx.imu_print_data_period = 200; // real update rate is 125 Hz, this is 5 Hz
-    console.tx.rangefinder_print_data_period = 500; // half of current update rate
+    console.tx.rangefinder_print_data_period = 0; //500; // half of current update rate
     
     return;
 }
@@ -81,64 +81,80 @@ void Console_Init(){
 /* Receive Console Packet
     - Reads in data from the host and sets cosole.rx_flag so that Task Manager can 
       tell the Console to do something with input data
+    - This function only reads in 1 byte at a time, thus it is 'non-blocking' the purpose 
+      of this is because the current serial writes used by pyserial take like 100 ms per 
+      20 bytes. 
 /* ------------------------------------------------------------------------------------ */
-uint8_t receive_console_packet(){
+void receive_console_packet(){
   uint16_t CHK = 0;
   uint8_t len;
   uint8_t data = 0;
   
-  /*consolePrint((char)consoleRead());
-  for (uint8_t i = 0; i < 10; i++){
-    while(!consoleAvailable());
-    consolePrint((char)consoleRead());
-  }*/
-  if (consoleRead() == 'h'){
-    while(!consoleAvailable());
-    if (consoleRead() == 's'){
-      while(!consoleAvailable());
-      if (consoleRead() == 't'){
-        while(!consoleAvailable());
-        console.rx.cmd = consoleRead();
-        consolePrint("csl");
-        consolePrint((char)console.rx.cmd);
-        consolePrintln();
-        
-        while(!consoleAvailable());
-        console.rx.len = consoleRead() - 48; // Since we are just sending lengths as characters ... for now
-        
-        // Check and see if rx_len is a reasonable value otherwise error
-        if (console.rx.len > 7){
-          return 0;
-        }
-        
-        CHK |= 'h' + 's' + 't' + console.rx.cmd + console.rx.len;
-        for (uint8_t i = 0; i < console.rx.len; i++){
-          while(!consoleAvailable());
-          data = consoleRead();
-          console.rx.data[i] = data;
-          CHK |= data;
-        }
-        
-        /* This is for when the checksum is actually used */
-        /* ============================================== */
-        /*
-        while(!xbeeAvailable());
-        console.rx.CHK = (((uint16_t)xbeeRead())<<8);
-        while(!xbeeAvailable());
-        console.rx.CHK |= xbeeRead();
-        
-        if (console.rx_CHK == CHK){
-          return console.rx_cmd;
-        }else{
-          return 0;
-        }
-        */
-        
-      return console.rx.cmd;
-      }
+  // Read in a byte of data
+  console.rx.byte_in = consoleRead();
+  
+  // Parse data and write to buffers
+  if (console.rx.index == 0){
+    if (console.rx.byte_in == 'h'){
+      console.rx.index++;
+      consolePrintln((uint16_t)console.rx.index);
+      return;
+    }else{
+      console.rx.index = 0;
+      return;
     }
   }
-  return 0;
+  if (console.rx.index == 1){
+    if (console.rx.byte_in == 's'){
+      console.rx.index++;
+      consolePrintln((uint16_t)console.rx.index);
+      return;
+    }else{
+      console.rx.index = 0;
+      return;
+    }
+  }
+  if (console.rx.index == 2){
+    if (console.rx.byte_in == 't'){
+      console.rx.index++;
+      consolePrintln((uint16_t)console.rx.index);
+      return;
+    }else{
+      console.rx.index = 0;
+      return;
+    }
+  }
+  if (console.rx.index == 3){
+    consolePrintln(console.rx.byte_in);
+    console.rx.cmd = console.rx.byte_in;
+    console.rx.index++;
+    return;
+  }
+  if (console.rx.index == 4){
+    console.rx.len = console.rx.byte_in - 48;  // ( - 48 ) becaues numerical values are sent in hex form
+    if (console.rx.len == 0 || console.rx.len > MAX_BUFFER_LENGTH){  // remember to set index to zero is length is zero.
+      console.rx.packet_received_flag = 1;
+      console.rx.index = 0;
+    }else{
+      console.rx.index++;
+    }
+    consolePrintln("Console length");
+    consolePrintln((uint16_t)console.rx.len);
+    return;
+  }
+  if ((console.rx.index > 4) && (console.rx.index < (console.rx.len+MAX_BUFFER_LENGTH))){
+    console.rx.data[console.rx.index - 4] = console.rx.byte_in;
+    console.rx.index++;
+    consolePrintln("Writing data \n \r");
+    consolePrintln((uint16_t)console.rx.index);
+  }
+  if (console.rx.index >= (console.rx.len + 5)){
+    consolePrintln("End of data \n \r");
+    console.rx.packet_received_flag = 1;
+    console.rx.index = 0;
+    return;
+  }
+  return;
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -340,3 +356,53 @@ void Console_Init(){
 }
   */ 
 
+
+
+/*
+  if (consoleRead() == 'h'){
+    while(!consoleAvailable());
+    if (consoleRead() == 's'){
+      while(!consoleAvailable());
+      if (consoleRead() == 't'){
+        while(!consoleAvailable());
+        console.rx.cmd = consoleRead();
+        consolePrint("csl");
+        consolePrint((char)console.rx.cmd);
+        consolePrintln();
+        
+        while(!consoleAvailable());
+        console.rx.len = consoleRead() - 48; // Since we are just sending lengths as characters ... for now
+        
+        // Check and see if rx_len is a reasonable value otherwise error
+        if (console.rx.len > 7){
+          return 0;
+        }
+        
+        CHK |= 'h' + 's' + 't' + console.rx.cmd + console.rx.len;
+        for (uint8_t i = 0; i < console.rx.len; i++){
+          while(!consoleAvailable());
+          data = consoleRead();
+          console.rx.data[i] = data;
+          CHK |= data;
+        }
+        
+        // This is for when the checksum is actually used 
+        // ============================================== 
+        //
+        while(!xbeeAvailable());
+        console.rx.CHK = (((uint16_t)xbeeRead())<<8);
+        while(!xbeeAvailable());
+        console.rx.CHK |= xbeeRead();
+        
+        if (console.rx_CHK == CHK){
+          return console.rx_cmd;
+        }else{
+          return 0;
+        }
+        
+      return console.rx.cmd;
+      }
+    }
+  }
+  return 0;
+  */

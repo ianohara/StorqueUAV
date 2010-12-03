@@ -58,6 +58,7 @@ typedef struct imu_rx_ {
   uint8_t D2;
   uint16_t CHK;
   uint16_t active_channels;
+  float data_temp[15];
   float data[15];
   uint8_t packet_received_flag;
   uint8_t index;

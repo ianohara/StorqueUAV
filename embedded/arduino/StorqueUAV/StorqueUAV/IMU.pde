@@ -228,15 +228,15 @@ uint8_t receive_imu_packet(){
                 while(!imuAvailable());
                 lsb = imuRead();
                 if (i<3){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLES;
+                  imu.rx.data_temp[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLES;
                 }else if (i>2 && i<6){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLE_RATES;
+                  imu.rx.data_temp[i] = (((int)(msb)<<8) | (lsb))*SCALE_ANGLE_RATES;
                 }else if (i>5 && i<9){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_MAG;
+                  imu.rx.data_temp[i] = (((int)(msb)<<8) | (lsb))*SCALE_MAG;
                 }else if (i>8 && i<12){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_GYRO;
+                  imu.rx.data_temp[i] = (((int)(msb)<<8) | (lsb))*SCALE_GYRO;
                 }else if (i>11 && i<15){
-                  imu.rx.data[i] = (((int)(msb)<<8) | (lsb))*SCALE_ACCEL;
+                  imu.rx.data_temp[i] = (((int)(msb)<<8) | (lsb))*SCALE_ACCEL;
                 }
                 CHK += msb + lsb;
               }else{
@@ -357,6 +357,14 @@ uint8_t receive_imu_packet(){
         imu.rx.CHK |= imuRead();
         
         if (imu.rx.CHK == CHK){
+          /* In the special case of acquiring SENSOR_DATA remember to copy 
+             the temp data to the used data. This prevents using corrupt 
+             data. */         
+          if (PT == SENSOR_DATA){
+            for(uint8_t i = 0; i<15; i++){
+              imu.rx.data[i] = imu.rx.data_temp[i];
+            }
+          }
           return PT;
         }else{
           return 0;

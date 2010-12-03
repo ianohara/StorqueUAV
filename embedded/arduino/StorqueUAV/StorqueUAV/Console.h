@@ -41,6 +41,8 @@
 #define consoleInit xbeeInit
 #define consolePort "Console"
 
+#define MAX_BUFFER_LENGTH 8
+
 /* ------------------------------------------------------------------------------------ */
 /* Console Struct:
    - contains all parameters used by the console for interactivity between the host and
@@ -56,11 +58,14 @@
 
 /* Receive struct */
 typedef struct console_rx_ {
-   
+  
+  uint8_t index; 
   uint8_t cmd;
   uint8_t len;
+  uint8_t byte_in; // caps because byte is already taken ... lame
   uint8_t data[8];
   uint8_t packet_received_flag;
+  
 } console_rx_t;
 
 /* Transmit struct */

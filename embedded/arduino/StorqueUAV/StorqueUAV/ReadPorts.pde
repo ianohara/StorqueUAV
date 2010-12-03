@@ -111,9 +111,7 @@ void Read_Ports(){
      console
   */
   if (xbeeAvailable()){ 
-    if (receive_console_packet()){
-      console.rx.packet_received_flag = true;
-    }
+    receive_console_packet();
   }
   
   return;
