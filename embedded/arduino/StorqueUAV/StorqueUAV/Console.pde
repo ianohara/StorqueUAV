@@ -191,7 +191,17 @@ void console_transmit_packet(){
       return;
     }
     if ((console.tx.index > 4) && ((console.tx.index - 5) < console.tx.len)){
-      consolePrint((uint16_t)console.tx.data[console.tx.index - 3]);
+      // Check what type the data is and transmit it from its respective array
+      if (console.tx.data_typecast[console.tx.index - 5] == UINT){
+        consolePrint((uint16_t)console.tx.data_uint[console.tx.index - 5]);
+      }else if (console.tx.data_typecast[console.tx.index - 5] == INT){
+        consolePrint((int16_t)console.tx.data_int[console.tx.index - 5]);
+      }else if (console.tx.data_typecast[console.tx.index - 5] == FLOAT){
+        consolePrint(console.tx.data_float[console.tx.index - 5]);
+      }else if (console.tx.data_typecast[console.tx.index - 5] == CHAR){
+        consolePrint(console.tx.data_char[console.tx.index - 5]);
+      }  
+      // A space to designate new data for host
       consolePrint(" ");
       console.tx.index++;
       return;
@@ -230,16 +240,31 @@ uint8_t console_write_packet(uint8_t command){
           console.tx.transmit_type[2] = ':';
           console.tx.cmd = ' ';
           console.tx.len = 3;
-          console.tx.data[0] = 'd';
-          console.tx.data[1] = ':';
-          console.tx.data[2] = attitude_pid.dt;
+          console.tx.data_typecast[0] = CHAR;
+          console.tx.data_typecast[1] = CHAR;
+          console.tx.data_typecast[2] = UINT;
+          console.tx.data_char[0] = 'd';
+          console.tx.data_char[1] = ':';
+          console.tx.data_uint[2] = attitude_pid.dt;
           console.tx.index = 0;
           console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
                          + console.tx.cmd + console.tx.len;
-          for (uint8_t i = 0; i < console.tx.len; i++){
-            console.tx.chk += console.tx.data[i];
-          }
-          
+         
+         // Figure out the checksum
+         for (uint8_t i = 0; i < console.tx.len; i++){ 
+           
+           // Check what type of data the message is and send the
+           //    properly cast array index.
+           if (console.tx.data_typecast[i] == UINT){
+             console.tx.chk += console.tx.data_uint[i];
+           }else if (console.tx.data_typecast[i] == INT){
+             console.tx.chk += console.tx.data_int[i];
+           }else if (console.tx.data_typecast[i] == FLOAT){
+             console.tx.chk += console.tx.data_float[i];
+           }else if (console.tx.data_typecast[i] == CHAR){
+             console.tx.chk += console.tx.data_char[i];
+           }
+         }
           /*
           consolePrint("<3:");
           consolePrint(" Time:");

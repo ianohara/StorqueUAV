@@ -39,6 +39,15 @@ class stoConsole(object):
     # ------------------------------------------------------------------------------
 
     def __init__(self, port):
+        
+        # Console Properties
+        self.print_command = 'none'
+        self.rx_msg_type = 0
+        self.rx_msg_command = 0
+        self.rx_msg_len = 0
+        self.rx_msg_data = 0
+        self.rx_msg_chk = 0
+
         # Initialize serial
         self.seri = serial.Serial(port, 57600, timeout=1)
         print "Serial Initialized"
@@ -69,7 +78,7 @@ class stoConsole(object):
     def runConsole(self):
         
         print
-        print "Console Initialed:                                      "
+        print "Console Initialized:                                    "
         print "         Type 'Help' for a list of commands and what-not"
         print "         To Quit press RET                              "
 
@@ -81,10 +90,20 @@ class stoConsole(object):
                 
                 if sel == self.seri:
                     # Read in line from serial
-                    serialIn = self.seri.readline()
-                    print
-                    print "In: %s" %(serialIn)
-                    # Log serial inputs to 
+                    #serialIn = self.seri.readline()
+                    serialIn = [0, 0, 0, 0, 0, 0, 0, 0,\
+                                0, 0, 0, 0, 0, 0, 0, 0,\
+                                0, 0, 0, 0, 0, 0, 0, 0,\
+                                0, 0, 0, 0, 0, 0, 0, 0]
+                    
+                    serialIn[2] = self.seri.read()
+                    serialIn[3] = self.seri.read()
+
+                    print serialIn
+                    
+                    # Parse serial input
+                    self.parseInput(serialIn)
+                    # Log serial inputs to
                     self.seri_log.write("IN: %s" %(serialIn))
                     
                 if sel == sys.stdin:
@@ -115,40 +134,100 @@ class stoConsole(object):
     # ------------------------------------------------------------------------------
     
     def parseCommand(self, input):
-        if input == 'Help\n':
+
+        input = input.upper()
+
+        if input == 'HELP\n':
             print "Current Commands are: "
             print "                     - Test: a for fun command"
-            print
+            print "                     - Print: toggle printing of inputs to conole"
+            
+        elif input[:5] == 'PRINT':
+            # Print command type:
+            #    such as: all, imu, rangefinder, none, console, heartbeat
+            self.print_command = input[6:len(input)-1].upper()  # make all values uppercase
+            print 'Printing ' + self.print_command
+        
+        elif input == 'TEST\n':
+            print "Test"
+            cmd = 't'
+            length = '0'
+            
+            for i in range(1):
+                delay = 0.00
+                self.seri.write('h')
+                time.sleep(delay)
+                self.seri.write('s')
+                time.sleep(delay)
+                self.seri.write('t')
+                time.sleep(delay)
+                self.seri.write('t')
+                time.sleep(delay)
+                self.seri.write('0')
 
-        elif input == 'Test\n':
-            cmd = 'ts'
-            len = '0'
-            delay = 0.05 # The purpose of this delay is to ensure
-                         # acquisition of the data by Storque
-            ''' It would not be unreasonable to consider a seperate
-                'r''c''v' command, that is like a byte or two long
-                which would indicate higher bandwidth messages, 
-                for real-time interactivity.
-            '''
-            self.seri.write('r')
-            time.sleep(delay)
-            self.seri.write('c')
-            time.sleep(delay)
-            self.seri.write('v')
-            time.sleep(delay)
-            self.seri.write(cmd[0])
-            time.sleep(delay)
-            self.seri.write(cmd[1])
-            time.sleep(delay)
-            self.seri.write(len)
         
         else:
             print "Command not supported"
             print
             
             
+    # ------------------------------------------------------------------------------
+    # Parse Input:
+    #         INPUT: Storque Serial Stream
+    #         RESULT: Parses data. 
+    #                 note: currently used to determine which messages to print
+    #                       to console
+    # ------------------------------------------------------------------------------
+    
+    def parseInput(self, serialInput):
+                
+        # --------------------------------------------------------------------------
+        # Parse out message types:
+        #       Packet defined in following format: 
+        #        | packet type | command |  len  |   data    |   chk    |
+        #        |  2 bytes    |  byte   |  byte | len bytes |  2 bytes |
+        #  
+        #                 <3: -> heartbeat (no type is equal to ' ' )
+        #                 imu -> imu receive (currently either data or properties
+        #                                     based on imud or imup)
+        #                 rng -> rangefinder receive (either d or p as well)
+        #                 csl -> console response (mainly used for debugging)
+        # --------------------------------------------------------------------------
+        
+        # Determine message type received
+        if (serialInput[0:3] == '<3:'):
+            self.rx_msg_type = 'heartbeat'
+        elif (serialInput[0:3] == 'imu'):
+            self.rx_msg_type = 'imu'
+        elif (serialInput[0:3] == 'rng'):
+            self.rx_msg_type = 'rangefinder'
+        elif (serialInput[0:3] == 'csl'):
+            self.rx_msg_type = 'console'
 
+        # Do stuff with message (currently nothing really just some print options)
+        
+        # If heartbeat message type
+        if (self.rx_msg_type == 'heartbeat'):
+            if (self.print_command == 'HEARTBEAT' or self.print_command == 'ALL'):
+                print serialInput
 
+        # If imu message type
+        if (self.rx_msg_type == 'imu'):
+            if (self.print_command == 'IMU' or self.print_command == 'ALL'):
+                print serialInput
+        
+        # If rangefinder message type 
+        if (self.rx_msg_type == 'rangefinder'):
+            if (self.print_command == 'RANGEFINDER' or self.print_command == 'ALL'):
+                print serialInput
+
+        # If console message type
+        if (self.rx_msg_type == 'console'):
+            if (self.print_command == 'CONSOLE' or self.print_command == 'ALL'):
+                print serialInput
+            
+            
+        
 # ----------------------------------------------------------------------------------
 # If stoConsole is called init and run
 # ----------------------------------------------------------------------------------

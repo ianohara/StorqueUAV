@@ -43,6 +43,13 @@
 
 #define MAX_BUFFER_LENGTH 8
 
+/* Console tx data type defines */
+#define UINT  0x22     // uint16_t
+#define INT   0x23     // int16_t
+#define FLOAT 0x24     // float
+#define CHAR  0x25     // char
+
+
 /* ------------------------------------------------------------------------------------ */
 /* Console Struct:
    - contains all parameters used by the console for interactivity between the host and
@@ -77,7 +84,11 @@ typedef struct console_tx_ {
   char cmd;
   uint8_t len;
   uint8_t byte_out;
-  uint16_t data[16];
+  uint16_t data_typecast[16];  // This array holds the typecast for each data index. FLOAT, CHAR, INT, UINT
+  char data_char[16];
+  float data_float[16];
+  uint16_t data_uint[16];
+  int16_t data_int[16];
   uint8_t packet_transmitted_f;
   uint8_t packet_transmitting_f;
   uint16_t chk;

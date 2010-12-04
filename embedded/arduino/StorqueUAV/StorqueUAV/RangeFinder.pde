@@ -65,13 +65,23 @@ void RangeFinder_Print(char which){
        console.tx.transmit_type[2] = 'G';
        console.tx.cmd = 'd';
        console.tx.len = 1;
-       console.tx.data[1] = rangefinder.range;
+       console.tx.data_typecast[0] = UINT;
+       console.tx.data_uint[0] = rangefinder.range;
        console.tx.index = 0;
        console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
                          + console.tx.cmd + console.tx.len;
-       for (uint8_t i = 0; i < console.tx.len; i++){
-         console.tx.chk += console.tx.data[i];
-       }
+      // Figure out the checksum
+      for (uint8_t i = 0; i < console.tx.len; i++){ 
+        if (console.tx.data_typecast[i] == UINT){
+          console.tx.chk += console.tx.data_uint[i];
+        }else if (console.tx.data_typecast[i] == INT){
+          console.tx.chk += console.tx.data_int[i];
+        }else if (console.tx.data_typecast[i] == FLOAT){
+          console.tx.chk += console.tx.data_float[i];
+        }else if (console.tx.data_typecast[i] == CHAR){
+          console.tx.chk += console.tx.data_char[i];
+        }
+      }
       break;
       
     case PROPERTIES:
