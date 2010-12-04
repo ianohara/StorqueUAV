@@ -243,6 +243,7 @@ void loop(){
   Read_Ports();
   Read_Timers();
   Manage_Tasks();
+  Write_Ports();
   
 }   // End of void loop()
 

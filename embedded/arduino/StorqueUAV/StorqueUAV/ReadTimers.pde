@@ -54,24 +54,24 @@ void Read_Timers(){
   }
   
   /* This is the other timer option. It drifts, but its simpler */
-  if (((current_time - console.tx.heartbeat_time) > console.tx.heartbeat_period) && \
-       !(console.tx.heartbeat_period == 0)){
-      console.tx.heartbeat_flag = 1;
-      console.tx.heartbeat_time = current_time;
+  if (((current_time - console.heartbeat_time) > console.heartbeat_period) && \
+       !(console.heartbeat_period == 0)){
+      console.heartbeat_flag = 1;
+      console.heartbeat_time = current_time;
   }
   
   /* Rate at which imu data is printed to console */
-  if (((current_time - console.tx.imu_print_data_time) > console.tx.imu_print_data_period) && \
-       !(console.tx.imu_print_data_period == 0)){
-    console.tx.imu_print_data_flag = 1;
-    console.tx.imu_print_data_time = current_time;
+  if (((current_time - console.imu_print_data_time) > console.imu_print_data_period) && \
+       !(console.imu_print_data_period == 0)){
+    console.imu_print_data_flag = 1;
+    console.imu_print_data_time = current_time;
   }
   
   /* Rate at which rangefinder data is printed to console */
-  if (((current_time - console.tx.rangefinder_print_data_time) > console.tx.rangefinder_print_data_period) && \
-       !(console.tx.rangefinder_print_data_period == 0)){
-    console.tx.rangefinder_print_data_flag = 1;
-    console.tx.rangefinder_print_data_time = current_time;
+  if (((current_time - console.rangefinder_print_data_time) > console.rangefinder_print_data_period) && \
+       !(console.rangefinder_print_data_period == 0)){
+    console.rangefinder_print_data_flag = 1;
+    console.rangefinder_print_data_time = current_time;
   }
   
   return;

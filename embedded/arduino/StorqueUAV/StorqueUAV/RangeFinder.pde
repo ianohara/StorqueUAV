@@ -60,10 +60,18 @@ void RangeFinder_Print(char which){
   switch(which){
     
     case DATA:
-      consolePrint("rng");
-      consolePrint(DATA);
-      consolePrint(rangefinder.range);
-      consolePrintln();    
+       console.tx.transmit_type[0] = 'R';
+       console.tx.transmit_type[1] = 'N';
+       console.tx.transmit_type[2] = 'G';
+       console.tx.cmd = 'd';
+       console.tx.len = 1;
+       console.tx.data[1] = rangefinder.range;
+       console.tx.index = 0;
+       console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
+                         + console.tx.cmd + console.tx.len;
+       for (uint8_t i = 0; i < console.tx.len; i++){
+         console.tx.chk += console.tx.data[i];
+       }
       break;
       
     case PROPERTIES:

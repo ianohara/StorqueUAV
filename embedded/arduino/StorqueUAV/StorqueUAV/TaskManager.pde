@@ -78,23 +78,28 @@ void Manage_Tasks(){
   */ 
        
   /* Low Priority Functions */
-  }else if (console.tx.heartbeat_flag){
-    console.tx.heartbeat_flag = 0;       // set flag to zero
-    console_transmit_packet(HEARTBEAT);
-    read_RC_Input();
-    Print_RC_Input();
+  }else if (console.heartbeat_flag){
+    // flipping transmit flag is contingent upon success of console write packet.
+    //     if console_write_packet fails then wait till later to write
+    if(console_write_packet(HEARTBEAT)){
+      console.heartbeat_flag = 0;
+    }
+    //read_RC_Input();
+    //Print_RC_Input();
     return;
-
-  }else if (console.tx.imu_print_data_flag){
-    console.tx.imu_print_data_flag = 0;
-    console_transmit_packet(IMU_DATA);
+  
+  }else if (console.rangefinder_print_data_flag){
+    if (console_write_packet(RANGEFINDER_DATA)){
+      console.rangefinder_print_data_flag = 0;
+    }
     return;
-
-  }else if (console.tx.rangefinder_print_data_flag){
-    console.tx.rangefinder_print_data_flag = 0;
-    console_transmit_packet(RANGEFINDER_DATA);
+  
+  }else if (console.imu_print_data_flag){
+    
+    if (console_write_packet(IMU_DATA)){
+      console.imu_print_data_flag = 0;
+    }
     return;
   }
-  
 }
         

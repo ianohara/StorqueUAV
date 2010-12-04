@@ -63,14 +63,31 @@ typedef struct console_rx_ {
   uint8_t cmd;
   uint8_t len;
   uint8_t byte_in; // caps because byte is already taken ... lame
-  uint8_t data[8];
+  uint8_t data[16];
   uint8_t packet_received_flag;
+  uint16_t chk;
   
 } console_rx_t;
 
 /* Transmit struct */
 typedef struct console_tx_ {
   
+  uint8_t index;
+  char transmit_type[3];
+  char cmd;
+  uint8_t len;
+  uint8_t byte_out;
+  uint16_t data[16];
+  uint8_t packet_transmitted_f;
+  uint8_t packet_transmitting_f;
+  uint16_t chk;
+  
+} console_tx_t;
+
+/* Full console declaration struct */
+typedef struct console_ {  
+
+  // Console output flags
   unsigned long heartbeat_time;
   uint16_t heartbeat_period;
   uint8_t heartbeat_flag;
@@ -83,14 +100,9 @@ typedef struct console_tx_ {
   uint16_t rangefinder_print_data_period;
   uint8_t rangefinder_print_data_flag;
   
-  /* other output flags */  
-} console_tx_t;
-
-/* Full console declaration struct */
-typedef struct console_ {  
-
   console_tx_t tx;
   console_rx_t rx;  
+  
 } console_t;
 
 /* Instantiate console */

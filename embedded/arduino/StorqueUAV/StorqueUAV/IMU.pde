@@ -162,13 +162,28 @@ void IMU_Print(char which){
     /* NOTE: printing DATA takes a long time, perhaps something should be
              changed about the way that the console posts data to the host */
     case(DATA):
+       console.tx.transmit_type[0] = 'I';
+       console.tx.transmit_type[1] = 'M';
+       console.tx.transmit_type[2] = 'U';
+       console.tx.cmd = DATA;
+       console.tx.len = 16;
+       for (uint8_t i = 0; i < 16; i++){
+         console.tx.data[i] = imu.rx.data[i];
+       }
+       console.tx.index = 0;
+       console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
+                         + console.tx.cmd + console.tx.len;
+       for (uint8_t i = 0; i < console.tx.len; i++){
+         console.tx.chk += console.tx.data[i];
+       }
+    /*
       consolePrint("imu");
       consolePrint(DATA);  
       for (uint8_t i = 0; i<15; i++){
         consolePrint(imu.rx.data[i]);
         consolePrint(",");
       }
-      consolePrintln();
+      consolePrintln()*/
       break;
     
     case(PROPERTIES):

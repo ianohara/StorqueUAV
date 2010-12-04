@@ -65,13 +65,13 @@
 void Console_Init(){
     console.rx.len = 0;
     console.rx.packet_received_flag = false;
-    console.tx.heartbeat_flag = false;
-    console.tx.imu_print_data_flag = false;
-    console.tx.rangefinder_print_data_flag = false;
+    console.heartbeat_flag = false;
+    console.imu_print_data_flag = false;
+    console.rangefinder_print_data_flag = false;
 
-    console.tx.heartbeat_period = 1000;
-    console.tx.imu_print_data_period = 200; // real update rate is 125 Hz, this is 5 Hz
-    console.tx.rangefinder_print_data_period = 0; //500; // half of current update rate
+    console.heartbeat_period = 1000;
+    console.imu_print_data_period = 1; // real update rate is 125 Hz, this is 5 Hz
+    console.rangefinder_print_data_period = 500; //500; // half of current update rate
     
     return;
 }
@@ -168,41 +168,113 @@ void receive_console_packet(){
    CHK. But for now, since all interactivity is user based I don't think it too crucial.
 */
 /* ------------------------------------------------------------------------------------ */
-void console_transmit_packet(uint8_t command){
-  switch(command){
+void console_transmit_packet(){
+  // If message to transmit then begin transmitting bytes
+  if (console.tx.packet_transmitting_f){
     
-    case HEARTBEAT:
-      /* Heartbeat_Print() */
-      consolePrint("<3:");
-      /* These values are just for fun, there is definitely 
-         a better way of decided what should be sent with
-         heartbeats */
-      consolePrint(" Time:");
-      consolePrint(millis());
-      consolePrint(" dt:");
-      consolePrint(attitude_pid.dt);
+    if (console.tx.index < 3){
+      consolePrint(console.tx.transmit_type[console.tx.index]);
+      console.tx.index++;
+      return;
+    }
+    if (console.tx.index == 3){
+      consolePrint(" ");
+      consolePrint(console.tx.cmd);
+      consolePrint(" ");
+      console.tx.index++;
+      return;
+    }
+    if (console.tx.index == 4){
+      consolePrint((uint16_t)console.tx.len);
+      consolePrint(" ");
+      console.tx.index++;
+      return;
+    }
+    if ((console.tx.index > 4) && ((console.tx.index - 5) < console.tx.len)){
+      consolePrint((uint16_t)console.tx.data[console.tx.index - 3]);
+      consolePrint(" ");
+      console.tx.index++;
+      return;
+    }
+    if ((console.tx.index - 4) > (console.tx.len)){ 
+      consolePrint((uint16_t)console.tx.chk);
+      console.tx.index++;
+    }
+    if ((console.tx.index - 4) > (console.tx.len)){
+      // Print a line to tell the host that full message has been sent
       consolePrintln();
-      break;
-    
-    case IMU_DATA:
-      IMU_Print(DATA);
-      break;
-      
-    case IMU_PROPERTIES:
-      IMU_Print(PROPERTIES);
-      break;
-      
-    case RANGEFINDER_DATA:
-      RangeFinder_Print(DATA);
-      break;
-      
-    case RANGEFINDER_PROPERTIES:
-      RangeFinder_Print(PROPERTIES);
-      break;
-      
-     
+      console.tx.index = 0;
+      console.tx.packet_transmitting_f = 0;
+      return;
+    }
   }
 }
+
+
+/* ------------------------------------------------------------------------------------ */
+/* Console Packet Definition Function:
+       - pass this function a transmit-command-type and it will pre-allocate a packet for
+         transmission and set up.
+*/
+/* ------------------------------------------------------------------------------------ */
+uint8_t console_write_packet(uint8_t command){
+   
+   // Check if not already in process of transmitting a packet
+   if (!console.tx.packet_transmitting_f){ 
+     switch(command){
+     
+       case HEARTBEAT:
+          /* Heartbeat_Print() */
+          console.tx.transmit_type[0] = '<';
+          console.tx.transmit_type[1] = '3';
+          console.tx.transmit_type[2] = ':';
+          console.tx.cmd = ' ';
+          console.tx.len = 3;
+          console.tx.data[0] = 'd';
+          console.tx.data[1] = ':';
+          console.tx.data[2] = attitude_pid.dt;
+          console.tx.index = 0;
+          console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
+                         + console.tx.cmd + console.tx.len;
+          for (uint8_t i = 0; i < console.tx.len; i++){
+            console.tx.chk += console.tx.data[i];
+          }
+          
+          /*
+          consolePrint("<3:");
+          consolePrint(" Time:");
+          consolePrint(millis());
+          consolePrint(" dt:");
+          consolePrint(attitude_pid.dt);
+          consolePrintln();
+          */
+          break;
+        
+        // All 'object' prints need to be rewritten
+        case IMU_DATA:
+          IMU_Print(DATA);
+          break;
+          
+        case IMU_PROPERTIES:
+          IMU_Print(PROPERTIES);
+          break;
+          
+        case RANGEFINDER_DATA:
+          RangeFinder_Print(DATA);
+          break;
+          
+        case RANGEFINDER_PROPERTIES:
+          RangeFinder_Print(PROPERTIES);
+          break;
+          
+     }
+     console.tx.packet_transmitting_f = 1;
+     return 1;
+   }else{
+     return 0;
+   }
+}
+  
 
 /* ------------------------------------------------------------------------------------ */
 /* Console:
