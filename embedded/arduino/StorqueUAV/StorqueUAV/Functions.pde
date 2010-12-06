@@ -27,22 +27,22 @@ void RadioCalibration() {
   long pitch_new = 0;
   long yaw_new = 0;
 
-  SerFlu();
-  SerPriln("Entering Radio Calibration mode");
-  SerPriln("Current channel MID values are:");
-  SerPri("ROLL: ");
-  SerPri(roll_mid);
-  SerPri(" PITCH: ");
-  SerPri(pitch_mid);
-  SerPri(" YAW: ");
-  SerPri(yaw_mid);
-  SerPriln();
-  SerPriln("Recalibrate Channel MID's [Y/N]?: ");
+  ftdiFlush();
+  ftdiPrintln("Entering Radio Calibration mode");
+  ftdiPrintln("Current channel MID values are:");
+  ftdiPrint("ROLL: ");
+  ftdiPrint(roll_mid);
+  ftdiPrint(" PITCH: ");
+  ftdiPrint(pitch_mid);
+  ftdiPrint(" YAW: ");
+  ftdiPrint(yaw_mid);
+  ftdiPrintln();
+  ftdiPrintln("Recalibrate Channel MID's [Y/N]?: ");
   command_timer = millis();
 
   // Start counter loop and wait serial input. If not input for 5 seconds, return to normal mode
   while(millis() - command_timer < 5000) {
-    if (SerAva()) {
+    if (ftdiAvailable()) {
       queryType = SerRea();
       if(queryType == 'y' || queryType == 'Y') {  
         Cmd_ok = TRUE;
@@ -56,16 +56,16 @@ void RadioCalibration() {
   }
   if(Cmd_ok) {
     // We have a go. Let's do new calibration
-    SerPriln("Starting calibration run in 5 seconds. Place all sticks to their middle including trims");
+    ftdiPrintln("Starting calibration run in 5 seconds. Place all sticks to their middle including trims");
     for(counter = 5; counter >= 0; counter --) {
       command_timer = millis();
       while(millis() - command_timer < 1000) {
       }
-      SerPriln(counter);
+      ftdiPrintln(counter);
     }
     // Do actual calibration now
-    SerPriln("Measuring average channel values");
-    SerPriln("ROLL, PITCH, YAW");
+    ftdiPrintln("Measuring average channel values");
+    ftdiPrintln("ROLL, PITCH, YAW");
 
     counter = 0; // Reset counter for just in case. 
     command_timer = millis();
@@ -80,42 +80,42 @@ void RadioCalibration() {
         ch_aux = APM_RC.InputCh(4);
         ch_aux2 = APM_RC.InputCh(5);
 
-        SerPri(ch_roll);
+        ftdiPrint(ch_roll);
         comma();
-        SerPri(ch_pitch);
+        ftdiPrint(ch_pitch);
         comma();
-        SerPri(ch_yaw);
-        SerPriln();
+        ftdiPrint(ch_yaw);
+        ftdiPrintln();
         roll_new += ch_roll;
         pitch_new += ch_pitch; 
         yaw_new += ch_yaw;
         counter++;
       }
     }
-    SerPri("New samples received: ");
-    SerPriln(counter);    
+    ftdiPrint("New samples received: ");
+    ftdiPrintln(counter);    
     roll_new = roll_new / counter;
     pitch_new = pitch_new / counter;
     yaw_new = yaw_new / counter;
-    SerPri("New values as: ");
-    SerPri("ROLL: ");
-    SerPri(roll_new);
-    SerPri(" PITCH: ");
-    SerPri(pitch_new);
-    SerPri(" YAW: ");
-    SerPri(yaw_new);
-    SerPriln();
-    SerPriln("Accept & Save values [Y/N]?: ");
+    ftdiPrint("New values as: ");
+    ftdiPrint("ROLL: ");
+    ftdiPrint(roll_new);
+    ftdiPrint(" PITCH: ");
+    ftdiPrint(pitch_new);
+    ftdiPrint(" YAW: ");
+    ftdiPrint(yaw_new);
+    ftdiPrintln();
+    ftdiPrintln("Accept & Save values [Y/N]?: ");
     Cmd_ok = FALSE;
     while(millis() - command_timer < 5000) {
-      if (SerAva()) {
+      if (ftdiAvailable()) {
         queryType = SerRea();
         if(queryType == 'y' || queryType == 'Y') { 
           Cmd_ok = TRUE;
           roll_mid = roll_new;
           pitch_mid = pitch_new;
           yaw_mid = yaw_new;
-          SerPriln("Values accepted, remember to save them to EEPROM with 'W' command");
+          ftdiPrintln("Values accepted, remember to save them to EEPROM with 'W' command");
           break;    
         } 
         else {
@@ -127,12 +127,12 @@ void RadioCalibration() {
   } 
   if(queryType == 'n' || queryType == 'N') Cmd_ok = TRUE;
   if(Cmd_ok)
-    SerPriln("Returning normal mode...");
-  else SerPriln("Command timeout, returning normal mode....");
+    ftdiPrintln("Returning normal mode...");
+  else ftdiPrintln("Command timeout, returning normal mode....");
 }
 
 void comma() {
-  SerPri(',');
+  ftdiPrint(',');
 }
 
 #if BATTERY_EVENT == 1
