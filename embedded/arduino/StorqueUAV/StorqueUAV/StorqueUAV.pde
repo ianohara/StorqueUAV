@@ -221,6 +221,7 @@ void setup()
   Console_Init();
   AttitudePID_Init();
   RangeFinder_Init();
+  RC_Input_Init();
   motorArmed = 0;
   
 } 

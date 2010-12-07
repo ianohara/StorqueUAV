@@ -111,6 +111,10 @@ typedef struct console_ {
   uint16_t rangefinder_print_data_period;
   uint8_t rangefinder_print_data_flag;
   
+  unsigned long rc_input_print_data_time;
+  uint16_t rc_input_print_data_period;
+  uint8_t rc_input_print_data_flag;
+  
   console_tx_t tx;
   console_rx_t rx;  
   

@@ -90,16 +90,7 @@ class stoConsole(object):
                 
                 if sel == self.seri:
                     # Read in line from serial
-                    #serialIn = self.seri.readline()
-                    serialIn = [0, 0, 0, 0, 0, 0, 0, 0,\
-                                0, 0, 0, 0, 0, 0, 0, 0,\
-                                0, 0, 0, 0, 0, 0, 0, 0,\
-                                0, 0, 0, 0, 0, 0, 0, 0]
-                    
-                    serialIn[2] = self.seri.read()
-                    serialIn[3] = self.seri.read()
-
-                    print serialIn
+                    serialIn = self.seri.readline()
                     
                     # Parse serial input
                     self.parseInput(serialIn)
@@ -153,17 +144,20 @@ class stoConsole(object):
             cmd = 't'
             length = '0'
             
-            for i in range(1):
-                delay = 0.00
-                self.seri.write('h')
-                time.sleep(delay)
-                self.seri.write('s')
-                time.sleep(delay)
-                self.seri.write('t')
-                time.sleep(delay)
-                self.seri.write('t')
-                time.sleep(delay)
-                self.seri.write('0')
+            # This delay is necessary. It seems to be an issue with
+            # pyserial's send. TODO: write storque serial driver
+            
+            delay = 0.04
+            
+            self.seri.write('h')
+            time.sleep(delay)
+            self.seri.write('s')
+            time.sleep(delay)
+            self.seri.write('t')
+            time.sleep(delay)
+            self.seri.write('t')
+            time.sleep(delay)
+            self.seri.write('0')
 
         
         else:
@@ -197,11 +191,11 @@ class stoConsole(object):
         # Determine message type received
         if (serialInput[0:3] == '<3:'):
             self.rx_msg_type = 'heartbeat'
-        elif (serialInput[0:3] == 'imu'):
+        elif (serialInput[0:3] == 'IMU'):
             self.rx_msg_type = 'imu'
-        elif (serialInput[0:3] == 'rng'):
+        elif (serialInput[0:3] == 'RNG'):
             self.rx_msg_type = 'rangefinder'
-        elif (serialInput[0:3] == 'csl'):
+        elif (serialInput[0:3] == 'CSL'):
             self.rx_msg_type = 'console'
 
         # Do stuff with message (currently nothing really just some print options)

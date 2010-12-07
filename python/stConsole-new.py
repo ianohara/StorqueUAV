@@ -197,6 +197,8 @@ class stoConsole(object):
             self.rx_msg_type = 'rangefinder'
         elif (serialInput[0:3] == 'CSL'):
             self.rx_msg_type = 'console'
+        elif (serialInput[0:3] == 'RCI'):
+            self.rx_msg_type = 'RC_Input'
 
         # Do stuff with message (currently nothing really just some print options)
         
@@ -220,7 +222,10 @@ class stoConsole(object):
             if (self.print_command == 'CONSOLE' or self.print_command == 'ALL'):
                 print serialInput
             
-            
+        # If RC Input message type
+        if (self.rx_msg_type == 'RC_Input'):
+            if (self.print_command == 'RC' or self.print_command == 'ALL'):
+                print serialInput
         
 # ----------------------------------------------------------------------------------
 # If stoConsole is called init and run

@@ -32,6 +32,10 @@
 /* Defines */
 /* ------------------------------------------------------------------------------------ */
 
+/* RC Input  */
+#define DATA 'd'
+#define PROPERTIES 'p'
+
 /* Channel Defines */
 #define INPUT_0 0
 #define INPUT_1 1

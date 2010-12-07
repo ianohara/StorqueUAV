@@ -60,6 +60,13 @@ void Read_Timers(){
       console.heartbeat_time = current_time;
   }
   
+  /* Print from RC inputs */
+  if (((current_time - console.rc_input_print_data_time) > console.rc_input_print_data_period) && \
+       !(console.rc_input_print_data_period == 0)){
+    console.rc_input_print_data_flag = 1;
+    console.rc_input_print_data_time = current_time;
+  }
+  
   /* Rate at which imu data is printed to console */
   if (((current_time - console.imu_print_data_time) > console.imu_print_data_period) && \
        !(console.imu_print_data_period == 0)){
