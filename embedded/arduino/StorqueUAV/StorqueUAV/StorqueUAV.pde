@@ -198,10 +198,10 @@ void setup()
   APM_RC.Init();             // APM Radio initialization
   // RC channels Initialization (Quad motors) 
   
-  motor_0 = 1500;
-  motor_1 = 1600;
-  motor_2 = 1700;
-  motor_3 = 1800;
+  motor_0 = 1100;
+  motor_1 = 1100;
+  motor_2 = 1100;
+  motor_3 = 1100;
   APM_RC.OutputCh(0,motor_0);  // Motors stopped
   APM_RC.OutputCh(1,motor_1);
   APM_RC.OutputCh(2,motor_2);
