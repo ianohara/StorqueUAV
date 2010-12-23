@@ -53,15 +53,19 @@ drawStep = 500;
 
 % Set up our figure
 fh = figure(1);   % Initialize a figure and figure handle
-plot3([0 0],[0 0], [0 1], 'k','LineWidth',3); % Plot the origin
+zAx = plot3([0 0],[0 0], [0 1], 'k','LineWidth',3); % Plot the origin
 hold on;
 grid on;
-plot3([0 0],[0 1], [0 0], 'k','LineWidth',3); % " "
-plot3([0 1],[0 0], [0 0], 'k','LineWidth',3); % " "
+yAx = plot3([0 0],[0 1], [0 0], 'k','LineWidth',3); % " "
+xAx = plot3([0 1],[0 0], [0 0], 'k','LineWidth',3); % " "
 
-xlabel('Distance from Start [m]','FontSize',14);
-ylabel('Distance from Start [m]','FontSize',14);
-zlabel('Distance from Start [m]','FontSize',14);
+set(zAx,'HandleVisibility','off');
+set(yAx,'HandleVisibility','off');
+set(xAx,'HandleVisibility','off');
+
+xLab = xlabel('Distance from Start [m]','FontSize',14);
+yLab = ylabel('Distance from Start [m]','FontSize',14);
+zLab = zlabel('Distance from Start [m]','FontSize',14);
 
 axis([min(xsave(1,:))-1 max(xsave(1,:))+1 min(xsave(2,:))-1 max(xsave(2,:))+1 min(xsave(3,:))-1 max(xsave(3,:))+1]);  % We're trying to stay still...so if we
                          % make it past this we're in real trouble.
@@ -78,15 +82,13 @@ drawStorque(fh, pos, dirVec); % Draw our initial position on the figure
 
 %plot3([pos(1) pos(1) + dirVec(1)], [pos(2) pos(2) + dirVec(2)], [pos(3) pos(3) + dirVec(3)], 'r', 'LineWidth',3);
 
-iterDelay = 50*round(simTime/n);
+iterDelay = round(simTime/n);
 
 for i = 1:n
     if (mod(i,drawStep) == 0) 
         pos = [xsave(1,i),xsave(2,i),xsave(3,i)];
         angles = [xsave(7,i) xsave(8,i) xsave(9,i)];
         drawStorque(fh,pos,angles);
-        pause(0.01);
-        drawnow();
+        pause(0.05);
     end
-
 end

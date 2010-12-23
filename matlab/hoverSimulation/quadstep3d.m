@@ -10,6 +10,8 @@ function [xnew] = quadstep3d(x,t,deltaT)
 % 
 %   OUTPUTS      
 %   xnew        n x 1 vector of state variables at time t + deltaT 
+%  Originally written by: Daniel Mellinger
+%  Modified with permission by: Ian O'Hara and Uriah Baalke
 
 f1 = statedwm(x,t); deltax1 = deltaT*f1;
 f2 = statedwm(x + deltax1,t + deltaT);
@@ -22,7 +24,9 @@ global cnt controls
 cnt=cnt+1;
 
 m = 0.500; %mass
-I = [2.32e-3,0,0;0,2.32e-3,0;0,0,4e-3]; %moment of inertia matrix
+I = [2.32e-3, 0, 0; ...
+     0, 2.32e-3, 0; ...
+     0, 0, 4e-3]; %moment of inertia matrix
 g = 9.81; %gravity
 
 sdot = zeros(12,1);
