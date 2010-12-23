@@ -55,8 +55,15 @@ void Manage_Tasks(){
     /* Do some cool controls stuff */   
     AttitudePID();
     return;
+  }else if (rangefinder.flag){
+    rangefinder.flag = 0;
+    RangeFinder_Read();  
+    return;
+  }else if (rc_input.flag){
+    RC_Input_Read();
+    rc_input.flag = 0;
+    return;
     
-  
   /* A bunch of other necessary
     elseif (high_magic_flag)
     elseif (high_etc)
@@ -75,11 +82,34 @@ void Manage_Tasks(){
   */ 
        
   /* Low Priority Functions */
-  }else if (console.tx.heartbeat_flag){
-    console.tx.heartbeat_flag = 0;       // set flag to zero
-    console_transmit_packet(HEARTBEAT);
-  return;
-  }
+  }else if (console.heartbeat_flag){
+    // flipping transmit flag is contingent upon success of console write packet.
+    //     if console_write_packet fails then wait till later to write
+    if(console_write_packet(HEARTBEAT)){
+      console.heartbeat_flag = 0;
+    }
+    //read_RC_Input();
+    //Print_RC_Input();
+    return;
+    
+  }else if (console.rc_input_print_data_flag){
+    if (console_write_packet(RC_INPUT_DATA)){
+      console.rc_input_print_data_flag = 0;
+    }
+    return;
   
+  }else if (console.rangefinder_print_data_flag){
+    if (console_write_packet(RANGEFINDER_DATA)){
+      console.rangefinder_print_data_flag = 0;
+    }
+    return;
+  
+  }else if (console.imu_print_data_flag){
+    
+    if (console_write_packet(IMU_DATA)){
+      console.imu_print_data_flag = 0;
+    }
+    return;
+  }
 }
         

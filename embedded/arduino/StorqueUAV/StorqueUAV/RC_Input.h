@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV RangeFinder     code:                                        */
-/*                       for MaxBotics LV Ultrasonic Rangefinder            */
+/* Storque UAV RC input Interface code:                                     */
+/*                       for Ardupilot Mega                                 */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -25,34 +25,57 @@
 */
 /* ------------------------------------------------------------------------ */
 
-#ifndef RANGEFINDER_H
-#define RANGEFINDER_H
+#ifndef RC_INPUT_H
+#define RC_INPUT_H
 
 /* ------------------------------------------------------------------------------------ */
-/* Range Finder Defines */
+/* Defines */
 /* ------------------------------------------------------------------------------------ */
 
-#define RANGEFINDER_PIN 0
-
-/* RangeFinder message types for RangeFinder_Print() */
+/* RC Input  */
 #define DATA 'd'
 #define PROPERTIES 'p'
 
-/* ------------------------------------------------------------------------------------ */
-/* LV Ultrasonic Rangefinder struct:
-        - Holds all parameters for the Rangefinder
-*/        
-/* ------------------------------------------------------------------------------------ */
+/* Channel Defines */
+#define INPUT_0 0
+#define INPUT_1 1
+#define INPUT_2 2
+#define INPUT_3 3
+#define INPUT_4 4
+#define INPUT_5 5
+#define INPUT_6 6
+#define INPUT_7 7
 
-typedef struct ultrasonic_range_finder_ {
+/* RC input struct definition */
 
-  unsigned long sample_time;  
-  uint8_t  flag;
-  uint16_t range;
-  uint16_t sample_period;
+typedef struct rc_input_ {
+
+  uint16_t channel_0;
+  uint16_t channel_1;
+  uint16_t channel_2;
+  uint16_t channel_3;
+  uint16_t channel_4;
+  uint16_t channel_5;
+  uint16_t channel_6;
+  uint16_t channel_7;
   
-} ultrasonic_range_finder_t;
+  uint16_t channel_0_trim;
+  uint16_t channel_1_trim;
+  uint16_t channel_2_trim;
+  uint16_t channel_3_trim;
+  uint16_t channel_4_trim;
+  uint16_t channel_5_trim;
+  uint16_t channel_6_trim;
+  uint16_t channel_7_trim;
+  
+  unsigned long sample_time;
+  uint16_t sample_period;
+  uint8_t flag;
+  
+} rc_input_t;
 
-ultrasonic_range_finder_t rangefinder;
+rc_input_t rc_input;
+
+
 
 #endif

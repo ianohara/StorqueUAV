@@ -32,6 +32,24 @@
 /* Console.h for Console parameters
 /* ------------------------------------------------------------------------------------ */
 
+/* Define Console Abstractions */
+#define consoleBau xbeeBau
+#define consolePrint xbeePrint
+#define consolePrintln xbeePrintln
+#define consoleAvailable xbeeAvailable
+#define consoleRead xbeeRead
+#define consoleInit xbeeInit
+#define consolePort "Console"
+
+#define MAX_BUFFER_LENGTH 8
+
+/* Console tx data type defines */
+#define UINT  0x22     // uint16_t
+#define INT   0x23     // int16_t
+#define FLOAT 0x24     // float
+#define CHAR  0x25     // char
+
+
 /* ------------------------------------------------------------------------------------ */
 /* Console Struct:
    - contains all parameters used by the console for interactivity between the host and
@@ -47,28 +65,59 @@
 
 /* Receive struct */
 typedef struct console_rx_ {
-   
+  
+  uint8_t index; 
   uint8_t cmd;
   uint8_t len;
-  uint8_t data[8];
+  uint8_t byte_in; // caps because byte is already taken ... lame
+  uint8_t data[16];
   uint8_t packet_received_flag;
+  uint16_t chk;
+  
 } console_rx_t;
 
 /* Transmit struct */
 typedef struct console_tx_ {
   
-  unsigned long heartbeat_time;
-  uint16_t heartbeat_period;
-  uint8_t heartbeat_flag;
-  uint8_t imu_data_flag;
-  /* other output flags */  
+  uint8_t index;
+  char transmit_type[3];
+  char cmd;
+  uint8_t len;
+  uint8_t byte_out;
+  uint16_t data_typecast[16];  // This array holds the typecast for each data index. FLOAT, CHAR, INT, UINT
+  char data_char[16];
+  float data_float[16];
+  uint16_t data_uint[16];
+  int16_t data_int[16];
+  uint8_t packet_transmitted_f;
+  uint8_t packet_transmitting_f;
+  uint16_t chk;
+  
 } console_tx_t;
 
 /* Full console declaration struct */
 typedef struct console_ {  
 
+  // Console output flags
+  unsigned long heartbeat_time;
+  uint16_t heartbeat_period;
+  uint8_t heartbeat_flag;
+  
+  unsigned long imu_print_data_time;
+  uint16_t imu_print_data_period;
+  uint8_t imu_print_data_flag;
+  
+  unsigned long rangefinder_print_data_time;
+  uint16_t rangefinder_print_data_period;
+  uint8_t rangefinder_print_data_flag;
+  
+  unsigned long rc_input_print_data_time;
+  uint16_t rc_input_print_data_period;
+  uint8_t rc_input_print_data_flag;
+  
   console_tx_t tx;
   console_rx_t rx;  
+  
 } console_t;
 
 /* Instantiate console */

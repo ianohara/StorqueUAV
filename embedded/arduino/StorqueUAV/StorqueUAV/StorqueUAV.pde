@@ -118,7 +118,6 @@
 #define xbeeInit Serial3.begin
 #define xbeePort "Xbee"
 
-
 /* ****************************************************************************** */
 /* ****************************** Includes ************************************** */
 /* ****************************************************************************** */
@@ -148,6 +147,7 @@
 #include "Console.h"
 #include "IMU.h"
 #include "RangeFinder.h"
+#include "RC_Input.h"
 
 /* Software version */
 #define VER 0.2    // Current software version (only numeric values)
@@ -197,10 +197,11 @@ void setup()
   
   APM_RC.Init();             // APM Radio initialization
   // RC channels Initialization (Quad motors) 
-  motor_0 = MIN_THROTTLE;
-  motor_1 = MIN_THROTTLE;
-  motor_2 = MIN_THROTTLE;
-  motor_3 = MIN_THROTTLE;
+  
+  motor_0 = 1100;
+  motor_1 = 1100;
+  motor_2 = 1100;
+  motor_3 = 1100;
   APM_RC.OutputCh(0,motor_0);  // Motors stopped
   APM_RC.OutputCh(1,motor_1);
   APM_RC.OutputCh(2,motor_2);
@@ -214,10 +215,13 @@ void setup()
   //DataFlash.StartWrite(1);   // Start a write session on page 1
 
   /* Initialize Communication with Host */
+  /* And all other functions / sensors */
   Com_Init();
   IMU_Init();
   Console_Init();
   AttitudePID_Init();
+  RangeFinder_Init();
+  RC_Input_Init();
   motorArmed = 0;
   
 } 
@@ -240,6 +244,7 @@ void loop(){
   Read_Ports();
   Read_Timers();
   Manage_Tasks();
+  Write_Ports();
   
 }   // End of void loop()
 

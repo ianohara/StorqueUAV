@@ -35,21 +35,60 @@
 /* ------------------------------------------------------------------------------------ */
 
 void RangeFinder_Init(){
-  uint8_t rx_flag = 0;
-  uint8_t current = 0;
-  uint8_t previous = 0;
-  uint16_t sample_period = 1000; 
-  
+  rangefinder.flag = 0;
+  rangefinder.range = 0;
+  rangefinder.sample_time = 0;
+  rangefinder.sample_period = 50; 
   pinMode(RANGEFINDER_PIN, INPUT);
   return;
 }
 
-void ReadRangeFinder(){
-
-  range.current = analogRead(RANGEFINDER_PIN);
-  ftdiPrint("Range: ");
-  ftdiPrintln((uint16_t)range.current);
+void RangeFinder_Read(){
+  
+  rangefinder.range = analogRead(RANGEFINDER_PIN);
+  
+  /* Note: rangefinder read should probably be in the timer, and should set a flag to
+     update the controls ... or better yet, maybe sensor reads (timer and serial) 
+     should be abstracted to a ReadSensors() function TODO */
+  
   return;
   
 }
+
+void RangeFinder_Print(char which){
   
+  switch(which){
+    
+    case DATA:
+       console.tx.transmit_type[0] = 'R';
+       console.tx.transmit_type[1] = 'N';
+       console.tx.transmit_type[2] = 'G';
+       console.tx.cmd = 'd';
+       console.tx.len = 1;
+       console.tx.data_typecast[0] = UINT;
+       console.tx.data_uint[0] = rangefinder.range;
+       console.tx.index = 0;
+       console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
+                         + console.tx.cmd + console.tx.len;
+      // Figure out the checksum
+      for (uint8_t i = 0; i < console.tx.len; i++){ 
+        if (console.tx.data_typecast[i] == UINT){
+          console.tx.chk += console.tx.data_uint[i];
+        }else if (console.tx.data_typecast[i] == INT){
+          console.tx.chk += console.tx.data_int[i];
+        }else if (console.tx.data_typecast[i] == FLOAT){
+          console.tx.chk += console.tx.data_float[i];
+        }else if (console.tx.data_typecast[i] == CHAR){
+          console.tx.chk += console.tx.data_char[i];
+        }
+      }
+      break;
+      
+    case PROPERTIES:
+      consolePrint('rng');
+      consolePrint(PROPERTIES);
+      /* print the rangefinder properties here .... */
+      break;
+  }
+  return;
+}

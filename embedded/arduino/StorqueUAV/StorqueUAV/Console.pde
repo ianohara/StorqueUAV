@@ -50,8 +50,12 @@
 #define IMU_DATA_LOG_RATE  'l' 
 
 /* Console Transmit Commands */
-#define HEARTBEAT    0x50 
-#define IMU_DATA     0x51
+#define HEARTBEAT                0x50 
+#define IMU_DATA                 0x51
+#define IMU_PROPERTIES           0x52
+#define RANGEFINDER_DATA         0x53
+#define RANGEFINDER_PROPERTIES   0x54
+#define RC_INPUT_DATA            0x55
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -62,9 +66,17 @@
 void Console_Init(){
     console.rx.len = 0;
     console.rx.packet_received_flag = false;
-    console.tx.heartbeat_flag = false;
-    console.tx.imu_data_flag = false;
-    console.tx.heartbeat_period = 1000;
+    console.heartbeat_flag = false;
+    console.imu_print_data_flag = false;
+    console.rangefinder_print_data_flag = false;
+    console.rc_input_print_data_flag = false;
+
+    console.heartbeat_period = 1000;
+    console.rc_input_print_data_period = 200;
+    console.imu_print_data_period = 100; // real update rate is 125 Hz, this is 5 Hz
+    console.rangefinder_print_data_period = 500; //500; // half of current update rate
+    
+    return;
 }
 
 
@@ -72,54 +84,80 @@ void Console_Init(){
 /* Receive Console Packet
     - Reads in data from the host and sets cosole.rx_flag so that Task Manager can 
       tell the Console to do something with input data
+    - This function only reads in 1 byte at a time, thus it is 'non-blocking' the purpose 
+      of this is because the current serial writes used by pyserial take like 100 ms per 
+      20 bytes. 
 /* ------------------------------------------------------------------------------------ */
-uint8_t receive_console_packet(){
+void receive_console_packet(){
   uint16_t CHK = 0;
   uint8_t len;
   uint8_t data = 0;
-  if (xbeeRead() == 'h'){
-    while(!xbeeAvailable());
-    if (xbeeRead() == 's'){
-      while(!xbeeAvailable());
-      if (xbeeRead() == 't'){
-        while(!xbeeAvailable());
-        console.rx.cmd = xbeeRead();
-        while(!xbeeAvailable());
-        console.rx.len = xbeeRead() - 48; // Since we are just sending lengths as characters ... for now
-        
-        // Check and see if rx_len is a reasonable value otherwise error
-        if (console.rx.len > 7){
-          return 0;
-        }
-        
-        CHK |= 'h' + 's' + 't' + console.rx.cmd + console.rx.len;
-        for (uint8_t i = 0; i < console.rx.len; i++){
-          while(!xbeeAvailable());
-          data = xbeeRead();
-          console.rx.data[i] = data;
-          CHK |= data;
-        }
-        
-        /* This is for when the checksum is actually used */
-        /* ============================================== */
-        /*
-        while(!xbeeAvailable());
-        console.rx.CHK = (((uint16_t)xbeeRead())<<8);
-        while(!xbeeAvailable());
-        console.rx.CHK |= xbeeRead();
-        
-        if (console.rx_CHK == CHK){
-          return console.rx_cmd;
-        }else{
-          return 0;
-        }
-        */
-        
-        return console.rx.cmd;
-      }
+  
+  // Read in a byte of data
+  console.rx.byte_in = consoleRead();
+  
+  // Parse data and write to buffers
+  if (console.rx.index == 0){
+    if (console.rx.byte_in == 'h'){
+      console.rx.index++;
+      consolePrintln((uint16_t)console.rx.index);
+      return;
+    }else{
+      console.rx.index = 0;
+      return;
     }
   }
-  return 0;
+  if (console.rx.index == 1){
+    if (console.rx.byte_in == 's'){
+      console.rx.index++;
+      consolePrintln((uint16_t)console.rx.index);
+      return;
+    }else{
+      console.rx.index = 0;
+      return;
+    }
+  }
+  if (console.rx.index == 2){
+    if (console.rx.byte_in == 't'){
+      console.rx.index++;
+      consolePrintln((uint16_t)console.rx.index);
+      return;
+    }else{
+      console.rx.index = 0;
+      return;
+    }
+  }
+  if (console.rx.index == 3){
+    consolePrintln(console.rx.byte_in);
+    console.rx.cmd = console.rx.byte_in;
+    console.rx.index++;
+    return;
+  }
+  if (console.rx.index == 4){
+    console.rx.len = console.rx.byte_in - 48;  // ( - 48 ) becaues numerical values are sent in hex form
+    if (console.rx.len == 0 || console.rx.len > MAX_BUFFER_LENGTH){  // remember to set index to zero is length is zero.
+      console.rx.packet_received_flag = 1;
+      console.rx.index = 0;
+    }else{
+      console.rx.index++;
+    }
+    consolePrintln("Console length");
+    consolePrintln((uint16_t)console.rx.len);
+    return;
+  }
+  if ((console.rx.index > 4) && (console.rx.index < (/*console.rx.len+*/MAX_BUFFER_LENGTH))){
+    console.rx.data[console.rx.index - 4] = console.rx.byte_in;
+    console.rx.index++;
+    consolePrintln("Writing data \n \r");
+    consolePrintln((uint16_t)console.rx.index);
+  }
+  if (console.rx.index >= (console.rx.len + 5)){
+    consolePrintln("End of data \n \r");
+    console.rx.packet_received_flag = 1;
+    console.rx.index = 0;
+    return;
+  }
+  return;
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -133,30 +171,142 @@ uint8_t receive_console_packet(){
    CHK. But for now, since all interactivity is user based I don't think it too crucial.
 */
 /* ------------------------------------------------------------------------------------ */
-void console_transmit_packet(uint8_t command){
-  switch(command){
+void console_transmit_packet(){
+  // If message to transmit then begin transmitting bytes
+  if (console.tx.packet_transmitting_f){
     
-    case HEARTBEAT:
-      xbeePrint("<3:");
-      /* These values are just for fun, there is definitely 
-         a better way of decided what should be sent with
-         heartbeats */
-      xbeePrint(" Time:");
-      xbeePrint(millis());
-      xbeePrint(" dt:");
-      xbeePrint(attitude_pid.dt);
-      xbeePrintln();
-      break;
-    
-    case IMU_DATA:
-      xbeePrint('imu');
-      for (uint8_t i = 0; i<15; i++){
-        xbeePrint(imu.rx.data[i]);
-        xbeePrint(",");
-      }
-      xbeePrintln();
+    if (console.tx.index < 3){
+      consolePrint(console.tx.transmit_type[console.tx.index]);
+      console.tx.index++;
+      return;
+    }
+    if (console.tx.index == 3){
+      consolePrint(" ");
+      consolePrint(console.tx.cmd);
+      consolePrint(" ");
+      console.tx.index++;
+      return;
+    }
+    if (console.tx.index == 4){
+      consolePrint((uint16_t)console.tx.len);
+      consolePrint(" ");
+      console.tx.index++;
+      return;
+    }
+    if ((console.tx.index > 4) && ((console.tx.index - 5) < (console.tx.len + 1))){
+      // Check what type the data is and transmit it from its respective array
+      if (console.tx.data_typecast[console.tx.index - 5] == UINT){
+        consolePrint((uint16_t)console.tx.data_uint[console.tx.index - 5]);
+      }else if (console.tx.data_typecast[console.tx.index - 5] == INT){
+        consolePrint((int16_t)console.tx.data_int[console.tx.index - 5]);
+      }else if (console.tx.data_typecast[console.tx.index - 5] == FLOAT){
+        consolePrint(console.tx.data_float[console.tx.index - 5]);
+      }else if (console.tx.data_typecast[console.tx.index - 5] == CHAR){
+        consolePrint(console.tx.data_char[console.tx.index - 5]);
+      }  
+      // A space to designate new data for host
+      consolePrint(" ");
+      console.tx.index++;
+      return;
+    }
+    if ((console.tx.index - 4) > (console.tx.len)){ 
+      consolePrint((uint16_t)console.tx.chk);
+      console.tx.index++;
+    }
+    if ((console.tx.index - 4) > (console.tx.len)){
+      // Print a line to tell the host that full message has been sent
+      consolePrintln();
+      console.tx.index = 0;
+      console.tx.packet_transmitting_f = 0;
+      return;
+    }
   }
 }
+
+
+/* ------------------------------------------------------------------------------------ */
+/* Console Packet Definition Function:
+       - pass this function a transmit-command-type and it will pre-allocate a packet for
+         transmission and set up.
+*/
+/* ------------------------------------------------------------------------------------ */
+uint8_t console_write_packet(uint8_t command){
+   
+   // Check if not already in process of transmitting a packet
+   if (!console.tx.packet_transmitting_f){ 
+     switch(command){
+     
+       case HEARTBEAT:
+          /* Heartbeat_Print() */
+          console.tx.transmit_type[0] = '<';
+          console.tx.transmit_type[1] = '3';
+          console.tx.transmit_type[2] = ':';
+          console.tx.cmd = ' ';
+          console.tx.len = 3;
+          console.tx.data_typecast[0] = CHAR;
+          console.tx.data_typecast[1] = CHAR;
+          console.tx.data_typecast[2] = UINT;
+          console.tx.data_char[0] = 'd';
+          console.tx.data_char[1] = ':';
+          console.tx.data_uint[2] = attitude_pid.dt;
+          console.tx.index = 0;
+          console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
+                         + console.tx.cmd + console.tx.len;
+         
+         // Figure out the checksum
+         for (uint8_t i = 0; i < console.tx.len; i++){ 
+           
+           // Check what type of data the message is and send the
+           //    properly cast array index.
+           if (console.tx.data_typecast[i] == UINT){
+             console.tx.chk += console.tx.data_uint[i];
+           }else if (console.tx.data_typecast[i] == INT){
+             console.tx.chk += console.tx.data_int[i];
+           }else if (console.tx.data_typecast[i] == FLOAT){
+             console.tx.chk += console.tx.data_float[i];
+           }else if (console.tx.data_typecast[i] == CHAR){
+             console.tx.chk += console.tx.data_char[i];
+           }
+         }
+          /*
+          consolePrint("<3:");
+          consolePrint(" Time:");
+          consolePrint(millis());
+          consolePrint(" dt:");
+          consolePrint(attitude_pid.dt);
+          consolePrintln();
+          */
+          break;
+        
+        // All 'object' prints need to be rewritten
+        case IMU_DATA:
+          IMU_Print(DATA);
+          break;
+          
+        case IMU_PROPERTIES:
+          IMU_Print(PROPERTIES);
+          break;
+          
+        case RANGEFINDER_DATA:
+          RangeFinder_Print(DATA);
+          break;
+          
+        case RANGEFINDER_PROPERTIES:
+          RangeFinder_Print(PROPERTIES);
+          break;
+          
+        case RC_INPUT_DATA:
+          RC_Input_Print(DATA);
+          break;
+          
+     }
+     console.tx.packet_transmitting_f = 1;
+     return 1;
+   }else{
+     return 0;
+   }
+}
+  
 
 /* ------------------------------------------------------------------------------------ */
 /* Console:
@@ -172,7 +322,9 @@ void Console(){
   switch(console.rx.cmd){
     
     case TEST:
-      xbeePrint("Test Packet Received \n \r");
+      consolePrint("csl");
+      consolePrint("Test Packet Received");
+      consolePrintln();
       break;
     
     case IMU_RESET:
@@ -180,7 +332,7 @@ void Console(){
       break;
     
     case IMU_RATE:
-      xbeePrint("IMU Rate Packet Received \n \r");
+      consolePrint("csl IMU Rate Packet Received \n \r");
       imu.settings.broadcast_rate = console.rx.data[0];
       break; 
   }
@@ -308,3 +460,53 @@ void Console_Init(){
 }
   */ 
 
+
+
+/*
+  if (consoleRead() == 'h'){
+    while(!consoleAvailable());
+    if (consoleRead() == 's'){
+      while(!consoleAvailable());
+      if (consoleRead() == 't'){
+        while(!consoleAvailable());
+        console.rx.cmd = consoleRead();
+        consolePrint("csl");
+        consolePrint((char)console.rx.cmd);
+        consolePrintln();
+        
+        while(!consoleAvailable());
+        console.rx.len = consoleRead() - 48; // Since we are just sending lengths as characters ... for now
+        
+        // Check and see if rx_len is a reasonable value otherwise error
+        if (console.rx.len > 7){
+          return 0;
+        }
+        
+        CHK |= 'h' + 's' + 't' + console.rx.cmd + console.rx.len;
+        for (uint8_t i = 0; i < console.rx.len; i++){
+          while(!consoleAvailable());
+          data = consoleRead();
+          console.rx.data[i] = data;
+          CHK |= data;
+        }
+        
+        // This is for when the checksum is actually used 
+        // ============================================== 
+        //
+        while(!xbeeAvailable());
+        console.rx.CHK = (((uint16_t)xbeeRead())<<8);
+        while(!xbeeAvailable());
+        console.rx.CHK |= xbeeRead();
+        
+        if (console.rx_CHK == CHK){
+          return console.rx_cmd;
+        }else{
+          return 0;
+        }
+        
+      return console.rx.cmd;
+      }
+    }
+  }
+  return 0;
+  */

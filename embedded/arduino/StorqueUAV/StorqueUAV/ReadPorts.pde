@@ -32,24 +32,23 @@
 */
 /* ------------------------------------------------------------------------------------ */
 typedef struct com_ports_ {
+  
   bool ftdi_rx_flag;
-  bool imu_rx_flag;
-  bool xbee_rx_flag;
   uint8_t ftdi_rx_byte;
-  uint8_t imu_rx_byte;
-  uint8_t xbee_rx_byte;
+  
   /* .... */
 } com_ports_t;
 
 com_ports_t com_port;  // <- instantiate pointer to com_flags struct.
 
+/* ------------------------------------------------------------------------------------ */
 /* Initialize communication ports */
 /* ------------------------------------------------------------------------------------ */
 void Com_Init(){
   
   /* Initialize Serial */
   /* ------------------------------------------------------------------------------------ */
-  ftdiInit(SerBau);                      // Initialize SerialXX.port, IsXBEE define declares which port
+  ftdiInit(ftdiBau);                      // Initialize SerialXX.port, IsXBEE define declares which port
   Serial1.begin(SerBau);
   imuInit(imuBau);
   xbeeInit(xbeeBau);
@@ -82,10 +81,9 @@ void Com_Init(){
 void Read_Ports(){
   
   /* FTDI port (usb->host) */
-  if (SerAva()){
-    com_port.ftdi_rx_byte = SerRea();
+  if (ftdiAvailable()){
+    com_port.ftdi_rx_byte = ftdiAvailable();
     com_port.ftdi_rx_flag = true;       // note: remember to set flags to false after com
-    SerPri("meh \n \r");
   }
   
   /*
@@ -99,10 +97,10 @@ void Read_Ports(){
     // Note: receiving full SENSOR_DATA imu packet takes approx: 4[ms] to complete
     if (receive_imu_packet() == SENSOR_DATA){
       imu.rx.packet_received_flag = true;
-      SerPriln("S");
+      //SerPriln("S");
     }else{
       imu.rx.packet_received_flag = false;
-      SerPriln("F");
+      //SerPriln("F");
     }   
   }
   
@@ -110,14 +108,9 @@ void Read_Ports(){
      console
   */
   if (xbeeAvailable()){ 
-    if (receive_console_packet()){
-      console.rx.packet_received_flag = true;
-
-      // some cruft to be removed
-      xbeePrint("Command: ");
-      xbeePrint(console.rx.cmd);
-      xbeePrint(" received. \n \r");
-    }
+    receive_console_packet();
   }
+  
+  return;
 }
 

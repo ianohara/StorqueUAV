@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV RangeFinder     code:                                        */
-/*                       for MaxBotics LV Ultrasonic Rangefinder            */
+/* Storque UAV port ouput code:                                             */
+/*                                                                          */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -25,34 +25,19 @@
 */
 /* ------------------------------------------------------------------------ */
 
-#ifndef RANGEFINDER_H
-#define RANGEFINDER_H
-
 /* ------------------------------------------------------------------------------------ */
-/* Range Finder Defines */
-/* ------------------------------------------------------------------------------------ */
-
-#define RANGEFINDER_PIN 0
-
-/* RangeFinder message types for RangeFinder_Print() */
-#define DATA 'd'
-#define PROPERTIES 'p'
-
-/* ------------------------------------------------------------------------------------ */
-/* LV Ultrasonic Rangefinder struct:
-        - Holds all parameters for the Rangefinder
-*/        
+/* The write ports function:
+            This implements a once per loop byte write. All write functions block sends 
+            until a full message has been transmitted
+*/            
 /* ------------------------------------------------------------------------------------ */
 
-typedef struct ultrasonic_range_finder_ {
+void Write_Ports(){
 
-  unsigned long sample_time;  
-  uint8_t  flag;
-  uint16_t range;
-  uint16_t sample_period;
+  // Currently only the console transmit has been implemented in this way
+  console_transmit_packet();
+
+  return;
+}
   
-} ultrasonic_range_finder_t;
-
-ultrasonic_range_finder_t rangefinder;
-
-#endif
+  

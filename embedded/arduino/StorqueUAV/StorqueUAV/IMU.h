@@ -33,6 +33,10 @@
 /* IMU.h for global IMU values
 /* ------------------------------------------------------------------------ */
 
+/* IMU message types for IMU_Print() */
+#define DATA 'd'
+#define PROPERTIES 'p'
+
 /* ------------------------------------------------------------------------ */
 /* IMU struct set-up:
    - the purpose of this struct configuration is to allow 
@@ -49,14 +53,20 @@ typedef struct imu_settings_ {
 
 /* IMU rx struct */
 typedef struct imu_rx_ {
+  uint8_t index;
+  uint8_t PT;
+  uint8_t msb;
+  uint8_t lsb;
   uint8_t N;
   uint8_t D1;
   uint8_t D2;
+  uint16_t chk;
   uint16_t CHK;
   uint16_t active_channels;
+  uint8_t active_channel_index;
+  float data_temp[15];
   float data[15];
   uint8_t packet_received_flag;
-  uint8_t index;
 } imu_rx_t;
 
 /* IMU struct */
