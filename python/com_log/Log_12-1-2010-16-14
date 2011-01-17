@@ -1,0 +1,167 @@
+IN: <3: Time:131745 dt:6160
+IN: <3: Time:132747 dt:6416
+IN: <3: Time:133748 dt:6436
+IN: StorqueUAV v0.20
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+IN: <3: Time:1553 dt:0
+IN: <3: Time:2556 dt:6420
+IN: <3: Time:3558 dt:6420
+IN: <3: Time:4559 dt:6732
+IN: <3: Time:5561 dt:6728
+IN: <3: Time:6562 dt:6696
+IN: <3: Time:7564 dt:6420
+IN: <3: Time:8565 dt:6076
+IN: <3: Time:9567 dt:6136
+OUT: print console
+IN: <3: Time:10568 dt:6152
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:11570 dt:6420
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:12571 dt:6780
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:13573 dt:6716
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:14574 dt:6784
+OUT: test
+IN: <3: Time:15576 dt:6420
+OUT: test
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:16577 dt:6416
+OUT: test
+IN: <3: Time:17579 dt:6092
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+OUT: test
+IN: Command: ÷ received. 
+IN:  <3: Time:18580 dt:6072
+OUT: test
+IN: <3: Time:19581 dt:6440
+IN: <3: Time:20583 dt:6420
+IN: <3: Time:21584 dt:6740
+IN: <3: Time:22586 dt:6728
+IN: <3: Time:23587 dt:6424
+IN: <3: Time:24589 dt:6424
+IN: <3: Time:25590 dt:6080
+IN: <3: Time:26592 dt:6140
+IN: <3: Time:27593 dt:6120
+IN: <3: Time:28595 dt:6428
+IN: <3: Time:29596 dt:6748
+IN: <3: Time:30598 dt:6776
+IN: <3: Time:31599 dt:6696
+IN: <3: Time:32601 dt:6428
+IN: <3: Time:33602 dt:6424
+IN: <3: Time:34604 dt:6096
+IN: <3: Time:35605 dt:6100
+IN: <3: Time:36606 dt:6424
+IN: <3: Time:37608 dt:6440
+IN: <3: Time:38609 dt:6780
+IN: <3: Time:39611 dt:6760
+IN: <3: Time:40612 dt:6772
+IN: <3: Time:41614 dt:6436
+IN: <3: Time:42615 dt:6140
+IN: <3: Time:43617 dt:6060
+IN: <3: Time:44618 dt:6068
+IN: <3: Time:45620 dt:6424
+IN: <3: Time:46621 dt:6428
+IN: <3: Time:47623 dt:6712
+IN: <3: Time:48624 dt:6752
+IN: <3: Time:49626 dt:6444
+IN: <3: Time:50627 dt:6420
+IN: <3: Time:51629 dt:6124
+IN: <3: Time:52630 dt:6064
+IN: <3: Time:53632 dt:6420
+IN: <3: Time:54633 dt:6420
+IN: <3: Time:55634 dt:6740
+IN: <3: Time:56636 dt:6740
+IN: <3: Time:57637 dt:6716
+IN: <3: Time:58639 dt:6416
+IN: <3: Time:59640 dt:6080
+IN: <3: Time:60642 dt:6132
+IN: <3: Time:61643 dt:6060
+IN: <3: Time:62645 dt:6428
+IN: <3: Time:63646 dt:6420
+IN: <3: Time:64648 dt:6704
+IN: <3: Time:65649 dt:6752
+IN: <3: Time:66651 dt:6420
+IN: <3: Time:67652 dt:6432
+IN: <3: Time:68654 dt:6104
+IN: <3: Time:69655 dt:6092
+IN: <3: Time:70657 dt:6064
+IN: <3: Time:71658 dt:6420
+IN: <3: Time:72660 dt:6768
+IN: <3: Time:73661 dt:6684
+IN: <3: Time:74662 dt:6728
+IN: <3: Time:75664 dt:6420
+IN: <3: Time:76665 dt:6420
+IN: <3: Time:77667 dt:6104
+IN: <3: Time:78668 dt:6108
+IN: <3: Time:79670 dt:6416
+IN: <3: Time:80671 dt:6420
+IN: <3: Time:81673 dt:6704
+IN: <3: Time:82674 dt:6704
+IN: <3: Time:83677 dt:6772
+IN: <3: Time:84677 dt:6416
+IN: <3: Time:85679 dt:6108
+IN: <3: Time:86680 dt:6084
+IN: <3: Time:87682 dt:6064
+IN: <3: Time:88683 dt:6412
+IN: <3: Time:89684 dt:6432
+IN: <3: Time:90687 dt:6704
+IN: <3: Time:91688 dt:6708
+IN: <3: Time:92689 dt:6544
+IN: <3: Time:93690 dt:6420
+IN: <3: Time:94692 dt:6132
+IN: <3: Time:95693 dt:6060
+IN: <3: Time:96695 dt:6136
+IN: <3: Time:97696 dt:6420
+IN: <3: Time:98699 dt:6724
+IN: <3: Time:99700 dt:6720
+IN: <3: Time:100702 dt:6700
+IN: <3: Time:101702 dt:6416
+IN: <3: Time:102704 dt:6420
+IN: <3: Time:103705 dt:6100
+IN: <3: Time:104707 dt:6048
+IN: <3: Time:105708 dt:6412
+IN: <3: Time:106710 dt:6412
+IN: <3: Time:107712 dt:6768
+IN: <3: Time:108713 dt:6772
+IN: <3: Time:109715 dt:6704
+IN: <3: Time:110715 dt:6412
+IN: <3: Time:111717 dt:6060
+IN: <3: Time:112718 dt:6064
+IN: <3: Time:113720 dt:6068
+IN: <3: Time:114721 dt:6416
+IN: <3: Time:115723 dt:6396
+IN: <3: Time:116725 dt:6688
+IN: <3: Time:117727 dt:6744
+IN: <3: Time:118727 dt:6420
+IN: <3: Time:119729 dt:6412
+IN: <3: Time:120730 dt:6136
+IN: <3: Time:121732 dt:6064
+IN: <3: Time:122733 dt:6136
+IN: <3: Time:123735 dt:6420
+IN: <3: Time:124736 dt:6416
+IN: <3: Time:125739 dt:6776
+IN: <3: Time:126740 dt:6756
+IN: <3: Time:127740 dt:6420
+IN: <3: Time:128742 dt:6408
+IN: <3: Time:129743 dt:6080
+IN: <3: Time:130745 dt:6068
+IN: <3: Time:131746 dt:6108
+IN: <3: Time:132748 dt:6416
+OUT: 

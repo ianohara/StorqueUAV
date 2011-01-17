@@ -66,7 +66,19 @@ class serialServer(object):
         #Output list
         self.outputs = [self.seri]
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.bind(('',port))
+
+        # Find an open port and use it
+        portFound = False
+        while(not portFound):        
+            try:
+                self.server.bind(('',port))
+                portFound = True
+            except:
+                print "Port %s currently in use" %(port)
+                port = port + 1
+                print "Trying port: %s " %(port)
+
+
         print "Server initialized on port: %s" %(port)
         self.server.listen(backlog)
         
@@ -85,9 +97,9 @@ class serialServer(object):
         while(Run):
             try:
                 inputready, outputready, exceptready = select.select(inputs, self.outputs, [])
-            except: select.error, e:
+            except select.error, e:
                 break
-            except: socket.error, e:
+            except socket.error, e:
                 break
             
             for sel in inputready:
