@@ -33,39 +33,53 @@ classdef storqueInterface < handle
             
             %Initialize Serial Connection
             instrreset % Reset all connected instruments
-            self.ser = serial(self.serialPort, 'BAUD', self.serialBaud);
+            self.ser = serial(self.serialPort);
+            self.ser.BaudRate = self.serialBaud;            
+            % Timeout can probably equal zero once we add more code
+            self.ser.Timeout = 0.005;
+            % Disable timout warning
+            warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
             fopen(self.ser);
+            disp('Storque Interface Initialized')
         end
         
         %% Close Interface
         function close(self)
-            
+            disp('Storque Interface Shutting Down')
             % Close Serial
             fclose(self.ser);
             delete(self.ser);
             clear self.ser;
             
             % Close logFile
-            fclose(self.logFile);            
+            fclose(self.logFile);  
+            
+            % Re-enable Timoutwarning
+            warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
+            
         end
         
         %% Run Interface Main Loop
         function loop(self)
             % This is just a little prototype
             quit = false;
+            tic
             while not(quit)
                 % Check to see if there is any serial data available
-                tic
-                if (fgets(self.ser) ~= -1)
-                    dataIn = fgetl(self.ser);
+                dataIn = fgetl(self.ser);
+                if (dataIn)
                     disp(dataIn)
                     tic                     
                 else
-                    if (toc > 1.0)
+                    if (toc > 1.1) %If it has been longer than a heartbeat
+                        % Eventually this will just be some sort of 
+                        % data link update
+                        disp('No More Data to read')
                         quit = true;
                     end
                 end
             end
+            %self.close
         end
                     
     end

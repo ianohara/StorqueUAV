@@ -33,7 +33,11 @@ classdef storqueInterface < handle
             
             %Initialize Serial Connection
             instrreset % Reset all connected instruments
-            self.ser = serial(self.serialPort, 'BAUD', self.serialBaud);
+            self.ser = serial(self.serialPort);
+            self.ser.BaudRate = self.serialBaud;            
+            self.ser.Timeout = 0;
+            % Disable timout warning
+            warning('off', MATLAB:serial:fgets:unsuccesfulRead)
             fopen(self.ser);
         end
         
@@ -46,7 +50,10 @@ classdef storqueInterface < handle
             clear self.ser;
             
             % Close logFile
-            fclose(self.logFile);            
+            fclose(self.logFile);  
+            
+            % Reen
+            warning('off', MATLAB:serial:fgets:unsuccesfulRead)
         end
         
         %% Run Interface Main Loop
@@ -58,12 +65,8 @@ classdef storqueInterface < handle
                 tic
                 if (fgets(self.ser) ~= -1)
                     dataIn = fgetl(self.ser);
-                    tic 
-                                        %dataIn = fgetl(self.ser);
-                    %if (dataIn)
-                    %    disp(dataIn)
-                    %    tic
-                    %end
+                    disp(dataIn)
+                    tic                     
                 else
                     if (toc > 1.0)
                         quit = true;
