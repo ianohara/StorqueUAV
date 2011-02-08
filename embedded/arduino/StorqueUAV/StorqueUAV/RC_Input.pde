@@ -28,10 +28,14 @@
 
 /* ------------------------------------------------------------------------------------ */
 void RC_Input_Init(){
-    
+  
+  rc_input.motors_armed = 0;  
   rc_input.sample_time = 0;
   rc_input.sample_period = 33;
   rc_input.flag = 0;
+  
+  rc_input.motors_max = 2400;
+  rc_input.motors_min = 1000;
   
   return;
 }
@@ -50,6 +54,25 @@ void RC_Input_Read(){
     rc_input.channel_1 = APM_RC.InputCh(INPUT_1);    
     rc_input.channel_2 = APM_RC.InputCh(INPUT_2);
     rc_input.channel_3 = APM_RC.InputCh(INPUT_3);
+    rc_input.channel_4 = APM_RC.InputCh(INPUT_4);
+    rc_input.channel_5 = APM_RC.InputCh(INPUT_5);
+  
+  
+    /* Arm motors */
+    if (rc_input.channel_5 < 2000){              
+      rc_input.motors_armed = 0;
+    }else{
+      if (~rc_input.motors_armed){
+        /* If throttle high, don't arm */
+        if (rc_input.channel_3 < 1100){       
+           rc_input.motors_armed = 1;
+         }
+      }else{
+        rc_input.motors_armed = 1;
+      }
+    }    
+    
+    
     
     /* FOR DEBUGGING
     ftdiPrint("RC ");
@@ -77,7 +100,7 @@ void RC_Input_Print(uint8_t type){
          console.tx.transmit_type[1] = 'C';
          console.tx.transmit_type[2] = 'I';
          console.tx.cmd = DATA;
-         console.tx.len = 16;
+         console.tx.len = 27;
          
          
          console.tx.data_typecast[0] = CHAR;
@@ -96,6 +119,20 @@ void RC_Input_Print(uint8_t type){
          console.tx.data_typecast[13] = CHAR;
          console.tx.data_typecast[14] = CHAR;
          console.tx.data_typecast[15] = UINT;
+         console.tx.data_typecast[16] = CHAR;
+         console.tx.data_typecast[17] = CHAR;
+         console.tx.data_typecast[18] = CHAR;
+         console.tx.data_typecast[19] = UINT;
+         console.tx.data_typecast[20] = CHAR;
+         console.tx.data_typecast[21] = CHAR;
+         console.tx.data_typecast[22] = CHAR;
+         console.tx.data_typecast[23] = UINT;
+         console.tx.data_typecast[24] = CHAR;
+         console.tx.data_typecast[25] = CHAR;
+         console.tx.data_typecast[26] = CHAR;
+         console.tx.data_typecast[27] = UINT;
+         
+
          
                    
          console.tx.data_char[0] = 'C';
@@ -113,7 +150,20 @@ void RC_Input_Print(uint8_t type){
          console.tx.data_char[12] = 'C';
          console.tx.data_char[13] = '3';
          console.tx.data_char[14] = ':';
-         console.tx.data_uint[15] = rc_input.channel_3;
+         console.tx.data_uint[15] = rc_input.channel_3;         
+         console.tx.data_char[16] = 'C';
+         console.tx.data_char[17] = '4';
+         console.tx.data_char[18] = ':';
+         console.tx.data_uint[19] = rc_input.channel_4;
+         console.tx.data_char[20] = 'C';
+         console.tx.data_char[21] = '5';
+         console.tx.data_char[22] = ':';
+         console.tx.data_uint[23] = rc_input.channel_5;
+         console.tx.data_char[24] = 'M';
+         console.tx.data_char[25] = 'A';
+         console.tx.data_char[26] = ':';
+         console.tx.data_uint[27] = rc_input.motors_armed;
+
          
          
          console.tx.index = 0;
@@ -136,3 +186,29 @@ void RC_Input_Print(uint8_t type){
   }
  return; 
 }
+
+
+
+// Maximun slope filter for radio inputs... (limit max differences between readings)
+int channel_filter(int ch, int ch_old)
+{
+  int diff_ch_old;
+
+  if (ch_old==0)      // ch_old not initialized
+    return(ch);
+  diff_ch_old = ch - ch_old;      // Difference with old reading
+  if (diff_ch_old < 0)
+  {
+    if (diff_ch_old <- 60)
+      return(ch_old - 60);        // We limit the max difference between readings
+  }
+  else
+  {
+    if (diff_ch_old > 60)    
+      return(ch_old + 60);
+  }
+  return((ch + ch_old) >> 1);   // Small filtering
+  //return(ch);
+}
+
+

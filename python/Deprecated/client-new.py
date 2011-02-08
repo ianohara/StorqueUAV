@@ -61,6 +61,7 @@ class serialClient(object):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((host,self.port))
         self.pipe = self.client.makefile('wr', 0)
+        print "Client Initialized on port: %s" %(port)
     
     # ---------------------------------------------------------------------------
     # runClient: this is currently purposeless and needs to be modified so that 

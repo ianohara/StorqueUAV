@@ -94,4 +94,4 @@ class serialClient(object):
 # If 'run client-new.py' is called then instantiate and run serialClient
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    serialClient(4557, 'localhost').runClient()
+    serialClient(4549, 'localhost').runClient()
