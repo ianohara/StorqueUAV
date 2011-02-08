@@ -29,7 +29,8 @@
 
 
 /* ------------------------------------------------------------------------------------ */
-/* The Console allows for real time interactivity with the ArduPilot Mega.
+/* 
+   The Console allows for real time interactivity with the ArduPilot Mega.
    It has the following functions:
      - Setting up Storque mode...
         ex: direct control, autonomous, configuration ... and what not. 
@@ -56,7 +57,6 @@
 #define RANGEFINDER_DATA         0x53
 #define RANGEFINDER_PROPERTIES   0x54
 #define RC_INPUT_DATA            0x55
-
 
 /* ------------------------------------------------------------------------------------ */
 /* Init Console:

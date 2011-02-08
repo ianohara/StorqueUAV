@@ -19,6 +19,7 @@ classdef storqueInterface < handle
         serialPort
         serialBaud
         serialData
+        serialExists
         logFile
     end
     
@@ -31,32 +32,46 @@ classdef storqueInterface < handle
             self.serialData = '';
             self.logFile = makeLogFile();           
             
+            if (isempty(self.serialPort))
+                self.serialExists = false;
+            else
+                self.serialExists = true;
+            end
+            
             %Initialize Serial Connection
             instrreset % Reset all connected instruments
-            self.ser = serial(self.serialPort);
-            self.ser.BaudRate = self.serialBaud;            
-            % Timeout can probably equal zero once we add more code
-            self.ser.Timeout = 0.005;
-            % Disable timout warning
-            warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
-            fopen(self.ser);
+            if (self.serialExists)
+                self.ser = serial(self.serialPort);
+                self.ser.BaudRate = self.serialBaud;            
+                % Timeout can probably equal zero once we add more code
+                self.ser.Timeout = 0.005;
+                % Disable timout warning
+                warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
+                fopen(self.ser);
+                disp(strcat('Serial Port ', self.serialPort, 'Initialized'));
+            else                                
+                disp('No Serial Initialized');
+            end
             disp('Storque Interface Initialized')
-        end
+        end       
         
         %% Close Interface
         function close(self)
             disp('Storque Interface Shutting Down')
-            % Close Serial
-            fclose(self.ser);
-            delete(self.ser);
-            clear self.ser;
+            
+            % If serial Existed ... Close Serial
+            if (self.serialExists)                
+                fclose(self.ser);
+                delete(self.ser);
+                clear self.ser;
+            end
             
             % Close logFile
             fclose(self.logFile);  
             
             % Re-enable Timoutwarning
             warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
-            
+            disp('Successful Shutdown');
         end
         
         %% Run Interface Main Loop
@@ -65,18 +80,29 @@ classdef storqueInterface < handle
             quit = false;
             tic
             while not(quit)
+                % If serialExists :
                 % Check to see if there is any serial data available
-                dataIn = fgetl(self.ser);
-                if (dataIn)
-                    disp(dataIn)
-                    tic                     
-                else
-                    if (toc > 1.1) %If it has been longer than a heartbeat
-                        % Eventually this will just be some sort of 
-                        % data link update
-                        disp('No More Data to read')
-                        quit = true;
+                % Note: this assumes that there are no errors in data
+                %   transmission, which is probably a bad thing
+                if (self.serialExists)
+                    dataIn = fgetl(self.ser);
+                    disp(size(dataIn));
+                    if (dataIn)
+                        disp(dataIn)
+                        fprintf(self.logFile, dataIn);
+                        tic                     
+                    else
+                        if (toc > 1.1)
+                            % Eventually this will just be some sort of 
+                            % data link update
+                            disp('No More Data to read')
+                            quit = true;
+                        end
                     end
+                else
+                    % Just drop out of the loop
+                    disp('No Serial to read Data')
+                    quit = true;
                 end
             end
             %self.close
@@ -86,7 +112,7 @@ classdef storqueInterface < handle
     
 end
 
-%% Handle Log Directory and Making Log Files
+%% Handle Log Directory and Creation of Log Files
 function logFile = makeLogFile()
     
     if not (isdir('log'))

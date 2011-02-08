@@ -50,6 +50,8 @@
 
 typedef struct rc_input_ {
 
+  uint8_t motors_armed;
+  
   uint16_t channel_0;
   uint16_t channel_1;
   uint16_t channel_2;
@@ -67,6 +69,9 @@ typedef struct rc_input_ {
   uint16_t channel_5_trim;
   uint16_t channel_6_trim;
   uint16_t channel_7_trim;
+
+  uint16_t motors_min;
+  uint16_t motors_max;
   
   unsigned long sample_time;
   uint16_t sample_period;

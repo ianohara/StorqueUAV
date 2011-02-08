@@ -42,6 +42,7 @@
 #define consolePort "Console"
 
 #define MAX_BUFFER_LENGTH 8
+#define MAX_TX_LENGTH 30
 
 /* Console tx data type defines */
 #define UINT  0x22     // uint16_t
@@ -84,11 +85,11 @@ typedef struct console_tx_ {
   char cmd;
   uint8_t len;
   uint8_t byte_out;
-  uint16_t data_typecast[16];  // This array holds the typecast for each data index. FLOAT, CHAR, INT, UINT
-  char data_char[16];
-  float data_float[16];
-  uint16_t data_uint[16];
-  int16_t data_int[16];
+  uint16_t data_typecast[MAX_TX_LENGTH];  // This array holds the typecast for each data index. FLOAT, CHAR, INT, UINT
+  char data_char[MAX_TX_LENGTH];
+  float data_float[MAX_TX_LENGTH];
+  uint16_t data_uint[MAX_TX_LENGTH];
+  int16_t data_int[MAX_TX_LENGTH];
   uint8_t packet_transmitted_f;
   uint8_t packet_transmitting_f;
   uint16_t chk;

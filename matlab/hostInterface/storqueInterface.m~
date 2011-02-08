@@ -30,21 +30,35 @@ classdef storqueInterface < handle
             self.serialBaud = 57600; % We will fix this for now
             self.serialData = '';
             self.logFile = makeLogFile();           
-            
+            if not (self.serialPort == '')
+                self.serialOn = True;
+            else
+                self.
             %Initialize Serial Connection
             instrreset % Reset all connected instruments
-            self.ser = serial(self.serialPort);
-            self.ser.BaudRate = self.serialBaud;            
-            self.ser.Timeout = 0;
-            % Disable timout warning
-            warning('off', MATLAB:serial:fgets:unsuccesfulRead)
-            fopen(self.ser);
-        end
+            if not (self.serialPort == '')
+                self.ser = serial(self.serialPort);
+                self.ser.BaudRate = self.serialBaud;            
+                % Timeout can probably equal zero once we add more code
+                self.ser.Timeout = 0.005;
+                % Disable timout warning
+                warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
+                fopen(self.ser);
+                disp(strcat('Serial Port ', self.serialPort, 'Initialized'));
+            else
+                % This is kinda cheating. We read our own logfile.
+                self.ser = self.logFile;
+                fopen(self.ser);
+                disp('No Serial Initialized');
+            end
+            disp('Storque Interface Initialized')
+        end       
         
         %% Close Interface
         function close(self)
+            disp('Storque Interface Shutting Down')
+            % If true serial... Close Serial
             
-            % Close Serial
             fclose(self.ser);
             delete(self.ser);
             clear self.ser;
@@ -52,34 +66,42 @@ classdef storqueInterface < handle
             % Close logFile
             fclose(self.logFile);  
             
-            % Reen
-            warning('off', MATLAB:serial:fgets:unsuccesfulRead)
+            % Re-enable Timoutwarning
+            warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
+            
         end
         
         %% Run Interface Main Loop
         function loop(self)
             % This is just a little prototype
             quit = false;
+            tic
             while not(quit)
                 % Check to see if there is any serial data available
-                tic
-                if (fgets(self.ser) ~= -1)
-                    dataIn = fgetl(self.ser);
+                % Note: this assumes that there are no errors in data
+                %   transmission, which is probably a bad thing
+                dataIn = fgetl(self.ser);
+                if (dataIn)
                     disp(dataIn)
+                    fprintf(self.logFile, dataIn);
                     tic                     
                 else
-                    if (toc > 1.0)
+                    if (toc > 1.1)
+                        % Eventually this will just be some sort of 
+                        % data link update
+                        disp('No More Data to read')
                         quit = true;
                     end
                 end
             end
+            %self.close
         end
                     
     end
     
 end
 
-%% Handle Log Directory and Making Log Files
+%% Handle Log Directory and Creation of Log Files
 function logFile = makeLogFile()
     
     if not (isdir('log'))

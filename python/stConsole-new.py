@@ -157,7 +157,7 @@ class stoConsole(object):
             time.sleep(delay)
             self.seri.write('t')
             time.sleep(delay)
-            self.seri.write('0')
+            self.seri.write('-1')
 
         
         else:
