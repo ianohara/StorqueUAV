@@ -1,0 +1,253 @@
+IN: <3: Time:132756 dt:6092
+IN: <3: Time:133757 dt:6120
+IN: <3: Time:134759 dt:6272
+IN: <3: Time:135760 dt:6420
+OUT: Print console
+IN: <3: Time:136762 dt:6416
+OUT: test
+IN: <3: Time:137763 dt:6416
+OUT: test
+OUT: test
+IN: <3: Time:139767 dt:6740
+IN: <3: Time:140769 dt:6720
+IN: StorqueUAV v0.20
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+IN: <3: Time:1553 dt:0
+IN: <3: Time:2555 dt:6288
+IN: <3: Time:3557 dt:6412
+IN: <3: Time:4558 dt:6436
+OUT: test
+IN: <3: Time:5560 dt:6420
+OUT: test
+IN: cslt
+IN: <3: Time:6562 dt:6772
+OUT: test
+IN: <3: Time:7564 dt:6736
+OUT: tes
+IN: <3: Time:8565 dt:6752
+IN: <3: Time:9567 dt:6768
+IN: <3: Time:10568 dt:6740
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:11570 dt:6420
+IN: <3: Time:12570 dt:6420
+OUT: test
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:13573 dt:6416
+IN: <3: Time:14573 dt:6100
+OUT: test
+IN: <3: Time:15576 dt:6124
+OUT: test
+IN: cslt
+IN: <3: Time:16577 dt:6096
+OUT: test
+IN: cslW
+IN: <3: Time:17579 dt:6140
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:18580 dt:6420
+OUT: test
+IN: <3: Time:19581 dt:6420
+IN: <3: Time:20583 dt:6420
+OUT: test
+IN: cslW
+IN: <3: Time:21584 dt:6728
+OUT: test
+IN: cslW
+IN: <3: Time:22586 dt:6708
+OUT: test
+IN: <3: Time:23587 dt:6692
+OUT: test
+IN: cslt
+IN: <3: Time:24589 dt:6712
+OUT: test
+IN: cslt
+IN: <3: Time:25590 dt:6424
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:26592 dt:6424
+OUT: test
+IN: <3: Time:27593 dt:6100
+OUT: test
+IN: <3: Time:28595 dt:6152
+OUT: test
+IN: <3: Time:29596 dt:6068
+IN: <3: Time:30598 dt:6128
+IN: <3: Time:31599 dt:6416
+OUT: test
+IN: cslW
+IN: <3: Time:32601 dt:6424
+OUT: test
+IN: cslt
+IN: <3: Time:33602 dt:6428
+IN: <3: Time:34604 dt:6696
+OUT: test
+IN: cslt
+IN: <3: Time:35606 dt:6752
+IN: <3: Time:36606 dt:6792
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:37609 dt:6756
+IN: <3: Time:38609 dt:6424
+IN: <3: Time:39611 dt:6404
+IN: <3: Time:40612 dt:6100
+IN: <3: Time:41614 dt:6100
+IN: <3: Time:42615 dt:6104
+IN: <3: Time:43617 dt:6136
+IN: <3: Time:44618 dt:6408
+IN: <3: Time:45621 dt:6420
+IN: <3: Time:46621 dt:6416
+IN: <3: Time:47624 dt:6700
+IN: <3: Time:48625 dt:6736
+IN: <3: Time:49627 dt:6764
+IN: <3: Time:50627 dt:6416
+IN: <3: Time:51630 dt:6420
+IN: <3: Time:52631 dt:6416
+IN: <3: Time:53633 dt:6104
+IN: <3: Time:54634 dt:6136
+IN: <3: Time:55635 dt:6072
+IN: <3: Time:56637 dt:6416
+IN: <3: Time:57638 dt:6420
+IN: <3: Time:58640 dt:6416
+IN: <3: Time:59641 dt:6760
+OUT: test
+IN: cslt
+IN: <3: Time:60643 dt:6792
+OUT: test
+IN: cslW
+IN: <3: Time:61644 dt:6752
+OUT: test
+IN: cslW
+IN: <3: Time:62646 dt:6440
+OUT: test
+IN: cslW
+IN: <3: Time:63647 dt:6404
+OUT: test
+IN: <3: Time:64649 dt:6080
+OUT: test
+IN: <3: Time:65650 dt:6092
+OUT: test
+IN: cslW
+IN: <3: Time:66652 dt:6056
+OUT: test
+IN: cslt
+IN: <3: Time:67653 dt:6092
+OUT: test
+IN: <3: Time:68655 dt:6440
+OUT: test
+IN: <3: Time:69656 dt:6424
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:70658 dt:6424
+OUT: test
+IN: <3: Time:71659 dt:6768
+OUT: test
+OUT: test
+IN: cslW
+IN: <3: Time:72660 dt:6696
+OUT: test
+IN: <3: Time:73663 dt:6748
+OUT: test
+IN: <3: Time:74663 dt:6420
+OUT: test
+IN: <3: Time:75665 dt:6428
+OUT: test
+IN: cslW
+IN: <3: Time:76666 dt:6120
+IN: <3: Time:77668 dt:6100
+IN: <3: Time:78669 dt:6120
+IN: <3: Time:79671 dt:6156
+IN: <3: Time:80672 dt:6412
+IN: <3: Time:81674 dt:6416
+IN: <3: Time:82676 dt:6792
+IN: <3: Time:83678 dt:6704
+IN: <3: Time:84679 dt:6696
+IN: <3: Time:85681 dt:6704
+IN: <3: Time:86681 dt:6400
+IN: <3: Time:87684 dt:6412
+IN: <3: Time:88684 dt:6104
+IN: <3: Time:89687 dt:6120
+IN: <3: Time:90687 dt:6156
+IN: <3: Time:91689 dt:6436
+IN: <3: Time:92690 dt:6416
+IN: <3: Time:93692 dt:6420
+IN: <3: Time:94694 dt:6772
+IN: <3: Time:95695 dt:6740
+IN: <3: Time:96697 dt:6724
+IN: <3: Time:97698 dt:6416
+IN: <3: Time:98700 dt:6420
+IN: <3: Time:99701 dt:6156
+IN: <3: Time:100703 dt:6048
+IN: <3: Time:101704 dt:6064
+IN: <3: Time:102706 dt:6320
+IN: <3: Time:103707 dt:6436
+IN: <3: Time:104709 dt:6420
+IN: <3: Time:105710 dt:6780
+IN: <3: Time:106712 dt:6788
+IN: <3: Time:107713 dt:6744
+IN: <3: Time:108715 dt:6416
+IN: <3: Time:109716 dt:6428
+IN: <3: Time:110717 dt:6136
+IN: <3: Time:111719 dt:6132
+IN: <3: Time:112720 dt:6104
+IN: <3: Time:113722 dt:6420
+IN: <3: Time:114723 dt:6428
+IN: <3: Time:115725 dt:6784
+IN: <3: Time:116726 dt:6776
+IN: <3: Time:117728 dt:6708
+IN: <3: Time:118729 dt:6692
+IN: <3: Time:119731 dt:6424
+IN: <3: Time:120732 dt:6436
+IN: <3: Time:121734 dt:6056
+IN: <3: Time:122735 dt:6084
+IN: <3: Time:123737 dt:6124
+IN: <3: Time:124738 dt:6420
+IN: <3: Time:125740 dt:6416
+IN: <3: Time:126741 dt:6752
+IN: <3: Time:127744 dt:6708
+IN: <3: Time:128745 dt:6780
+IN: <3: Time:129745 dt:6420
+IN: <3: Time:130747 dt:6420
+IN: <3: Time:131748 dt:6100
+IN: <3: Time:132750 dt:6096
+IN: <3: Time:133751 dt:6080
+IN: <3: Time:134753 dt:6412
+IN: <3: Time:135754 dt:6408
+IN: <3: Time:136757 dt:6780
+IN: <3: Time:137758 dt:6740
+IN: <3: Time:138760 dt:6700
+IN: <3: Time:139761 dt:6420
+IN: <3: Time:140762 dt:6424
+IN: <3: Time:141764 dt:6140
+IN: <3: Time:142765 dt:6096
+IN: <3: Time:143767 dt:6084
+IN: <3: Time:144768 dt:6416
+IN: <3: Time:145770 dt:6420
+IN: <3: Time:146771 dt:6740
+IN: <3: Time:147773 dt:6732
+IN: <3: Time:148774 dt:6748
+IN: <3: Time:149776 dt:6424
+IN: <3: Time:150777 dt:6416
+IN: <3: Time:151779 dt:6060
+IN: <3: Time:152780 dt:6136
+IN: <3: Time:153782 dt:6120
+IN: <3: Time:154783 dt:6428
+IN: <3: Time:155785 dt:6420
+IN: <3: Time:156786 dt:6752
+IN: <3: Time:157788 dt:6756
+IN: <3: Time:158789 dt:6756
+OUT: 

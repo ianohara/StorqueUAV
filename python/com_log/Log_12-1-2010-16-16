@@ -1,0 +1,225 @@
+IN: <3: Time:133749 dt:6424
+IN: <3: Time:134752 dt:6752
+IN: <3: Time:135753 dt:6720
+OUT: print console
+IN: <3: Time:136754 dt:6480
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:137755 dt:5240
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:138757 dt:6084
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:139758 dt:6152
+IN: <3: Time:140760 dt:6060
+IN: <3: Time:141761 dt:6424
+IN: <3: Time:142763 dt:6416
+IN: <3: Time:143765 dt:6748
+IN: <3: Time:144766 dt:6768
+IN: <3: Time:145767 dt:6416
+IN: <3: Time:146768 dt:6432
+IN: <3: Time:147770 dt:6096
+IN: <3: Time:148771 dt:6100
+IN: <3: Time:149773 dt:6344
+IN: <3: Time:150774 dt:6416
+IN: <3: Time:151777 dt:6768
+IN: <3: Time:152778 dt:6756
+IN: <3: Time:153780 dt:6680
+IN: <3: Time:154780 dt:6408
+IN: <3: Time:155782 dt:6088
+IN: <3: Time:156783 dt:6104
+IN: <3: Time:157785 dt:6136
+IN: <3: Time:158786 dt:6432
+IN: <3: Time:159788 dt:6416
+IN: <3: Time:160790 dt:6720
+IN: <3: Time:161792 dt:6732
+IN: <3: Time:162792 dt:6460
+IN: <3: Time:163793 dt:6432
+IN: <3: Time:164795 dt:6124
+IN: <3: Time:165796 dt:6156
+IN: <3: Time:166798 dt:6152
+IN: <3: Time:167799 dt:6420
+IN: <3: Time:168802 dt:6720
+IN: <3: Time:169803 dt:6740
+IN: <3: Time:170805 dt:6724
+IN: <3: Time:171805 dt:6420
+IN: <3: Time:172807 dt:6092
+IN: <3: Time:173808 dt:6132
+IN: <3: Time:174810 dt:6080
+IN: <3: Time:175811 dt:6420
+IN: <3: Time:176813 dt:6416
+IN: <3: Time:177815 dt:6704
+IN: <3: Time:178817 dt:6704
+IN: <3: Time:179817 dt:6412
+IN: <3: Time:180818 dt:6416
+IN: <3: Time:181820 dt:6120
+IN: <3: Time:182821 dt:6084
+IN: <3: Time:183823 dt:6424
+IN: <3: Time:184824 dt:6424
+IN: <3: Time:185827 dt:6724
+IN: <3: Time:186828 dt:6772
+IN: <3: Time:187829 dt:6420
+IN: <3: Time:188830 dt:6424
+IN: <3: Time:189832 dt:6136
+IN: <3: Time:190833 dt:6100
+IN: <3: Time:191835 dt:6400
+IN: <3: Time:192836 dt:6416
+IN: <3: Time:193839 dt:6752
+IN: <3: Time:194840 dt:6756
+IN: <3: Time:195842 dt:6708
+IN: <3: Time:196842 dt:6416
+IN: <3: Time:197843 dt:6136
+IN: <3: Time:198845 dt:6100
+IN: <3: Time:199846 dt:6152
+IN: <3: Time:200848 dt:6420
+IN: <3: Time:201849 dt:6420
+IN: <3: Time:202852 dt:6772
+IN: <3: Time:203853 dt:6740
+IN: <3: Time:204854 dt:6408
+IN: <3: Time:205855 dt:6436
+IN: <3: Time:206857 dt:6080
+IN: <3: Time:207858 dt:6080
+IN: <3: Time:208860 dt:6420
+IN: <3: Time:209861 dt:6424
+IN: <3: Time:210864 dt:6712
+IN: <3: Time:211865 dt:6716
+IN: <3: Time:212866 dt:6416
+IN: <3: Time:213867 dt:6432
+IN: <3: Time:214868 dt:6152
+IN: <3: Time:215870 dt:6128
+IN: <3: Time:216871 dt:6408
+IN: <3: Time:217873 dt:6432
+IN: <3: Time:218875 dt:6752
+IN: <3: Time:219877 dt:6752
+IN: <3: Time:220878 dt:6552
+IN: <3: Time:221879 dt:6416
+IN: <3: Time:222880 dt:6056
+IN: <3: Time:223882 dt:6120
+IN: <3: Time:224883 dt:6416
+IN: <3: Time:225885 dt:6416
+IN: <3: Time:226887 dt:6740
+IN: <3: Time:227889 dt:6784
+IN: <3: Time:228889 dt:6416
+IN: <3: Time:229891 dt:6420
+IN: <3: Time:230892 dt:6120
+IN: <3: Time:231894 dt:6092
+IN: <3: Time:232895 dt:6412
+IN: <3: Time:233896 dt:6416
+IN: <3: Time:234899 dt:6716
+IN: <3: Time:235900 dt:6752
+IN: <3: Time:236901 dt:6420
+IN: <3: Time:237902 dt:6412
+IN: <3: Time:238904 dt:6100
+IN: <3: Time:239905 dt:6132
+IN: <3: Time:240907 dt:6420
+IN: StorqueUAV v0.20
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+IN: <3: Time:1553 dt:0
+IN: <3: Time:2556 dt:6420
+IN: <3: Time:3558 dt:6776
+IN: <3: Time:4559 dt:6740
+IN: <3: Time:5561 dt:6420
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:6562 dt:6416
+OUT: test
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:8565 dt:6120
+IN: <3: Time:9567 dt:6420
+OUT: tst
+OUT: test
+IN: <3: Time:10568 dt:6416
+IN: <3: Time:11570 dt:6760
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:12571 dt:6716
+OUT: test
+IN: csl÷
+IN: Command: ÷ received. 
+IN:  <3: Time:13573 dt:6696
+IN: <3: Time:14574 dt:6416
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:15576 dt:6108
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:16577 dt:6108
+OUT: test
+IN: csl÷
+IN: Command: ÷ received. 
+IN:  <3: Time:17579 dt:6064
+IN: <3: Time:18580 dt:6420
+IN: <3: Time:19581 dt:6420
+IN: <3: Time:20583 dt:6768
+IN: <3: Time:21584 dt:6740
+IN: <3: Time:22586 dt:6416
+IN: <3: Time:23587 dt:6420
+IN: <3: Time:24589 dt:6048
+IN: <3: Time:25590 dt:6064
+IN: <3: Time:26592 dt:6432
+IN: <3: Time:27593 dt:6420
+IN: <3: Time:28595 dt:6716
+IN: <3: Time:29596 dt:6696
+IN: <3: Time:30598 dt:6736
+IN: <3: Time:31599 dt:6416
+IN: <3: Time:32601 dt:6140
+IN: <3: Time:33602 dt:6060
+IN: <3: Time:34604 dt:6096
+IN: <3: Time:35605 dt:6416
+IN: <3: Time:36606 dt:6408
+IN: <3: Time:37608 dt:6752
+IN: <3: Time:38609 dt:6708
+IN: <3: Time:39611 dt:6432
+IN: <3: Time:40612 dt:6416
+IN: <3: Time:41614 dt:6120
+IN: <3: Time:42615 dt:6064
+IN: <3: Time:43617 dt:6416
+IN: <3: Time:44618 dt:6428
+IN: <3: Time:45620 dt:6704
+IN: <3: Time:46621 dt:6724
+IN: StorqueUAV v0.20
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+IN: <3: Time:1563 dt:6148
+IN: <3: Time:2555 dt:6436
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:3557 dt:6136
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:4558 dt:6120
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:5560 dt:6104
+OUT: test
+IN: <3: Time:6561 dt:6412
+OUT: test
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:7563 dt:6420
+IN: <3: Time:8565 dt:6772
+IN: <3: Time:9567 dt:6776
+IN: <3: Time:10567 dt:6416
+IN: <3: Time:11569 dt:6436
+IN: <3: Time:12570 dt:6076
+IN: <3: Time:13572 dt:6080
+OUT: 

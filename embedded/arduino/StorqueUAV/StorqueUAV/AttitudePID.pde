@@ -50,6 +50,11 @@ void AttitudePID(){
   attitude_pid.current_time = micros();
   attitude_pid.dt = attitude_pid.current_time - attitude_pid.previous_time;
   
+    APM_RC.OutputCh(0, rc_input.channel_1);  // Motors stopped
+    APM_RC.OutputCh(1, rc_input.channel_1);
+    APM_RC.OutputCh(2, rc_input.channel_1);
+    APM_RC.OutputCh(3, rc_input.channel_1);
+  
   /* Do some cool maths */  
   
   attitude_pid.previous_time = attitude_pid.current_time;  

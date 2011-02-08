@@ -1,0 +1,98 @@
+IN: <3: Time:98697 dt:6704
+IN: <3: Time:99698 dt:6704
+IN: <3: Time:100700 dt:6420
+IN: <3: Time:101701 dt:6420
+OUT: print console
+IN: <3: Time:102703 dt:6140
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:103706 dt:2412
+IN: <3: Time:104706 dt:6424
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:105707 dt:6436
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:106708 dt:6732
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:107710 dt:6776
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:108711 dt:6760
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:109713 dt:6416
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:110714 dt:6408
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:111716 dt:6080
+IN: <3: Time:112717 dt:6064
+IN: <3: Time:113719 dt:6424
+IN: <3: Time:114720 dt:6428
+IN: <3: Time:115722 dt:6764
+IN: <3: Time:116723 dt:6704
+IN: <3: Time:117725 dt:6688
+IN: <3: Time:118726 dt:6420
+IN: <3: Time:119728 dt:6120
+IN: <3: Time:120729 dt:6108
+IN: <3: Time:121731 dt:6156
+IN: <3: Time:122732 dt:6416
+IN: <3: Time:123734 dt:6420
+IN: <3: Time:124735 dt:6728
+IN: <3: Time:125736 dt:6712
+IN: <3: Time:126738 dt:6480
+IN: StorqueUAV v0.20
+IN: Serial ready on port: Xbee
+IN: Serial baud rate: 57600
+IN: <3: Time:1555 dt:0
+IN: <3: Time:2555 dt:6692
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:3556 dt:6432
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:4557 dt:6412
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:5559 dt:6140
+IN: <3: Time:6560 dt:6080
+IN: <3: Time:7562 dt:6156
+IN: <3: Time:8563 dt:6416
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:9565 dt:6412
+IN: <3: Time:10567 dt:6688
+IN: <3: Time:11569 dt:6760
+IN: <3: Time:12570 dt:6748
+IN: <3: Time:13571 dt:6420
+IN: <3: Time:14572 dt:6420
+IN: <3: Time:15574 dt:6124
+IN: <3: Time:16575 dt:6120
+OUT: 

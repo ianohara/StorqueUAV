@@ -10,6 +10,8 @@ function [xnew] = quadstep3d(x,t,deltaT)
 % 
 %   OUTPUTS      
 %   xnew        n x 1 vector of state variables at time t + deltaT 
+%  Originally written by: Daniel Mellinger
+%  Modified with permission by: Ian O'Hara and Uriah Baalke
 
 f1 = statedwm(x,t); deltax1 = deltaT*f1;
 f2 = statedwm(x + deltax1,t + deltaT);
@@ -22,7 +24,9 @@ global cnt controls
 cnt=cnt+1;
 
 m = 0.500; %mass
-I = [2.32e-3,0,0;0,2.32e-3,0;0,0,4e-3]; %moment of inertia matrix
+I = [2.32e-3, 0, 0; ...
+     0, 2.32e-3, 0; ...
+     0, 0, 4e-3]; %moment of inertia matrix
 g = 9.81; %gravity
 
 sdot = zeros(12,1);
@@ -53,25 +57,25 @@ az_des = 0;
 
 %%% another simple way
  F = m*g + m*az_des;
- phi_des = -ay_des/g;
- theta_des = ax_des/g;
+ phi_des = -ay_des/g;            % Phi Control
+ theta_des = ax_des/g;           % Theta control
 
-%this simulates the onboard attitude controller
-psi_des = 0;
+% This simulates the onboard attitude controller
+psi_des = 0;                    % Psi control
 Ixx = I(1,1);
 Izz = I(3,3);
 
-t_attitude = 0.2; %rise time of the attitude controller
-xi_attitude = 1.0; %damping ratio for attitude controller
-kp_roll = 3.24*Ixx/t_attitude^2;
-kd_roll = 3.6*xi_attitude*Ixx/t_attitude; 
+t_attitude = 0.2;  % Rise time of the attitude controller [s]
+xi_attitude = 1.0; % Damping ratio for attitude controller
+kp_roll = 3.24*Ixx/t_attitude^2;           % Transfer function for proportional roll 
+kd_roll = 3.6*xi_attitude*Ixx/t_attitude;  % Transfer function for derivative roll
 
-t_yaw =0.2; %rime time of yaw controller
-xi_yaw = 1.0; %damping ratio for yaw controller
-kp_yaw = 3.24*Izz/t_yaw^2;
-kd_yaw = 3.6*xi_yaw*Izz/t_yaw;
+t_yaw =0.2;   % Rise time of yaw controller [s]
+xi_yaw = 1.0; % Damping ratio for yaw controller
+kp_yaw = 3.24*Izz/t_yaw^2;     % 
+kd_yaw = 3.6*xi_yaw*Izz/t_yaw; % 
 
-%moment
+% Moment
 M = zeros(3,1);
 M(1) = kp_roll*(phi_des - phi) - kd_roll*p;
 M(2) = kp_roll*(theta_des - theta) - kd_roll*q;

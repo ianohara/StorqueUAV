@@ -157,10 +157,7 @@ void IMU_Init(){
 void IMU_Print(char which){
   
   switch(which){
-    
-    
-    /* NOTE: printing DATA takes a long time, perhaps something should be
-             changed about the way that the console posts data to the host */
+   
     case(DATA):
        console.tx.transmit_type[0] = 'I';
        console.tx.transmit_type[1] = 'M';
@@ -218,21 +215,273 @@ void IMU_Print(char which){
     - contains switch with all possible packet receives.
 */
 /* ------------------------------------------------------------------------ */
+/* NEW RECEIVE IMU PACKET function  NOTE: THIS STILL DOESN'T WORK ... MEH =/
+uint8_t receive_imu_packet(){
+  
+  // Check for 'snp' packet indicator
+  if (imu.rx.index == 0){
+    if (imuRead() == 's'){
+      imu.rx.index++;
+    }else{
+      imu.rx.index = 0;
+      return 0;
+    }
+  }
+
+  if (imu.rx.index == 1){
+   if (imuRead() == 'n'){
+      imu.rx.index++;
+    }else{
+      imu.rx.index = 0;
+      return 0;
+    }
+  }  
+
+  if (imu.rx.index == 2){
+   if (imuRead() == 'p'){
+      imu.rx.index++;
+    }else{
+      imu.rx.index = 0;
+      return 0;
+    }
+  }  
+  
+  // Get packet type
+  if (imu.rx.index == 3){
+    imu.rx.PT = imuRead();
+    imu.rx.index++;
+    return 0;
+  }
+  
+  switch(imu.rx.PT){    
+    
+            case SENSOR_DATA:
+            // We just received a SENSOR_DATA message so lets parse it!!!
+            if (imu.rx.index == 4){
+              imu.rx.N = imuRead();
+              imu.rx.index++;
+              return 0;
+            }
+            if (imu.rx.index == 5){
+              imu.rx.D1 = imuRead();
+              imu.rx.index++;
+              return 0;
+            }
+            if (imu.rx.index == 6){
+              imu.rx.D2 = imuRead();
+              imu.rx.active_channels = (uint16_t)((imu.rx.D1)<<8) | (imu.rx.D2);
+              imu.rx.active_channel_index = 0;
+              imu.rx.CHK += imu.rx.N + imu.rx.D1 + imu.rx.D2;         
+              imu.rx.index++;
+              return 0;
+            }
+            if ((imu.rx.index > 6) && ((imu.rx.index - 7) < (imu.rx.N + 1))){
+              // Increase active channel index until next active channel
+              if (imu.rx.active_channel_index < 15){
+                while((imu.rx.active_channels>>(15-imu.rx.active_channel_index) & 1) != 1){
+                    imu.rx.active_channel_index++;
+                    
+                  consolePrint((uint16_t)imu.rx.active_channel_index);
+                
+                } 
+              }
+              
+              imu.rx.msb = imuRead();
+              imu.rx.index++;
+              while(!imuAvailable());
+              imu.rx.lsb = imuRead();
+              if (imu.rx.active_channel_index<3){
+                imu.rx.data_temp[imu.rx.active_channel_index] = (((int)(imu.rx.msb)<<8) | (imu.rx.lsb))*SCALE_ANGLES;
+              }else if (imu.rx.active_channel_index>2 && imu.rx.active_channel_index<6){
+                imu.rx.data_temp[imu.rx.active_channel_index] = (((int)(imu.rx.msb)<<8) | (imu.rx.lsb))*SCALE_ANGLE_RATES;
+              }else if (imu.rx.active_channel_index>5 && imu.rx.active_channel_index<9){
+                imu.rx.data_temp[imu.rx.active_channel_index] = (((int)(imu.rx.msb)<<8) | (imu.rx.lsb))*SCALE_MAG;
+              }else if (imu.rx.active_channel_index>8 && imu.rx.active_channel_index<12){
+                imu.rx.data_temp[imu.rx.active_channel_index] = (((int)(imu.rx.msb)<<8) | (imu.rx.lsb))*SCALE_GYRO;
+              }else if (imu.rx.active_channel_index>11 && imu.rx.active_channel_index<15){
+                imu.rx.data_temp[imu.rx.active_channel_index] = (((int)(imu.rx.msb)<<8) | (imu.rx.lsb))*SCALE_ACCEL;
+              }
+              
+              //consolePrint(imu.rx.data_temp[imu.rx.active_channel_index]);
+              //consolePrint(", ");
+              //consolePrintln();
+              
+              imu.rx.CHK += imu.rx.msb + imu.rx.lsb;
+              imu.rx.active_channel_index++;
+              imu.rx.index++;
+              return 0;
+            }
+            break;
+          
+          case COMMAND_COMPLETE:
+            SerPri("command complete \n \r");
+            while(!imuAvailable());
+            imu.rx.CHK += imuRead();
+            while(!imuAvailable());
+            imu.rx.CHK += imuRead();
+            break;
+          
+          case COMMAND_FAILED:
+            SerPri("command failed \n \r");
+            while(!imuAvailable());
+            imu.rx.CHK += imuRead();
+            while(!imuAvailable());
+            imu.rx.CHK += imuRead();
+            break;
+          
+          case BAD_CHECKSUM:
+            SerPri("bad checksum \n \r");
+            break;
+          
+          case BAD_DATA_LENGTH:
+            SerPri("bad data length \n \r");
+            while(!imuAvailable());
+            imu.rx.CHK += imuRead();
+            while(!imuAvailable());
+            imu.rx.CHK += imuRead();
+            break;
+          
+          case UNRECOGNIZED_PACKET:
+            SerPri("unrecognized packet \n \r");
+            while(!imuAvailable());
+            imu.rx.CHK += imuRead();
+            break;
+          
+          case BUFFER_OVERFLOW:
+            // UNIMPLEMENTED
+            break;
+            
+          case STATUS_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case GYRO_BIAS_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case GYRO_SCALE_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case START_CAL_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case ACCEL_BIAS_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case ACCEL_REF_VECTOR_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case MAG_COVARIANCE_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case PROCESS_COVARIANCE_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case STATE_COVARIANCE_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case EKF_CONFIG_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case GYRO_ALIGNMENT_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case ACCEL_ALIGNMENT_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case MAG_REF_VECTOR_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case MAG_CAL_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case MAG_BIAS_REPORT:
+            // UNIMPLEMENTED
+            break;
+         
+          case BROADCAST_MODE_REPORT:
+            // UNIMPLEMENTED
+            break;
+                
+        }
+        
+  if ((imu.rx.index - 6) > imu.rx.N){
+    
+    consolePrint("meh2");
+    consolePrintln();
+    
+    imu.rx.chk = (((uint16_t)imuRead())<<8);
+    imu.rx.index++;
+    return 0;
+  }
+  
+  if ((imu.rx.index - 5) > imu.rx.N){
+    
+    consolePrint("meh2");
+    consolePrintln();
+    consolePrint("index: ");
+    consolePrint((uint16_t)imu.rx.index);
+    consolePrintln();
+    
+    imu.rx.chk |= imuRead();
+    imu.rx.index++;
+  }
+  if ((imu.rx.index - 5) > imu.rx.N){
+    
+    consolePrint("CHK: ");
+    consolePrint(imu.rx.CHK);
+    consolePrint(" chk: ");
+    consolePrint(imu.rx.chk);
+    consolePrintln();
+    
+    if (imu.rx.chk == imu.rx.CHK){      
+      // In the special case of acquiring SENSOR_DATA remember to copy 
+      //   the temp data to the used data. This prevents using corrupt 
+      //   data.
+      if (imu.rx.PT == SENSOR_DATA){
+        for(uint8_t i = 0; i<15; i++){
+          imu.rx.data[i] = imu.rx.data_temp[i];
+        }
+        imu.rx.index = 0;
+        return imu.rx.PT;
+      }else{
+        imu.rx.index = 0;
+        return 0;
+      }
+    }
+  }
+}
+*/    
+
+/* OLD RECEIVE IMU PACKET */
 uint8_t receive_imu_packet(){
   uint16_t CHK = 0;
-  /* Check for full packet */
+  
+  // Check for full packet 
   if (imuRead() == 's'){
     while(!imuAvailable());
     if (imuRead() == 'n'){
       while(!imuAvailable());
       if (imuRead() == 'p'){
         while(!imuAvailable());
-        /* Receive cases */
-        /* Read packet type */
+        // Receive cases 
+        // Read packet type 
         uint8_t PT = imuRead();
         uint8_t msb = 0;
         uint8_t lsb = 0;
-        /* Update checksum */
+        // Update checksum 
         CHK += 's' + 'n' + 'p' + PT;
         switch(PT){
           
@@ -273,7 +522,7 @@ uint8_t receive_imu_packet(){
             break;
           
           case COMMAND_COMPLETE:
-            SerPri("command complete \n \r");
+            SerPri("csl command complete \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             while(!imuAvailable());
@@ -281,7 +530,7 @@ uint8_t receive_imu_packet(){
             break;
           
           case COMMAND_FAILED:
-            SerPri("command failed \n \r");
+            SerPri("csl command failed \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             while(!imuAvailable());
@@ -289,11 +538,11 @@ uint8_t receive_imu_packet(){
             break;
           
           case BAD_CHECKSUM:
-            SerPri("bad checksum \n \r");
+            SerPri("csl bad checksum \n \r");
             break;
           
           case BAD_DATA_LENGTH:
-            SerPri("bad data length \n \r");
+            SerPri("csl bad data length \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             while(!imuAvailable());
@@ -301,77 +550,77 @@ uint8_t receive_imu_packet(){
             break;
           
           case UNRECOGNIZED_PACKET:
-            SerPri("unrecognized packet \n \r");
+            SerPri("csl unrecognized packet \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             break;
           
           case BUFFER_OVERFLOW:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
             
           case STATUS_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case GYRO_BIAS_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case GYRO_SCALE_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case START_CAL_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case ACCEL_BIAS_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case ACCEL_REF_VECTOR_REPORT:
-                      /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case MAG_COVARIANCE_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case PROCESS_COVARIANCE_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case STATE_COVARIANCE_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case EKF_CONFIG_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case GYRO_ALIGNMENT_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case ACCEL_ALIGNMENT_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case MAG_REF_VECTOR_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case MAG_CAL_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case MAG_BIAS_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
          
           case BROADCAST_MODE_REPORT:
-            /* UNIMPLEMENTED */
+            // UNIMPLEMENTED
             break;
                 
         }
@@ -383,9 +632,9 @@ uint8_t receive_imu_packet(){
         imu.rx.CHK |= imuRead();
         
         if (imu.rx.CHK == CHK){
-          /* In the special case of acquiring SENSOR_DATA remember to copy 
-             the temp data to the used data. This prevents using corrupt 
-             data. */         
+          // In the special case of acquiring SENSOR_DATA remember to copy 
+          //   the temp data to the used data. This prevents using corrupt 
+          //   data.
           if (PT == SENSOR_DATA){
             for(uint8_t i = 0; i<15; i++){
               imu.rx.data[i] = imu.rx.data_temp[i];
@@ -400,7 +649,6 @@ uint8_t receive_imu_packet(){
   }
   return 0;
 }
-   
    
    
    

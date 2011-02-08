@@ -32,6 +32,10 @@
 /* Defines */
 /* ------------------------------------------------------------------------------------ */
 
+/* RC Input  */
+#define DATA 'd'
+#define PROPERTIES 'p'
+
 /* Channel Defines */
 #define INPUT_0 0
 #define INPUT_1 1
@@ -54,6 +58,15 @@ typedef struct rc_input_ {
   uint16_t channel_5;
   uint16_t channel_6;
   uint16_t channel_7;
+  
+  uint16_t channel_0_trim;
+  uint16_t channel_1_trim;
+  uint16_t channel_2_trim;
+  uint16_t channel_3_trim;
+  uint16_t channel_4_trim;
+  uint16_t channel_5_trim;
+  uint16_t channel_6_trim;
+  uint16_t channel_7_trim;
   
   unsigned long sample_time;
   uint16_t sample_period;

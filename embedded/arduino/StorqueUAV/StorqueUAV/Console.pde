@@ -55,6 +55,7 @@
 #define IMU_PROPERTIES           0x52
 #define RANGEFINDER_DATA         0x53
 #define RANGEFINDER_PROPERTIES   0x54
+#define RC_INPUT_DATA            0x55
 
 
 /* ------------------------------------------------------------------------------------ */
@@ -68,9 +69,11 @@ void Console_Init(){
     console.heartbeat_flag = false;
     console.imu_print_data_flag = false;
     console.rangefinder_print_data_flag = false;
+    console.rc_input_print_data_flag = false;
 
     console.heartbeat_period = 1000;
-    console.imu_print_data_period = 1; // real update rate is 125 Hz, this is 5 Hz
+    console.rc_input_print_data_period = 200;
+    console.imu_print_data_period = 100; // real update rate is 125 Hz, this is 5 Hz
     console.rangefinder_print_data_period = 500; //500; // half of current update rate
     
     return;
@@ -142,7 +145,7 @@ void receive_console_packet(){
     consolePrintln((uint16_t)console.rx.len);
     return;
   }
-  if ((console.rx.index > 4) && (console.rx.index < (console.rx.len+MAX_BUFFER_LENGTH))){
+  if ((console.rx.index > 4) && (console.rx.index < (/*console.rx.len+*/MAX_BUFFER_LENGTH))){
     console.rx.data[console.rx.index - 4] = console.rx.byte_in;
     console.rx.index++;
     consolePrintln("Writing data \n \r");
@@ -190,7 +193,7 @@ void console_transmit_packet(){
       console.tx.index++;
       return;
     }
-    if ((console.tx.index > 4) && ((console.tx.index - 5) < console.tx.len)){
+    if ((console.tx.index > 4) && ((console.tx.index - 5) < (console.tx.len + 1))){
       // Check what type the data is and transmit it from its respective array
       if (console.tx.data_typecast[console.tx.index - 5] == UINT){
         consolePrint((uint16_t)console.tx.data_uint[console.tx.index - 5]);
@@ -290,6 +293,10 @@ uint8_t console_write_packet(uint8_t command){
           
         case RANGEFINDER_PROPERTIES:
           RangeFinder_Print(PROPERTIES);
+          break;
+          
+        case RC_INPUT_DATA:
+          RC_Input_Print(DATA);
           break;
           
      }

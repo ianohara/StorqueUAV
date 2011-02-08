@@ -1,0 +1,54 @@
+IN: <3: Time:78667 dt:6432
+IN: <3: Time:79669 dt:6416
+IN: <3: Time:80670 dt:6100
+OUT: print console
+IN: <3: Time:81672 dt:6136
+IN: <3: Time:82673 dt:6136
+OUT: test
+IN: cslt
+IN: <3: Time:83675 dt:6428
+OUT: test
+OUT: test
+IN: <3: Time:84676 dt:6416
+OUT: test
+IN: csl
+IN: <3: Time:85678 dt:6708
+OUT: test
+IN: cslt
+IN: <3: Time:86679 dt:6704
+OUT: test
+IN: csl÷
+IN: Command: ÷ received. 
+IN:  <3: Time:87681 dt:6620
+OUT: test
+IN: <3: Time:88682 dt:6420
+OUT: test
+IN: <3: Time:89683 dt:6132
+OUT: test
+IN: <3: Time:90685 dt:6052
+OUT: test
+IN: <3: Time:91686 dt:6056
+OUT: test
+IN: csl
+IN: <3: Time:92688 dt:6428
+OUT: test
+IN: cslt
+IN: <3: Time:93689 dt:6420
+IN: <3: Time:94691 dt:6772
+IN: <3: Time:95692 dt:6736
+OUT: tst
+IN: <3: Time:96694 dt:6616
+IN: <3: Time:97695 dt:6420
+OUT: test
+IN: csl
+IN: <3: Time:98697 dt:6136
+IN: <3: Time:99698 dt:6132
+IN: <3: Time:100700 dt:6152
+OUT: test
+IN: <3: Time:101701 dt:6436
+IN: <3: Time:102703 dt:6424
+IN: <3: Time:103704 dt:6712
+IN: <3: Time:104706 dt:6716
+IN: <3: Time:105707 dt:6648
+IN: <3: Time:106708 dt:6420
+OUT: 

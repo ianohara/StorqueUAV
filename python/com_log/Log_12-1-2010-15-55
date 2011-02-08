@@ -1,0 +1,136 @@
+IN: <3: Time:22587 dt:6416
+IN: <3: Time:23588 dt:6432
+IN: <3: Time:24590 dt:6776
+IN: <3: Time:25592 dt:6788
+IN: <3: Time:26593 dt:6704
+IN: <3: Time:27595 dt:6772
+IN: <3: Time:28596 dt:6408
+IN: <3: Time:29598 dt:6412
+IN: <3: Time:30600 dt:6416
+IN: <3: Time:31601 dt:6140
+OUT: Test
+IN: <3: Time:32603 dt:6116
+IN: <3: Time:33604 dt:6092
+IN: <3: Time:34606 dt:6072
+OUT: Test
+IN: <3: Time:35607 dt:6424
+OUT: TEst
+IN: <3: Time:36609 dt:6416
+IN: <3: Time:37610 dt:6432
+OUT: test
+IN: cslt
+IN: <3: Time:38611 dt:6452
+OUT: test
+IN: csl
+IN: <3: Time:39614 dt:6796
+OUT: etst
+IN: <3: Time:40615 dt:6752
+OUT: test
+IN: <3: Time:41617 dt:6740
+OUT: test
+IN: csl
+IN: <3: Time:42618 dt:6780
+IN: <3: Time:43620 dt:6708
+IN: <3: Time:44621 dt:6720
+IN: <3: Time:45623 dt:6432
+IN: <3: Time:46624 dt:6420
+IN: <3: Time:47626 dt:6420
+IN: <3: Time:48627 dt:6420
+IN: <3: Time:49630 dt:6416
+IN: <3: Time:50630 dt:6364
+IN: <3: Time:51633 dt:6084
+IN: <3: Time:52634 dt:6076
+IN: <3: Time:53636 dt:6136
+IN: <3: Time:54637 dt:6112
+OUT: Print console
+IN: <3: Time:55639 dt:6120
+IN: <3: Time:56640 dt:6152
+IN: <3: Time:57641 dt:6104
+OUT: test
+IN: cslt
+IN: Command: t received. 
+IN:  csl Test Packet Received
+IN: <3: Time:58643 dt:6076
+IN: <3: Time:59644 dt:6124
+OUT: test
+IN: csl
+IN: <3: Time:60646 dt:6088
+OUT: test
+IN: cslt
+IN: <3: Time:61647 dt:6100
+OUT: test
+IN: <3: Time:62649 dt:6408
+IN: <3: Time:63651 dt:6416
+IN: <3: Time:64652 dt:6420
+IN: <3: Time:65654 dt:6416
+OUT: test
+IN: cslt
+IN: <3: Time:66656 dt:6424
+IN: <3: Time:67657 dt:6420
+OUT: test
+IN: cslt
+IN: <3: Time:68659 dt:6420
+IN: <3: Time:69660 dt:6420
+OUT: test
+IN: <3: Time:70662 dt:6420
+IN: <3: Time:71663 dt:6424
+IN: <3: Time:72665 dt:6624
+IN: <3: Time:73667 dt:6692
+IN: <3: Time:74668 dt:6688
+IN: <3: Time:75670 dt:6704
+IN: <3: Time:76672 dt:6684
+IN: <3: Time:77673 dt:6780
+IN: <3: Time:78674 dt:6728
+IN: <3: Time:79676 dt:6776
+IN: <3: Time:80677 dt:6700
+IN: <3: Time:81679 dt:6776
+IN: <3: Time:82680 dt:6764
+IN: <3: Time:83682 dt:6748
+IN: <3: Time:84683 dt:6728
+IN: <3: Time:85685 dt:6764
+IN: <3: Time:86686 dt:6708
+IN: <3: Time:87689 dt:6756
+IN: <3: Time:88689 dt:6772
+IN: <3: Time:89692 dt:6688
+IN: <3: Time:90692 dt:6684
+IN: <3: Time:91695 dt:6712
+IN: <3: Time:92696 dt:6572
+IN: <3: Time:93698 dt:6432
+IN: <3: Time:94698 dt:6416
+IN: <3: Time:95700 dt:6420
+IN: <3: Time:96702 dt:6424
+IN: <3: Time:97703 dt:6416
+IN: <3: Time:98705 dt:6420
+IN: <3: Time:99706 dt:6416
+IN: <3: Time:100708 dt:6420
+IN: <3: Time:101709 dt:6420
+IN: <3: Time:102711 dt:6076
+IN: <3: Time:103712 dt:6092
+IN: <3: Time:104714 dt:6096
+IN: <3: Time:105715 dt:6060
+IN: <3: Time:106717 dt:6136
+IN: <3: Time:107718 dt:6136
+IN: <3: Time:108720 dt:6044
+IN: <3: Time:109721 dt:6080
+IN: <3: Time:110723 dt:6136
+IN: <3: Time:111725 dt:6152
+IN: <3: Time:112726 dt:6212
+IN: <3: Time:113728 dt:6412
+IN: <3: Time:114729 dt:6440
+IN: <3: Time:115731 dt:6428
+IN: <3: Time:116732 dt:6432
+IN: <3: Time:117734 dt:6416
+IN: <3: Time:118735 dt:6756
+IN: <3: Time:119737 dt:6752
+IN: <3: Time:120738 dt:6740
+IN: <3: Time:121740 dt:6740
+IN: <3: Time:122741 dt:6748
+IN: <3: Time:123743 dt:6704
+IN: <3: Time:124744 dt:6692
+IN: <3: Time:125746 dt:6424
+IN: <3: Time:126747 dt:6424
+IN: <3: Time:127749 dt:6420
+IN: <3: Time:128750 dt:6420
+IN: <3: Time:129752 dt:6120
+IN: <3: Time:130753 dt:6140
+OUT: 

@@ -59,7 +59,11 @@ void Manage_Tasks(){
     rangefinder.flag = 0;
     RangeFinder_Read();  
     return;
-  
+  }else if (rc_input.flag){
+    RC_Input_Read();
+    rc_input.flag = 0;
+    return;
+    
   /* A bunch of other necessary
     elseif (high_magic_flag)
     elseif (high_etc)
@@ -86,6 +90,12 @@ void Manage_Tasks(){
     }
     //read_RC_Input();
     //Print_RC_Input();
+    return;
+    
+  }else if (console.rc_input_print_data_flag){
+    if (console_write_packet(RC_INPUT_DATA)){
+      console.rc_input_print_data_flag = 0;
+    }
     return;
   
   }else if (console.rangefinder_print_data_flag){

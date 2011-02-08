@@ -19,15 +19,15 @@ x = zeros(12,1);
 x(1) = 0; %x
 x(2) = 0; %y
 x(3) = 0; %z
-x(4) = 0.5; %xdot
+x(4) = 0; %xdot
 x(5) = 0; %ydot
 x(6) = 0; %zdot
 x(7) = 0.8; %phi, roll
 x(8) = 0.0; %theta, pitch
 x(9) = 0.0; %psi, yaw
-x(10) = 0; %p
-x(11) = 0; %q
-x(12) = 0; %r
+x(10) = 8; %p
+x(11) = 3; %q
+x(12) = 7; %r
 
 endtime = 3.0;             % end of simulation in seconds
 deltat = .0005;            % time step of numerical integration
@@ -48,30 +48,47 @@ simTime = toc;
 % as your computer can compute timesteps]
 
 % To help speed things up, only redraw every drawStep times
-drawStep = 100;
+drawStep = 500;
 
 
 % Set up our figure
-figure(1);
-plot3([0 0],[0 0], [0 1], 'k','LineWidth',3); % Plot the origin
+fh = figure(1);   % Initialize a figure and figure handle
+zAx = plot3([0 0],[0 0], [0 1], 'k','LineWidth',3); % Plot the origin
 hold on;
 grid on;
-plot3([0 0],[0 1], [0 0], 'k','LineWidth',3);
-plot3([0 1],[0 0], [0 0], 'k','LineWidth',3);
+yAx = plot3([0 0],[0 1], [0 0], 'k','LineWidth',3); % " "
+xAx = plot3([0 1],[0 0], [0 0], 'k','LineWidth',3); % " "
 
+set(zAx,'HandleVisibility','off');
+set(yAx,'HandleVisibility','off');
+set(xAx,'HandleVisibility','off');
+
+xLab = xlabel('Distance from Start [m]','FontSize',14);
+yLab = ylabel('Distance from Start [m]','FontSize',14);
+zLab = zlabel('Distance from Start [m]','FontSize',14);
+
+axis([min(xsave(1,:))-1 max(xsave(1,:))+1 min(xsave(2,:))-1 max(xsave(2,:))+1 min(xsave(3,:))-1 max(xsave(3,:))+1]);  % We're trying to stay still...so if we
+                         % make it past this we're in real trouble.
 
 pos = [x(1),x(2),x(3)]; % Holds our position for plotting
-dirVec = eulerRotate([0,0,1]', x(7),x(8),x(9)); % Initial direction vector
 
-plot3([pos(1) pos(1) + dirVec(1)], [pos(2) pos(2) + dirVec(2)], [pos(3) pos(3) + dirVec(3)], 'r', 'LineWidth',3);
+
+dirVec = eulerRotate([0,0,1]', x(7),x(8),x(9)); % Initial direction vector
+                                                % Note: eulerRotate() needs
+                                                % a column vector
+angles = [x(7) x(8) x(9)];
+
+drawStorque(fh, pos, dirVec); % Draw our initial position on the figure 
+
+%plot3([pos(1) pos(1) + dirVec(1)], [pos(2) pos(2) + dirVec(2)], [pos(3) pos(3) + dirVec(3)], 'r', 'LineWidth',3);
 
 iterDelay = round(simTime/n);
 
 for i = 1:n
     if (mod(i,drawStep) == 0) 
         pos = [xsave(1,i),xsave(2,i),xsave(3,i)];
-        dirVec = eulerRotate([0,0,1]', xsave(7,i),xsave(8,i),xsave(9,i));
-        plot3([pos(1) pos(1) + dirVec(1)], [pos(2) pos(2) + dirVec(2)], [pos(3) pos(3) + dirVec(3)], 'r', 'LineWidth',3);
+        angles = [xsave(7,i) xsave(8,i) xsave(9,i)];
+        drawStorque(fh,pos,angles);
+        pause(0.05);
     end
-    pause(iterDelay);
 end

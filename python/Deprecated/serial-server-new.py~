@@ -53,10 +53,12 @@ class serialServer(object):
     
     def __init__(self, port, backlog, serialFile):
         
-
         #Initialize Serial
-        self.seri = serial.Serial(serialFile, 57600, timeout=1)
-        print "Serial initialized from %s" %serialFile
+        if serialFile != "":
+            self.seri = serial.Serial(serialFile, 57600, timeout=1)
+            print "Serial initialized from %s" %serialFile
+        else:
+            self.seri = 0
                 
         # Initialize Server
         self.clients = 0
@@ -78,9 +80,15 @@ class serialServer(object):
         inputs = [self.server, sys.stdin]
         self.outputs = []
         Run = True
-        
+        dataOut = ""
+        junk = ""
         while(Run):
-            inputready, outputready, exceptready = select.select(inputs, self.outputs, [])
+            try:
+                inputready, outputready, exceptready = select.select(inputs, self.outputs, [])
+            except select.error, e:
+                break
+            except socket.error, e:
+                break
             
             for sel in inputready:
                 
@@ -96,8 +104,9 @@ class serialServer(object):
                     
                 elif sel == sys.stdin:
                     junk = sys.stdin.readline()
-                    print "Shutting down server"
-                    Run = False
+                    if junk == "\n":
+                        print "Shutting down server"
+                        Run = False
                     
                 else:
                     dataIn = sel.readline()
@@ -126,4 +135,4 @@ class serialServer(object):
 # If 'run serial-server-new.py' is called then instantiate and run serialServer
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    serialServer(4557, 5, '/dev/tty.usbserial-A700eCpR').runServer()
+    serialServer(4549, 5, '').runServer()
