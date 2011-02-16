@@ -1,0 +1,18 @@
+/* ---------------------------------------------------------------------------- */
+/* (CPP)
+   Property List: 
+      - Capable of containing the following types:         
+         - char
+         - byte
+	 - int
+	 - unsigned int
+	 - word
+	 - long
+
+      - Has methods:
+         - Get:
+	     returns string of single property
+	 - Set:
+	     sets the value for a single property
+*/
+/* ----------------------------------------------------------------------------- */
