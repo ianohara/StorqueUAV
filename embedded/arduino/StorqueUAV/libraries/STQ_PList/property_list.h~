@@ -1,0 +1,11 @@
+/* ----------------------------------------------------------------------- */
+/* Property List:
+      - Capable of containing the following types:
+         
+         - char
+         - byte
+	 - int
+	 - unsigned int
+	 - word
+	 - long
+   

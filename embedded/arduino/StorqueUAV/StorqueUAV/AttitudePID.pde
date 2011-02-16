@@ -51,12 +51,12 @@ void AttitudePID(){
   attitude_pid.dt = attitude_pid.current_time - attitude_pid.previous_time;
   
   if (rc_input.motors_armed){
-    APM_RC.OutputCh(0, rc_input.channel_1);  // Motors stopped
-    APM_RC.OutputCh(1, rc_input.channel_1);
-    APM_RC.OutputCh(2, rc_input.channel_1);
-    APM_RC.OutputCh(3, rc_input.channel_1);
+    APM_RC.OutputCh(0, rc_input.channel_3);  // Motors armed
+    APM_RC.OutputCh(1, rc_input.channel_3);
+    APM_RC.OutputCh(2, rc_input.channel_3);
+    APM_RC.OutputCh(3, rc_input.channel_3);
   }else{
-    APM_RC.OutputCh(0, rc_input.motors_min);  // Motors stopped
+    APM_RC.OutputCh(0, rc_input.motors_min);  // Motors not armed
     APM_RC.OutputCh(1, rc_input.motors_min);
     APM_RC.OutputCh(2, rc_input.motors_min);
     APM_RC.OutputCh(3, rc_input.motors_min);
