@@ -1,3 +1,4 @@
+
 /* ------------------------------------------------------------------------ */
 /*                    ArduCopter Quadcopter code:                           */
 /*                      - Modded for StorqueUAV                             */
@@ -136,6 +137,8 @@
 //#include <GPS_MTK.h>      // MediaTEK DIY Drones GPS. 
 #include <GPS_UBLOX.h>  // uBlox GPS
 
+#include <PropertyList.h>
+
 // EEPROM storage for user configurable values
 #include <EEPROM.h>
 #include "StorqueUAV.h"
@@ -202,6 +205,22 @@ void setup()
   RC_Input_Init();
   motorArmed = 0;
   
+
+  /* Testing PropertyList */
+  PropertyList p(3);  
+
+  int a[3] = {1, 2, 3};
+  char b = 'b';
+  
+  p.Set(0, Int, 3, &a);
+  p.Set(1, Char, 1, &b);
+  
+  String output;
+  output = p.Get(0);
+  ftdiPrintln(output);
+  output = p.Get(1);
+  ftdiPrintln(output);
+  
 } 
 
 
@@ -218,12 +237,12 @@ void loop(){
   }else{
     digitalWrite(LOOP_PIN, LOW);
   }
-  
+  /*
   Read_Ports();
   Read_Timers();
   Manage_Tasks();
   Write_Ports();
-  
+  */
 }   // End of void loop()
 
 // END of StorqueUAV.pde

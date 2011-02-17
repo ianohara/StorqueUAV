@@ -39,12 +39,11 @@ public:
 
 };
 
-PropertyList::PropertyList(int n){
-  property_list = (property_t*) malloc (n*sizeof(property_t));
+PropertyList::PropertyList(int index){
+  property_list = (property_t*) malloc (index*sizeof(property_t));
 };
 
 void PropertyList::Set(int index, int type, int length, void *data){
-
   property_list[index].type = type;
   property_list[index].length = length;
   property_list[index].data = data;
@@ -87,7 +86,7 @@ void PropertyList::Get(int index){
 
 
 int main(void){
-  PropertyList p(0);
+  PropertyList p(5);
 
   int a[2] = {2, 3};
   char b = 'b';
