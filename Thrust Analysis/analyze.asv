@@ -1,0 +1,368 @@
+%------------------------------------------------------------------------
+%         Propeller Thrust Analysis Script (Static Only)
+%           Purpose: Take data in 9 .csv files generated
+%                    by run our thrust test setup for
+%                    a certain propeller on a certain
+%                    motor and generate pretty plots
+%                    of:
+%                       1) Fz vs RPM
+%                       2) Mz vs RPM
+%                       3) |Fz + Fy + Fx| vs Time (line for each duty fac)
+%                       4) |Mz + My + Mx| vs Time (line for each duty fac)
+%                       5) I vs RPM
+%                       6) Power vs RPM
+%                       7) Motor Efficiency vs RPM
+%                       8) Prop Efficiency vs RPM (ideal power for thrust /
+%                               actual power for thrust)
+%                       9)
+%                      10) 
+%
+%   Calling procedure:
+%     analyze('propFolder', 'propName', trialNum) % Pretty self explanatory
+%           Note: Don't include trailing backslashes.
+%           - propFolder will be used both as the folder name
+%               and as the csv file names, so we need to make sure this
+%               is consistent with Sebastian's script.
+%           - propName is used in the main titles of the plots.  It's
+%               just there so that we can use less cryptic names for our
+%               figures ('Master Airscrew 9x7 Tri' instead of MA0970TP)
+%   
+%  Notes: Right now, you need to manually enter the diameter of each prop
+%  you run.  This is horrible.  If we decide on a common naming technique
+%  such as 2 letters for the company, 2 digits for prop length, 1 digit for
+%  prop pitch, and whatever after then we can just pull this out of
+%  propFolder. (This naming convention would be the same as the example
+%  cited above, MA0970TP.)
+%------------------------------------------------------------------------
+
+function success = analyze(propFolder, propName, trialNum, varargin)
+    
+    % Parse optional arguments and make sure there are at least 3
+    % arguments.
+    
+    % Set all optional options to false first
+    verboseOpt = 0; % Turn on a lot of matlab command window output.
+    debugOpt = 0;   % Turn on debugging (Currently does nothing).
+    closeOpt = 0;   % '-c' specified says that we shouldn't close previously
+                    % existing features.  Useful for laying multiple trials
+                    % of data on top of each other.
+    if (nargin > 3)
+        for i = 1:(nargin-3)
+            switch(varargin{i})
+                case '-c'
+                    closeOpt = 1;
+                case '-v'
+                    verboseOpt = 1;
+                case '-d'
+                    debugOpt = 1;
+                otherwise
+                    fprintf('Unknown option: "%s"\n',varargin{i});
+            end
+        end
+    elseif (nargin < 3)
+        disp('Error: Incorrect arguments passed. See source for usage.');
+    end
+    
+    if (~closeOpt)
+        close all;
+    end
+    
+    %------------------------------------------------------------------
+    % Quick Current Calibration Stuff: This should be moved, erased, or
+    % at least given more data eventually.
+    
+    calibrateCur = [0.52 1.01 1.93 2.84];
+    calibrateCurCAN = [92.8544 105.9064 128.3618 152.2740];
+    
+    P = polyfit(calibrateCurCAN,calibrateCur,1);
+    avgSlope = P(1);
+    avgIntercept = P(2);
+    
+    %------- DEFINES ----------%
+    ampSlope = avgSlope;  %[A/V] -> Convert amp readings from volts->amps
+    ampIntercept = avgIntercept;
+    
+    trialString = ['Trial_' num2str(trialNum)];
+    trialFolder = [propFolder '\' trialString];
+    
+    rho = 1.2;           % [kg/m^3];
+    diam = 0.2286;       % [m] THIS NEEDS TO BE PULLED OUT OF propName eventually
+    voltage = 11.1;      % [V]
+    % END DEFINES %
+    
+    if (exist(propFolder,'file') ~= 7)
+        disp(sprintf('Error: Folder "%s" does not exist.',propFolder));
+        success = -1;
+        return;
+    end
+    
+    if (exist(trialFolder,'file') ~= 7)
+        disp(sprintf('Error: Folder "%s" does not exist.',trialFolder));
+        success = -2;
+        return;
+    end
+    
+    % Check to see if there are data files for transient tests.
+    staticTests = 0;
+    if (exist([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fx'],'file') == 2)
+        staticTests = 1;
+    end
+    
+    % Check to see if there are data files for transient tests.
+    transientTests = 0;
+    if (exist([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fx_trans'],'file') == 2)
+        transientTests = 1;
+    end
+    
+    if (staticTests == 1)
+        disp('Loading static test data...');
+        % Load all of our data from .csv files
+        dataFx = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fx']);     % [N]
+        dataFy = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fy']);     % [N]
+        dataFz = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fz']);     % [N]
+        dataTx = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Tx']);     % [mN*m]
+        dataTy = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Ty']);     % [mN*m]
+        dataTz = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Tz']);     % [mN*m]
+        % Number given to the timer in the Maevarm 
+        dataOCR1A = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_dc_nums']);    
+                                
+        % Note: Current data is given to us in voltage across
+        %       a hall effect sensor.  So, we need a calibration factor
+        %       to convert from voltage -> amps.  Luckily this
+        %       is a linear relationship.
+        dataCur = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_cur']);   % [V]
+        % Convert current data to amps
+        dataCur = ampSlope*dataCur + ampIntercept;                             % [A]
+
+        dataRPM = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_w']);     % [RPM]
+        dataRPMTime = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_t_w']); % [s]
+
+        setup = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_setup']);
+
+        numTests = setup(1,1);
+        durTests = setup(1,2);
+        sampleRate = setup(1,3);
+        dcTimerMax = setup(1,4);
+
+        % Duty cycles of each section of data.  dcTimerMax is the
+        % max number Timer1 on the maevarm counts to, dataOCR1A is the
+        % value at which the timer is set low and it is set high
+        % again when the timer rolls over (ie: 20000+1).
+        % THIS TIMER SETUP NEEDS TO BE VERIFIED!!!!!
+        dataPwmCom = dataOCR1A ./ dcTimerMax;
+        
+        % The DAC takes 0.5 seconds to start giving valid readings every
+        % time you pull data from it, so we need to know how many data
+        % points to ignore at the beginning of each new trial
+        dacIgnore = sampleRate * 0.5;                                      %[1/s * s = index]
+
+        % Now, construct the average values for each duty factor (ignoring the
+        % values during the 0.5s DAC recalibrate.
+        avgFx = sum(dataFx(dacIgnore:size(dataFx,1),:))./(size(dataFx,1)-dacIgnore); %[N]: 1 x numTests
+        avgFy = sum(dataFy(dacIgnore:size(dataFy,1),:))./(size(dataFy,1)-dacIgnore); %[N]: 1 x numTests
+        avgFz = sum(dataFz(dacIgnore:size(dataFz,1),:))./(size(dataFz,1)-dacIgnore); %[N]: 1 x numTests
+
+        avgTx = sum(dataTx(dacIgnore:size(dataTx,1),:))./(size(dataTx,1)-dacIgnore);
+        avgTy = sum(dataTy(dacIgnore:size(dataTy,1),:))./(size(dataTy,1)-dacIgnore);
+        avgTz = sum(dataTz(dacIgnore:size(dataTz,1),:))./(size(dataTz,1)-dacIgnore);
+
+        avgRPM = sum(dataRPM)./size(dataRPM,1);                     % [RPM]
+        avgCur = sum(dataCur)./size(dataCur,1);                     % [A]
+        
+        % Perform a linerar fit on the magnitude of thrust for
+        % purposes of our first linear simulink model.  (It looks
+        % more like a 2nd order polynomial)
+        avgFMag = sqrt(avgFx.^2 + avgFy.^2 + avgFz.^2);
+        
+        % Perform a linear fit on the  moment magnitude data
+        magnitudeM = sqrt(avgTx.^2 + avgTy.^2 + avgTz.^2);
+        
+        coeffsFitM = polyfit(avgRPM, magnitudeM,1);
+        
+        % Perform a linear fit on the magnitude of thrust versus PWM
+        % commanded
+        coeffsFitPwm = polyfit(dataPwmCom,avgFMag,1);
+        
+      disp('Plotting Static test data...');
+     
+      % Average Fz
+      figure(1);
+      title(sprintf('Static Tests for Prop: %',propName),'FontSize',14);
+
+      subplot(2,2,1);
+      plot(avgRPM,avgFz,'o','MarkerFaceColor','b');
+      grid on;
+      hold on;
+      title('Average F_z','FontSize',14);
+      xlabel('\omega [RPM]','FontSize',14);
+      ylabel('F_z [N]','FontSize',14);
+
+      % Average Mz
+      subplot(2,2,2);
+      plot(avgRPM,avgTz,'o','MarkerFaceColor','b');
+      grid on;
+      hold on;
+      title('Average M_z','FontSize',14);
+      xlabel('\omega [RPM]','FontSize',14);
+      ylabel('T_z [mN*m]','FontSize',14);
+
+      % Magnitude of F
+      subplot(2,2,3);
+      plot(avgRPM,avgFMag,'o','MarkerFaceColor','b');
+      grid on;
+      hold on;
+      title('Magnitude of F Vector','FontSize',14);
+      xlabel('\omega [RPM]','FontSize',14);
+      %ylabel('|\bar{F}| [N]','interpreter','tex');
+      ylabel('|F| [N]','interpreter','tex','FontSize',14);
+
+      % Magnitude of M
+      subplot(2,2,4);
+      grid on;
+      hold on;
+      plot(avgRPM,magnitudeM,'o','MarkerFaceColor','b');
+      plot(avgRPM,coeffsFitM(1).*avgRPM + coeffsFitM(2),'-r','LineWidth',2);
+
+      title('Magnitude of M Vector','FontSize',14);
+      xlabel('\omega [RPM]','FontSize',14);
+      %ylabel('$|\bar{M}| [N]$','interpreter','tex');
+      ylabel('|M| [mN*m]','interpreter','tex','FontSize',14);
+    
+      legend('Average Moment', sprintf('Linear fit (M = %2.4f * w + %2.1f)', coeffsFitM(1), coeffsFitM(2)),'Location','NorthWest');
+      % Now Calculate our power numbers (All in [W])
+      powerThrust = avgFz.*sqrt(avgFz./(2*rho*(diam/2)^2));          % Theoretical power required for the thrust we made
+                                                                     % --Essentially
+                                                                     % power out
+
+      powerElecIn = avgCur * voltage;                                % Electrical power put into the system
+      powerRotMech = avgTz ./ 1000 .* (avgRPM .* 2*pi ./ 60);        % [N*m * rpm * (2pi rad/1rev) / (60 s / 1 min)]
+
+      coeffThrust = avgFz ./ (rho .* (avgRPM./60).^2 .* diam^4);
+      coeffPower = powerElecIn ./ (rho .* (avgRPM./60).^3 .* diam^5);
+
+      % Now calculate whatever efficiencies we can
+      effMot = powerRotMech./powerElecIn;
+      figureMerit = powerThrust ./ powerElecIn;
+
+      % Plot Some efficiencies versus RPM
+      figure(2);
+      title(sprintf('Static Tests for Prop: %',propName), 'FontSize',14);
+      subplot(2,2,1);
+      plot(avgRPM, effMot,'o','MarkerFaceColor','b');
+      grid on;
+      hold on;
+
+      title('Motor Efficiency','FontSize',14);
+      xlabel('\omega [RPM]','FontSize',14);
+      ylabel('\eta [-]','FontSize',14);
+
+      subplot(2,2,2);
+      plot(avgRPM, figureMerit,'o','MarkerFaceColor','b');
+      grid on;
+      hold on;
+
+      title('Figure of Merit','FontSize',14);
+      xlabel('\omega [RPM]','FontSize',14);
+      ylabel('FM','FontSize',14);
+      
+      % Plot |F| vs pwm commanded to ESC
+      subplot(2,2,3);
+      plot(dataPwmCom,avgFMag,'o','MarkerFaceColor','b');
+      plot(dataPwmCom,coeffsFitPwm(1).*dataPwmCom + coeffsFitPwm(2),'-r','LineWidth',2);
+      grid on;
+      hold on;
+      title('Commanded PWM Duty Cycle versus Magnitude of Thrust','FontSize',14);
+      xlabel('PWM Duty Cycle [%]','FontSize',14);
+      ylabel('|F| [N]','FontSize',14);
+      legend('Magnitude of F', sprintf('Linear fit (|F| = %2.4f * pwm + %2.1f)', coeffsFitPwm(1), coeffsFitPwm(2)),'Location','NorthWest');
+    
+      % Plot |Mz| vs pwm commanded to ESC
+      plot(dataPwmCom,magnitudeM,'o','MarkerFaceColor','b');
+      plot(dataPwmCom,coeffsFitPwm(1).*dataPwmCom + coeffsFitPwm(2),'-r','LineWidth',2);
+      grid on;
+      hold on;
+      title('Commanded PWM Duty Cycle versus Magnitude of Thrust','FontSize',14);
+      xlabel('PWM Duty Cycle [%]','FontSize',14);
+      ylabel('|M| [mN*m]','FontSize',14);
+      legend('Magnitude of M', sprintf('Linear fit (|F| = %2.4f * pwm + %2.1f)', coeffsFitPwm(1), coeffsFitPwm(2)),'Location','NorthWest');
+      subplot(2,2,4);
+    end
+    
+    % If transient test data exists for this trial, load it as well.
+    % TODO: Refactor the data reading into a function, because the whole
+    %       transient section is literally copy and pasted.
+    
+    if (transientTests == 1)
+        disp('Loading transient test data...');
+        % Load all of our data from .csv files
+        dataTranFx = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fx_trans']);     % [N]
+        dataTranFy = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fy_trans']);     % [N]
+        dataTranFz = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Fz_trans']);     % [N]
+        dataTranTx = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Tx_trans']);     % [mN*m]
+        dataTranTy = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Ty_trans']);     % [mN*m]
+        dataTranTz = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_Tz_trans']);     % [mN*m]
+        dataTranDuty = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_dc_nums_trans']);
+        % Note: Current data is given to us in voltage across
+        %       a hall effect sensor.  So, we need a calibration factor
+        %       to convert from voltage -> amps.  Luckily this
+        %       is a linear relationship.
+        dataTranCur = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_cur_trans']);   % [V]
+        % Convert current data to amps
+        dataTranCur = ampSlope*dataTranCur + ampIntercept;                             % [A]
+
+        dataTranRPM = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_w_trans']);     % [RPM]
+        dataTranRPMTime = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_t_w_trans']); % [s]
+
+        setupTran = csvread([trialFolder '\' propName '_' sprintf('%d',trialNum) '_setup_trans']);
+
+        numTestsTran = setupTran(1,2);
+        durTestsTran = setupTran(1,3);
+        sampleRateTran = setupTran(1,4);
+        dcTimerMaxTran = setupTran(1,5);   % Highest number sent to the M1 as an OCR1A value
+                                           % This is apparently
+                                           % wrong...everywhere
+        powerSupplyTran = setupTran(1,6);
+        powerVoltTran = setupTran(1,7);
+
+        % The DAC takes 0.5 seconds to start giving valid readings every
+        % time you pull data from it, so we need to know how many data
+        % points to ignore at the beginning of each new trial
+        dacIgnoreTran = sampleRateTran * 0.5;                                      %[1/s * s = index]
+
+        % Now, construct the average values for each duty factor (ignoring the
+        % values during the 0.5s DAC recalibrate.
+        avgTranFx = sum(dataTranFx(dacIgnoreTran:size(dataTranFx,1),:))./(size(dataTranFx,1)-dacIgnoreTran); %[N]: 1 x numTests
+        avgTranFy = sum(dataTranFy(dacIgnoreTran:size(dataTranFy,1),:))./(size(dataTranFy,1)-dacIgnoreTran); %[N]: 1 x numTests
+        avgTranFz = sum(dataTranFz(dacIgnoreTran:size(dataTranFz,1),:))./(size(dataTranFz,1)-dacIgnoreTran); %[N]: 1 x numTests
+
+        avgTranTx = sum(dataTranTx(dacIgnoreTran:size(dataTranTx,1),:))./(size(dataTranTx,1)-dacIgnoreTran);
+        avgTranTy = sum(dataTranTy(dacIgnoreTran:size(dataTranTy,1),:))./(size(dataTranTy,1)-dacIgnoreTran);
+        avgTranTz = sum(dataTranTz(dacIgnoreTran:size(dataTranTz,1),:))./(size(dataTranTz,1)-dacIgnoreTran);
+
+        avgTranRPM = sum(dataTranRPM)./size(dataTranRPM,1);                     % [RPM]
+        avgTranCur = sum(dataTranCur)./size(dataTranCur,1);                     % [A]
+
+
+
+
+      disp('Plotting transient response data...');
+      % Plot the magnitude of the force vector versus time and pull out
+      % some important response data.
+
+      % But first, make a time vector that will align with our data points
+      % properly
+      tTran = 1/sampleRateTran:1/sampleRateTran:durTestsTran;
+      tTran = tTran';
+
+      size(tTran)
+      size(dataTranFx)
+
+      figure(3);
+      title(sprintf('Transient Test for Prop: %s',propName), 'FontSize',14);
+      plot(tTran,sqrt(dataTranFx.^2+dataTranFy.^2+dataTranFz.^2),'.');
+      grid on;
+      hold on;
+      xlabel('Time [s]','FontSize',14);
+      ylabel('|F| [N]', 'FontSize',14);
+    end
+end

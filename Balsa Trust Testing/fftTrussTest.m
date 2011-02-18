@@ -6,64 +6,54 @@
 %   Date: 2/15/2011
 %   Base idea of code taken from mathworks (fft() help page)
 
-function [freq, amplitude] = fftTrussTest(csvFile)
+function [freq, amplitude, time, voltAmp] = fftTrussTest(csvDir)
 
-if (exist(csvFile,'file') ~= 2)
-    disp(sprintf('fftTrussTest: The file "%s" does not exist.',csvFile));
+if (exist(csvDir,'file') ~= 7)
+    disp(sprintf('fftTrussTest: The Directory "%s" does not exist.',csvDir));
+    freq = -1;
+    amplitude = -1;
+    return;
 end
 
 close all;
 
-% This only works on windows...D'OH!
-% [numberData, textData, rawData] = xlsread(csvFile);
-% 
-% time = numberData(:,3);        % [s]
-% voltAmplitude = numberData(:,4); % [some Voltage] that depends on
-%                                  % settings in the csv file.
-% 
-% % Get the settings from the output of xlsread
-% % Note that this is for a "TDS2002B Oscope"
-% recordLen      = rawData{1,2};
-% sampleInterval = rawData{2,2};
-% triggerPoint   = rawData{3,2};
-% voltScale      = rawData{9,2};
-% vertOffset     = rawData{10,2};
-% timeScale      = rawData{12,2};
+[status, result] = system(['perl formatScopeData.pl ' csvDir '/']);
 
-fh = fopen(csvFile);
-rowCount = 1;
-while (1)
-   line = fgetl(fh);
-   if (line == -1)
-       break;
-   end
-   
-   line = native2unicode(line);   % Portability, hopefully.
-   colVals = regexp(line,',','split');
-   rawData{rowCount} = colVals;
-   rowCount = rowCount+1;
+numFile = [csvDir '/Numerical.csv'];
+setFile = [csvDir '/Settings.csv'];
+
+if (exist(numFile,'file') ~= 2)
+   fprintf('fftTrustTest: Numerical.csv does not exist in specified directory. Perl script failure.\n');
+   freq = -1;
+   amplitude = -1;
+   return;
 end
 
-freq = rawData;
-amplitude = 1;
+numData = csvread(numFile);
+settings = csvread(setFile);
 
-return;
+time = numData(:,1);
+voltAmp = numData(:,2);
+
+numSamples = settings(1);      % Number of samples
+sampleInterval = settings(2);  % Time between samples [s]
+trigPoint = settings(3);       % Not entirely sure what this is.
+vertScale = settings(6);       % Volts/1 count
+vertOffset = settings(7);      % Volts
+horScale = settings(9);        % Seconds/1 count
+
 % Some derived data
-sampleTime = max(time)-min(time);
-sampleRate = recordLen/(sampleTime); % [samples/s]
+sampleTime = numSamples*sampleInterval - sampleInterval;   % [s]
+sampleRate = 1/sampleInterval;   % [1/s]
 
-NFFT = 2^nextpow2(recordLen); % Next power of 2 from length of y
-Y = fft(voltAmplitude,NFFT)/recordLen;
-freq = sampleRate/2*linspace(0,1,NFFT/2+1);
-figure(1);
+fourierPoints = 500; % Next power of 2 from length of y
+normFreq = fft(voltAmp);
+normFreq(1) = []; % First term is just the sum of all terms.
 
-%Plot single-sided amplitude spectrum.
-plot(freq,2*abs(Y(1:NFFT/2+1))) ;
-title('Single-Sided Amplitude Spectrum of y(t)');
-xlabel('Frequency (Hz)');
-ylabel('|Y(f)|');
+fourierLen = length(normFreq);
+amplitude = abs(normFreq(1:floor(fourierLen/2))).^2;
 
-
-figure(2);
-plot(time,voltAmplitude);
+% Return both as 1xfourierLen/2 vectors.
+freq = sampleRate.*(1:fourierLen/2)/(fourierLen/2)*(1/2);  % Help from mathworks.
+amplitude = amplitude';
 end
