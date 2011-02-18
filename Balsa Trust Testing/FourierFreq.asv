@@ -1,0 +1,47 @@
+%%%%%%%%%%%%%%%%
+%   Discrete Fourier Transform of beam vibration
+%   data to find fundamental frequency of vibration
+%
+%   By: Ian O'Hara
+%   Date: 2/15/2011
+%   Base idea of code taken from mathworks (fft() help page)
+
+function [freq, amplitude] = fftTrussTest(csvFile)
+
+if (exist(csvFile,'file') ~= 2)
+    disp(sprintf('fftTrussTest: The file "%s" does not exist.',csvFile));
+end
+
+
+
+
+[numberData,textData,rawData] = xlsread(csvFile);
+
+time = numberData(3,:);
+voltAmplitude = numberData(4,:);
+
+sample
+
+%{
+Fs = 1000;                    % Sampling frequency
+T = 1/Fs;                     % Sample time
+L = 1000;                     % Length of signal
+t = (0:L-1)*T;                % Time vector
+% Sum of a 50 Hz sinusoid and a 120 Hz sinusoid
+x = 0.7*sin(2*pi*50*t) + sin(2*pi*120*t); 
+y = x + 2*randn(size(t));     % Sinusoids plus noise
+plot(Fs*t(1:50),y(1:50));
+title('Signal Corrupted with Zero-Mean Random Noise');
+xlabel('time (milliseconds)');
+
+NFFT = 2^nextpow2(L); % Next power of 2 from length of y
+Y = fft(y,NFFT)/L;
+f = Fs/2*linspace(0,1,NFFT/2+1);
+figure();
+% Plot single-sided amplitude spectrum.
+plot(f,2*abs(Y(1:NFFT/2+1))) ;
+title('Single-Sided Amplitude Spectrum of y(t)');
+xlabel('Frequency (Hz)');
+ylabel('|Y(f)|');
+%}
+end

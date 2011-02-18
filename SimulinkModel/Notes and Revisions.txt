@@ -1,0 +1,1 @@
+2/15/2011: Moved gravity outside of the Thrust->Body fram forces and moments subsystem.

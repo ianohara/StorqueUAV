@@ -1,0 +1,16 @@
+Image Correlation:
+1 - Lateral Testing - 0g - (somewhere between 25 to 100 ms time divs)
+2 - Lateral Testing - 0g - "           "         "        "
+3 - Lateral Testing -  0g - (Full Waveform in view at 100ms time divs)
+4 - Lateral Testing -  0g - (Close up at 25 ms time divs)
+5 - Lateral Testin  - 145g - (100ms)
+6 - Vertical Testing -  0g - (Far view, 50.0ms)
+7 - Vertical Testing -  0g - (Far view, 50.0ms)
+8 - Vertical Testing - 0g - (10.0ms)
+9 - Vertical Testing - 0g - (10.0ms)
+10 - Vertical Testing - 0g - (10.0ms and caught the first peak)
+11 - Bad Test - -
+12 - Vertical Testing - 145g - 
+13 - Vertical Testing - 145g - (100ms full wave)
+14 - Lateral Testing - 145g - (100ms)
+
