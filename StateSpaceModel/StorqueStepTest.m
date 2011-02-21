@@ -85,6 +85,5 @@ else
     fprintf('Failed!\n   %d Rate of Change of States are not 0\n',test2Error);
 end
 
-1;
 
 
