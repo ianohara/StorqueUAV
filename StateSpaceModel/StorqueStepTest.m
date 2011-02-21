@@ -1,0 +1,90 @@
+% Ian O'Hara
+%
+% Test the StorquStep(x,u) function
+% 
+%
+
+% Book Keeping Variables
+failedTests = 0;
+passedTests = 0;
+
+% Most tests will look for a '0' result, but rounding will make
+% actual '0' results near impossible.  We'll use this epsilon as our 
+% effective 0.
+epsilon = 1e-5;
+
+% Define physical system parameters
+mass = 5;        % [kg]
+armLen = 0.382;  % [m]
+Ixx = 1;         % [kg*m^2]
+Iyy = 1;         % [kg*m^2]
+Izz = 1;         % [kg*m^2]
+g = 9.81;        % [m/s^2]
+
+% Physical system gains
+kM = 1;          % Gain for omega -> Moment [kg*m^2]
+kT = 1;          % Gain for omega -> Thrust [kg*m]
+kMot = 1;        % Gain on first order motor delay [1/s]
+
+fprintf('Beginning Tests of xDot = StorqueStep(x,u)\n');
+
+%% Test 1: Determinism
+%   For a given input, the rate of change of state
+%     should be the same.
+% 
+%   Test Description: Make 10 random state and input vectors.  Call
+%     StorqueStep twice with each random state, take their difference
+%     And keep a running total of the differences.  
+%
+% Expected Result: The difference should be 0 (not epsilon in this case)
+
+fprintf('  Test 1...');
+test1Diff = 0;
+test1Result = 0;
+for i = 1:10
+   x = 10*ones(1,16).*rand(1,16);
+   u = ones(1,6).*rand(1,6);
+   
+   sdot1 = StorqueStep(x,u);
+   sdot2 = StorqueStep(x,u);
+   test1Diff = test1Diff + (sdot1 - sdot2);
+end
+
+if (test1Diff == 0)
+    passedTests = passedTests + 1;
+    fprintf('Passed!\n');
+else
+    fprintf('Failed!\n\t    Sum Difference = %f and should be 0.\n', test1Diff);
+    failedTess = failedTests + 1;
+end
+
+%% Test 2 - Steady State
+%   If we give steady conditions with no input, we should recieve steady
+%   state back.
+%
+%   Test Description: Run StorqueStep(x,u) with a steady state input
+%    and make sure that the returned change of state vector is 0.
+%
+%
+
+fprintf('  Test 2...');
+test2OmegaSteady = sqrt((mass*g)/(4*kT));
+test2OmegaRowVec = ones(1,4)*test2OmegaSteady;
+
+test2SteadyState = [1 1 1 0 0 0 0 0 0 0 0 0 test2OmegaRowVec];
+test2SteadyInput = zeros(1,6);
+
+test2StateDot = StorqueStep(test2SteadyState,test2SteadyInput)
+
+test2Error = sum(abs(test2StateDot) > epsilon)
+
+if (test2Error == 0)
+    passedTests = passedTests + 1;
+    fprintf('Passed!\n');
+else 
+    fprintf('Failed!\n   %d Rate of Change of States are not 0\n',test2Error);
+end
+
+1;
+
+
