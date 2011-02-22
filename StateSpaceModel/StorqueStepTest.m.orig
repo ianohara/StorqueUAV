@@ -74,9 +74,15 @@ test2OmegaRowVec = ones(1,4)*test2OmegaSteady;
 test2SteadyState = [1 1 1 0 0 0 0 0 0 0 0 0 test2OmegaRowVec];
 test2SteadyInput = zeros(1,6);
 
+<<<<<<< HEAD
+test2StateDot = StorqueStep(test2SteadyState,test2SteadyInput)
+
+test2Error = sum(abs(test2StateDot) > epsilon)
+=======
 test2StateDot = StorqueStep(test2SteadyState,test2SteadyInput);
 
-test2Error = sum(abs(test2StateDot) > epsilon);
+test2Error = sum(test2StateDot ~= 0);
+>>>>>>> 1dec613c3f4cb76387a37154d6d840cca0900de8
 
 if (test2Error == 0)
     passedTests = passedTests + 1;
@@ -85,5 +91,9 @@ else
     fprintf('Failed!\n   %d Rate of Change of States are not 0\n',test2Error);
 end
 
+<<<<<<< HEAD
+1;
+=======
+>>>>>>> 1dec613c3f4cb76387a37154d6d840cca0900de8
 
 

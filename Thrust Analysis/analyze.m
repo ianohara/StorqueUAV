@@ -250,13 +250,13 @@ function success = analyze(motorFolder, propName, trialNum, varargin)
       grid on;
       hold on;
       plot(avgRPM,magnitudeM,'o','MarkerFaceColor','b');
-      plot(avgRPM,coeffsFitM(1).*avgRPM + coeffsFitM(2),'-r','LineWidth',2);
+      %plot(avgRPM,coeffsFitM(1).*avgRPM + coeffsFitM(2),'-r','LineWidth',2);
 
       title('Magnitude of M Vector','FontSize',14);
       xlabel('\omega [RPM]','FontSize',14);
       ylabel('|M| [mN*m]','interpreter','tex','FontSize',14);
     
-      legend('Average Moment', sprintf('Linear fit (M = %2.4f * w + %2.1f)', coeffsFitM(1), coeffsFitM(2)),'Location','NorthWest');
+      %legend('Average Moment', sprintf('Linear fit (M = %2.4f * w + %2.1f)', coeffsFitM(1), coeffsFitM(2)),'Location','NorthWest');
       % Now Calculate our power numbers (All in [W])
       powerThrust = avgFz.*sqrt(avgFz./(2*rho*(diam/2)^2));          % Theoretical power required for the thrust we made
                                                                      % --Essentially

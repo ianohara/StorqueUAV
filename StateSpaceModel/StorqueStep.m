@@ -12,7 +12,6 @@ phi_com   = u(4);
 theta_com = u(5);
 psi_com   = u(6);
 
-
 % Define physical system parameters
 mass = 5;        % [kg]
 armLen = 0.382;  % [m]

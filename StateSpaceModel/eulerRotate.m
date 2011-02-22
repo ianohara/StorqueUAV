@@ -1,4 +1,4 @@
-/% Take a column 3x1 column vector and rotate it according to the
+% Take a column 3x1 column vector and rotate it according to the
 % incoming euler angles.
 
 function newVec = eulerRotate(vec,phi,theta,psi)
