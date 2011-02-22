@@ -23,7 +23,7 @@ function s2 = rk4Step(s1, u, fh, dt)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Compute the four slopes that will be used as weighted slopes for stepping
-% to the next state
+% to the next state.  If curious, find Ian near a blackboard.
 mk = fh(s1, u);
 nk = fh(s1 + mk*(dt/2), u);
 pk = fh(s1 + nk*(dt/2), u);

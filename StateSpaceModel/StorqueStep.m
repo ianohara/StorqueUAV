@@ -3,6 +3,13 @@ function [sdot] = StorqueStep(s,u)
 % sdot = derivative of state at current time
 % u = control input (6x1)
 
+% Turn off warnings for the time being.  We run into a lot of boarderline
+% singular matricies for some conditions, which matlab does not like.
+% TODO: Figure out what situations bring rise to the singular matricies,
+%       and whether or not it's a problem.
+
+warning off;
+
 % u = [xd_com yd_com zd_com phi_com theta_com psi_com]
 % Where com = 'commanded'
 xd_com    = u(1);
@@ -15,19 +22,19 @@ psi_com   = u(6);
 % Define physical system parameters
 mass = 5;        % [kg]
 armLen = 0.382;  % [m]
-Ixx = 1;         % [kg*m^2]
-Iyy = 1;         % [kg*m^2]
-Izz = 1;         % [kg*m^2]
+Ixx = 0.2;         % [kg*m^2]
+Iyy = 0.2;         % [kg*m^2]
+Izz = 0.2;         % [kg*m^2]
 g = 9.81;        % [m/s^2]
 
 % Physical system gains
 kM = 1;          % Gain for omega -> Moment [kg*m^2]
 kT = 1;          % Gain for omega -> Thrust [kg*m]
-kMot = 1;        % Gain on first order motor delay [1/s]
+kMot = 5;        % Gain on first order motor delay [1/s]
 
 % Control gains
-kpRoll = 1;
-kdRoll = 1;
+kpRoll = 0;
+kdRoll = 0;
 
 % Calculate trim angular velocities needed in our artificial quadrotor
 % axes (omegaZ,omegaPhi,omegaPsi,omegaTheta)  These get distributed over
@@ -138,14 +145,13 @@ omegaDotToEulerDot = [cos(theta) 0 -cos(phi)*sin(theta);...
                       0          1      sin(phi);...
                       sin(theta) 0   cos(phi)*cos(theta)];
 
-eulerAngleDot = inv(omegaDotToEulerDot)*omegaDot;
+eulerAngleDot = inv(omegaDotToEulerDot)*[p q r]';
 
+
+% First order moto response.
 omegaPropsDot = kMot*(wDes' - [w1 w2 w3 w4]);
 
-%s(4:6)
-%linAccel'
-%eulerAngleDot'
-%omegaDot'
-%omegaPropsDot'
+warning on;
+
 sdot = [s(4:6) linAccel' eulerAngleDot' omegaDot' omegaPropsDot];
 end
