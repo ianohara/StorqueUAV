@@ -1,3 +1,5 @@
+% Copyright 2011. Ian O'Hara, Uriah Baalke, Emily Fisher, Alice Yurechko,
+%                 and Sebastian Mauchly.
 %------------------------------------------------------------------------
 %         Propeller Thrust Analysis Script (Static Only)
 %           Purpose: Take data in 9 .csv files generated
@@ -36,6 +38,11 @@
 %  prop pitch, and whatever after then we can just pull this out of
 %  motorFolder. (This naming convention would be the same as the example
 %  cited above, MA0970TP.)
+%
+%  Second Note/PLEA:  This guy is getting ugly, huge, and repetative. If
+%                     anyone has the desire to refactor the hell out of it
+%                     by breaking it down into read/analyze/plot functions
+%                     of reasonable size, please do.
 %------------------------------------------------------------------------
 
 function success = analyze(motorFolder, propName, trialNum, varargin)
@@ -191,20 +198,30 @@ function success = analyze(motorFolder, propName, trialNum, varargin)
 
         avgRPM = sum(dataRPM)./size(dataRPM,1);                     % [RPM]
         avgCur = sum(dataCur)./size(dataCur,1);                     % [A]
-        
-        % Perform a linear fit on the magnitude of thrust for
-        % purposes of our first linear simulink model.  (It looks
-        % more like a 2nd order polynomial)
+
+% Linear fit was misguided        
+%         % Perform a linear fit on the magnitude of thrust for
+%         % purposes of our first linear simulink model.  (It looks
+%         % more like a 2nd order polynomial)
         avgFMag = sqrt(avgFx.^2 + avgFy.^2 + avgFz.^2);
-        
+        magnitudeM = sqrt(avgTx.^2 + avgTy.^2 + avgTz.^2);
+
+        % TODO: ALERT: DEBUG: These are specific to the data set
+        % available on 2/22/2011.  This should be removed
+        % for new data
         % Now perform a 2nd order fit on the magnitude of thrust versus
         % dataPwmCom
-        coeffsFitF2nd = polyfit(dataPwmCom, avgFMag,2);
+        coeffsFitF2nd = polyfit(dataPwmCom(1:length(avgFMag)-3), avgFMag(1:length(avgFMag)-3),2);
+        coeffsFitF2ndOmeg = polyfit(avgRPM(1:length(avgFMag)-3), avgFMag(1:length(avgFMag)-3),2);
         
+        % Perform a second order fit on the moment data IGNORING the last
+        % four points because they are current limited.
+        coeffsFitM2nd = polyfit(dataPwmCom(1:length(magnitudeM)-4),magnitudeM(1:length(magnitudeM)-4),2);
+        coeffsFitM2ndOmeg = polyfit(avgRPM(1:length(magnitudeM)-4),magnitudeM(1:length(magnitudeM)-4),2);
         % Perform a linear fit on the  moment magnitude data
-        magnitudeM = sqrt(avgTx.^2 + avgTy.^2 + avgTz.^2);
         
         coeffsFitM = polyfit(avgRPM, magnitudeM,1);
+
         
         % Perform a linear fit on the magnitude of thrust versus PWM
         % commanded
@@ -241,6 +258,9 @@ function success = analyze(motorFolder, propName, trialNum, varargin)
       plot(avgRPM,avgFMag,'o','MarkerFaceColor','b');
       grid on;
       hold on;
+      forceFitDataOmeg = coeffsFitF2ndOmeg(1).*avgRPM.^2 + coeffsFitF2ndOmeg(2).*avgRPM + coeffsFitF2ndOmeg(3);
+      plot(avgRPM,forceFitDataOmeg,'r','LineWidth',2);
+       legend('Raw Data',sprintf('2nd Order Poly Fit: %2.5g x^2',coeffsFitF2ndOmeg(1)));
       title('Magnitude of F Vector','FontSize',14);
       xlabel('\omega [RPM]','FontSize',14);
       ylabel('|F| [N]','interpreter','tex','FontSize',14);
@@ -250,8 +270,10 @@ function success = analyze(motorFolder, propName, trialNum, varargin)
       grid on;
       hold on;
       plot(avgRPM,magnitudeM,'o','MarkerFaceColor','b');
-      %plot(avgRPM,coeffsFitM(1).*avgRPM + coeffsFitM(2),'-r','LineWidth',2);
-
+      momFitDataOmeg = coeffsFitM2ndOmeg(1).*avgRPM.^2 + coeffsFitM2ndOmeg(2).*avgRPM + coeffsFitM2ndOmeg(3);
+      plot(avgRPM,momFitDataOmeg,'r','LineWidth',2);
+      
+      legend('Raw Data',sprintf('2nd Order Poly Fit: %2.5g x^2',coeffsFitM2ndOmeg(1)),'Location','NorthWest');
       title('Magnitude of M Vector','FontSize',14);
       xlabel('\omega [RPM]','FontSize',14);
       ylabel('|M| [mN*m]','interpreter','tex','FontSize',14);
@@ -297,25 +319,27 @@ function success = analyze(motorFolder, propName, trialNum, varargin)
       subplot(2,2,3);
       grid on;
       hold on;
+      forceFitData = coeffsFitF2nd(1).*dataPwmCom.^2 + coeffsFitF2nd(2).*dataPwmCom + coeffsFitF2nd(3);
       plot(dataPwmCom,avgFMag,'o','MarkerFaceColor','b');
-      plot(dataPwmCom,coeffsFitPwm(1).*dataPwmCom + coeffsFitPwm(2),'-r','LineWidth',2);
+      plot(dataPwmCom,forceFitData,'-r','LineWidth',2);
       
       title('Commanded PWM Duty Cycle versus Magnitude of Thrust','FontSize',14);
       xlabel('PWM Duty Cycle [%]','FontSize',14);
       ylabel('|F| [N]','FontSize',14);
-      legend('Magnitude of F', sprintf('Linear fit (|F| = %2.4f * pwm + %2.1f)', coeffsFitPwm(1), coeffsFitPwm(2)),'Location','NorthWest');
+      legend('Magnitude of F', sprintf('2nd Order Poly: ~ %2.2f * x^2', coeffsFitF2nd(1)),'Location','NorthWest');
     
       % Plot |Mz| vs pwm commanded to ESC
       subplot(2,2,4);
       grid on;
       hold on;
       plot(dataPwmCom,magnitudeM,'o','MarkerFaceColor','b');
-      plot(dataPwmCom,coeffsFitPwmMom(1).*dataPwmCom + coeffsFitPwmMom(2),'-r','LineWidth',2);
+      momFitData = coeffsFitM2nd(1).*dataPwmCom.^2 + coeffsFitM2nd(2).*dataPwmCom + coeffsFitM2nd(3);
+      plot(dataPwmCom,momFitData,'-r','LineWidth',2);
 
       title('Commanded PWM Duty Cycle versus Magnitude of Moment in Z','FontSize',14);
       xlabel('PWM Duty Cycle [%]','FontSize',14);
       ylabel('|M| [mN*m]','FontSize',14);
-      legend('Magnitude of M', sprintf('Linear fit (M = %2.4f * pwm + %2.1f)', coeffsFitPwmMom(1), coeffsFitPwmMom(2)),'Location','NorthWest');
+      legend('Magnitude of M', sprintf('2nd Order Poly: ~ %2.2f * x^2', coeffsFitM2nd(1)),'Location','NorthWest');
 
       figure(3);
       grid on;

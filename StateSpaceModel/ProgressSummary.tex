@@ -135,17 +135,15 @@ Are the thrust, angular speed, and moment in the $e_{bz}$ direction of each prop
 				      -
 				      \omegaVec \times \bar{\bar{I}} \omegaVec
 \end{equation}
-  
-Where:
 
-\begin{equation}
-    \label{omegaDot}
-    \left[ \begin{array}{ccc} \dot{p} \\ 
-  					\dot{q} \\ 
-					\dot{r} \end{array} \right]
-					=
-					nasty vector I need to look up again
-\end{equation}
+%\begin{equation}
+ %   \label{omegaDot}
+  %  \left[ \begin{array}{ccc} \dot{p} \\ 
+ % 					\dot{q} \\ 
+%					\dot{r} \end{array} \right]
+%					=
+%					nasty vector I need to look up again
+%\end{equation}
 
 \section{Analysis}
 \subsection{Motor Characteristics}
@@ -153,6 +151,22 @@ It has been shown by \emph{Mellinger, et. al.} and suggested by our faculty advi
 
 \emph{Mellinger, et. al.} and Dr. Kothmann also suggested that:
 \[\dot{\omega_i} = K_{mot}\left(\omega_{i,com} - \omega_i\right)\]
+Where $\omega_{i,com}$ is the commanded motor speed.
+
+Solving explicitly for $\omega_i$ with $\omega_{i}(t=0) = 0$ we have:
+\[\omega_i\left(t\right) = \omega_{i,com}\left(1-e^{-K_{mot}t}\right)\]
+Which shows that $K_{mot} = 1/\tau_{mot}$ which can be determined experimentally.  We have limited useful experimental data for transient motor response because our initial results exhibited signs of rate limiting, and so the data are not entirely useful.  However, using what we have $\tau_{mot} \approx 0.2  $ [s] so:
+\begin{equation}
+\label{motorCoeff}
+K_{mot} \approx 5 \quad [1/s]
+\end{equation}
+\subsection{$K_t$ and $K_m$ From Experimental Results}
+Figure \ref{thrustAndMomCoeffs} shows raw data from the thrust tests of the Turnigy 35-42D motor with the Master Airscrew 12"x6" Tri Blade prop.  Each point represents the average of 2 [s] of data a a certain RPM.  The last 3 and 4 points in the thrust and moment plots, respectively, were ignored in the 2nd order polynomial fit because they were deemed to be the result of current limiting in our test system, and so were not consistent with in situ expectation. 
+\begin{figure}[h]
+  \includegraphics[width=5in]{images/forceAndMomMagFitOmega.eps}
+  \caption{Thrust test data with 2nd order polynomial fit for thrust and moment coefficients with erroneous data points ignored in fit}
+   \label{thrustAndMomCoeffs}
+\end{figure}
 
 \subsection{Equations of Motion with Motor Characteristics}
 \subsubsection{Linear Acceleration}
