@@ -42,7 +42,7 @@ title('Validity Check of Custom Runge Kutta Function','FontSize',14);
 % Euclidean distance between the two resulting vectors
 eucDistNum = sqrt(sum((states2(:)-y(:)).^2));
 
-% Euclidean Distance between my result and the real thing
+% Euclidean Distance between both my result and ODE45's result and the real thing
 expFunc = @(t)(steady.*(1-exp(-t)));
 
 eucDistActMe = sqrt(sum((states2(:)-expFunc(t)).^2));

@@ -42,7 +42,7 @@ function success = drawStorque(fh, pos, angles)
     % These vectors define the fuselage and 4 rotor arms sitting at the
     % origin in the world frame (pre-translation and pre-rotation)
     
-    fuselage = [0 0 fuselageLength];
+    fuselage = [0 0 -fuselageLength];
     rotorArm1 = [rotorArmLength 0 0];
     rotorArm2 = [-rotorArmLength 0 0];
     rotorArm3 = [0 rotorArmLength 0];

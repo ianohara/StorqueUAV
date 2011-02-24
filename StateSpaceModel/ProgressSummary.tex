@@ -161,7 +161,7 @@ Which shows that $K_{mot} = 1/\tau_{mot}$ which can be determined experimentally
 K_{mot} \approx 5 \quad [1/s]
 \end{equation}
 \subsection{$K_t$ and $K_m$ From Experimental Results}
-Figure \ref{thrustAndMomCoeffs} shows raw data from the thrust tests of the Turnigy 35-42D motor with the Master Airscrew 12"x6" Tri Blade prop.  Each point represents the average of 2 [s] of data a a certain RPM.  The last 3 and 4 points in the thrust and moment plots, respectively, were ignored in the 2nd order polynomial fit because they were deemed to be the result of current limiting in our test system, and so were not consistent with in situ expectation. 
+Figure \ref{thrustAndMomCoeffs} shows raw data from the thrust tests of the Turnigy 35-42D motor with the Master Airscrew 12"x6" Tri Blade prop.  Each point represents the average of 2 [s] of data at a certain RPM.  The last 3 and 4 points in the thrust and moment plots, respectively, were ignored in the 2nd order polynomial fit because they were deemed to be the result of current limiting in our test system, and so were not consistent with the full prototype in situ environment.  These tests will be redone, eventually, to verify this hypothesis. 
 \begin{figure}[h]
   \includegraphics[width=5in]{images/forceAndMomMagFitOmega.eps}
   \caption{Thrust test data with 2nd order polynomial fit for thrust and moment coefficients with erroneous data points ignored in fit}
@@ -262,7 +262,7 @@ Figure \ref{thrustAndMomCoeffs} shows raw data from the thrust tests of the Turn
     Our input vector is:
     \begin{equation}
       \label{inputVecEqn}
-      \vec{u} = \left(something\right)
+      \vec{u} = \left(\begin{array}{cccccc}\dot{x}_{com} &\dot{y}_{com}& \dot{z}_{com}& \phi_{com}& \theta_{com}& \psi_{com}\end{array}\right)^T
     \end{equation}
     
     The rate of change of state without control is defined, in pieces, below:
