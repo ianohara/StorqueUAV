@@ -33,8 +33,8 @@ kT = 1;          % Gain for omega -> Thrust [kg*m]
 kMot = 5;        % Gain on first order motor delay [1/s]
 
 % Control gains
-kpRoll = 0;
-kdRoll = 0;
+kpRoll = 10;
+kdRoll = 1;
 
 % Calculate trim angular velocities needed in our artificial quadrotor
 % axes (omegaZ,omegaPhi,omegaPsi,omegaTheta)  These get distributed over
@@ -137,7 +137,7 @@ cos(psi)*sin(theta) + cos(theta)*sin(phi)*sin(psi), sin(psi)*sin(theta) - cos(ps
 
 linAccel = inv(Mtens)*([0 0 mass*g]' + R*[0 0 -(T(w1,kT)+T(w2,kT)+T(w3,kT)+T(w4,kT))]');
 
-omegaDot = inv(Itens)*([armLen*(T(w1,kT)-T(w1,kT)) armLen*(T(w1,kT)-T(w1,kT)) M(w1,kM)+M(w2,kM)-M(w3,kM)-M(w4,kM)]' - cross(s(10:12)', Itens*s(10:12)'));
+omegaDot = inv(Itens)*([armLen*(T(w4,kT)-T(w3,kT)) armLen*(T(w1,kT)-T(w2,kT)) M(w1,kM)+M(w2,kM)-M(w3,kM)-M(w4,kM)]' - cross(s(10:12)', Itens*s(10:12)'));
 
 % Matrix that brings you from your angular accels to derivatives of euler
 % angles.
