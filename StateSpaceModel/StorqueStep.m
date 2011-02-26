@@ -107,9 +107,9 @@ thrustCont(3) = 0; % Thrust in z [N]
 
 % Define and calculate omegas needed
 omegaZ     = omegaZTrim + Ttow(thrustCont(3),kT);
-omegaPhi   = omegaPhiTrim + Ttow(thrustCont(1),kT) + Mtow(momCont(1),kM);
-omegaTheta = omegaThetaTrim + Ttow(thrustCont(2),kT) + Mtow(momCont(2),kM);
-omegaPsi   = omegaPsiTrim + Mtow(momCont(3),kM);
+omegaPhi   = omegaPhiTrim + Ttow(thrustCont(1),kT) + sign(momCont(1))*Mtow(abs(momCont(1)),kM);
+omegaTheta = omegaThetaTrim + Ttow(thrustCont(2),kT) + sign(momCont(2))*Mtow(abs(momCont(2)),kM);
+omegaPsi   = omegaPsiTrim + sign(momCont(3))*Mtow(abs(momCont(3)),kM);
 
 % Calculate the desired angular velocities of each motor to achieve
 % these results.
