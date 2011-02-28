@@ -110,7 +110,7 @@ function success = analyze(motorFolder, propName, trialNum, varargin)
     fileNameStub = [dataFolder '/' propName '_' sprintf('%d',trialNum)];
     
     rho = 1.2;           % [kg/m^3];
-    diam = 0.2286;       % [m] THIS NEEDS TO BE PULLED OUT OF propName eventually
+    diam = 0.3048;       % [m] THIS NEEDS TO BE PULLED OUT OF propName eventually
     voltage = 11.1;      % [V]
     % END DEFINES %
     

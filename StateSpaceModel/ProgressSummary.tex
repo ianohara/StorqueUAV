@@ -155,17 +155,22 @@ Where $\omega_{i,com}$ is the commanded motor speed.
 
 Solving explicitly for $\omega_i$ with $\omega_{i}(t=0) = 0$ we have:
 \[\omega_i\left(t\right) = \omega_{i,com}\left(1-e^{-K_{mot}t}\right)\]
-Which shows that $K_{mot} = 1/\tau_{mot}$ which can be determined experimentally.  We have limited useful experimental data for transient motor response because our initial results exhibited signs of rate limiting, and so the data are not entirely useful.  However, using what we have $\tau_{mot} \approx 0.2  $ [s] so:
+Which shows that $K_{mot} = 1/\tau_{mot}$ which can be determined experimentally.  We have limited useful experimental data for transient motor response because our initial results exhibited signs of rate limiting, and so the data are not entirely useful.  However, using what we have (see Figure \ref{transientTests}) $\tau_{mot} \approx 0.2  $ [s] so:
 \begin{equation}
 \label{motorCoeff}
 K_{mot} \approx 5 \quad [1/s]
 \end{equation}
+\begin{figure}[h]
+  \includegraphics[width=5in]{images/transientThrust.eps}
+  \label{transientTests}
+  \caption{Transient thrust tests that exhibit rate limiting.  The time constant of $\tau=0.2$ was pulled from the 2nd and 3rd time constant generations of the $0$[N] to $4$[N] test.}
+\end{figure}
 \subsection{$K_t$ and $K_m$ From Experimental Results}
 Figure \ref{thrustAndMomCoeffs} shows raw data from the thrust tests of the Turnigy 35-42D motor with the Master Airscrew 12"x6" Tri Blade prop.  Each point represents the average of 2 [s] of data at a certain RPM.  The last 3 and 4 points in the thrust and moment plots, respectively, were ignored in the 2nd order polynomial fit because they were deemed to be the result of current limiting in our test system, and so were not consistent with the full prototype in situ environment.  These tests will be redone, eventually, to verify this hypothesis. 
 \begin{figure}[h]
   \includegraphics[width=5in]{images/forceAndMomMagFitOmega.eps}
+     \label{thrustAndMomCoeffs}
   \caption{Thrust test data with 2nd order polynomial fit for thrust and moment coefficients with erroneous data points ignored in fit}
-   \label{thrustAndMomCoeffs}
 \end{figure}
 
 \subsection{Equations of Motion with Motor Characteristics}
@@ -326,8 +331,6 @@ Figure \ref{thrustAndMomCoeffs} shows raw data from the thrust tests of the Turn
 Where we have not defined $\omega_{i,des}$ yet.
 
 \subsection{Linearization}
-If we assume $\bar{\bar{I}}_{ij} \ll \bar{\bar{I}}_{ii}$ because of the symmetry of our design, then the $\vec{\omega} \times \bar{\bar{I}}\vec{\omega} $ term in \eqref{angAccelStateStep} is $\approx \vec{0}$.  
-
 
 
 \end{document}

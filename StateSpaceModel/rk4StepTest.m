@@ -30,7 +30,7 @@ kMot = 1;        % Gain on first order motor delay [1/s]
 
 u = [0 0 0 0 0 0];
 motTrim0 = sqrt((mass*g)/(4*kT));
-state0 = [1 1 1 0 0 0 0 0 0 0 0 0 motTrim0 motTrim0 motTrim0 motTrim0];
+state0 = [1 1 1 0 0 0 0.3 0 0 0 0 0 motTrim0 motTrim0 motTrim0 motTrim0];
 
 fprintf('Starting Sim...');
 [states, steps, simTime] = runSim(state0, u, params, endTime, dt);
