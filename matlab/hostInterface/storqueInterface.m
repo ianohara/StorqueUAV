@@ -21,6 +21,9 @@ classdef storqueInterface < handle
         serialData
         serialExists
         logFile
+        stream
+        dataIn
+        errorCount
     end
     
     methods        
@@ -30,7 +33,9 @@ classdef storqueInterface < handle
             self.serialPort = serialPort;
             self.serialBaud = 57600; % We will fix this for now
             self.serialData = '';
-            self.logFile = makeLogFile();           
+            self.logFile = makeLogFile();
+            self.errorCount = 0;
+            self.dataIn = [];
             
             if (isempty(self.serialPort))
                 self.serialExists = false;
@@ -46,7 +51,7 @@ classdef storqueInterface < handle
                 % Timeout can probably equal zero once we add more code
                 self.ser.Timeout = 0.005;
                 % Disable timout warning
-                warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
+                warning('off', 'MATLAB:serial:fgets:unsuccessfulRead')            
                 fopen(self.ser);
                 disp(strcat('Serial Port ', self.serialPort, 'Initialized'));
             else                                
@@ -74,42 +79,78 @@ classdef storqueInterface < handle
             disp('Successful Shutdown');
         end
         
-        %% Run Interface Main Loop
-        function loop(self)
-            % This is just a little prototype
-            quit = false;
-            tic
-            while not(quit)
-                % If serialExists :
-                % Check to see if there is any serial data available
-                % Note: this assumes that there are no errors in data
-                %   transmission, which is probably a bad thing
-                if (self.serialExists)
-                    dataIn = fgetl(self.ser);
-                    disp(size(dataIn));
-                    if (dataIn)
-                        disp(dataIn)
-                        fprintf(self.logFile, dataIn);
-                        tic                     
-                    else
-                        if (toc > 1.1)
-                            % Eventually this will just be some sort of 
-                            % data link update
-                            disp('No More Data to read')
-                            quit = true;
-                        end
-                    end
+        
+        %% Retrieve Serial Data and Parse It
+        function [angles pwms] = get_data(self)
+            
+            if (self.serialExists)
+                
+                %Initialize return values to 0 - if a full packet is found
+                %the appropriate return will be set.
+                angles = [];
+                pwms = [];
+                
+                temp_data = fgets(self.ser);
+                terminator_indices = strfind(temp_data, sprintf('\n'));
+                
+                %If the read detects no newlines, then simply add it to the
+                %existing read data.  We'll keep adding until we get a full
+                %packet, as indicated by the newline.
+                if (isempty(terminator_indices))
+                    self.dataIn = strcat(self.dataIn,temp_data,' ');
+
+                
+                %Otherwise, we have a complete packet.  Take in the
+                %appropriate data, parse it, and set this functions return
+                %values (angles, pwms, etc.).  Take the remaining data left
+                %after the first terminator and stick it in dataIn
                 else
-                    % Just drop out of the loop
-                    disp('No Serial to read Data')
-                    quit = true;
+                    for i = 1:length(terminator_indices)
+                        next_terminator = terminator_indices(i);
+                        self.dataIn = strcat(self.dataIn,temp_data(1:next_terminator));
+
+                        %Parse It!!
+
+                        %IMU Packet
+                        if strcmp(self.dataIn(1:4),'IMU_')
+                            if self.dataIn(5) == 'd'
+                                %IMU Data Packet
+                                len = length(self.dataIn);
+                                
+                                %To avoid errors with our concatenation,
+                                %underscores are used as delimeters.  Since
+                                %str2num wants spaces, we replace them.
+                                self.dataIn(strfind(self.dataIn(1,:),'_')) = ' ';
+                                imu_data = str2num(self.dataIn(10:len));
+                                if (~isempty(imu_data))
+                                    angles = imu_data(1:3);
+                                else
+                                    self.errorCount = self.errorCount + 1;
+                                    disp('Errors: ')
+                                    disp(self.errorCount)
+                                end
+                            end
+
+                        %RC Input Packet
+                        elseif strcmp(self.dataIn(1:4),'RCI ')
+                            if self.dataIn(5) == 'd'
+                                %RC Input Data Packet
+                                %TODO: Parse this properly
+                            end
+                        end
+
+                        %Now we've used dataIn, so replace whatever is in there
+                        %with any of the extra data that was after the
+                        %terminator
+                        self.dataIn = temp_data(next_terminator+1:length(temp_data));
+                    end
                 end
             end
-            %self.close
-        end
                     
-    end
+            
+        end
     
+    end
 end
 
 %% Handle Log Directory and Creation of Log Files
