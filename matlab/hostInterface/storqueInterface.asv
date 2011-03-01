@@ -1,0 +1,223 @@
+%% Matlab Host Storque Host Interface
+%{ 
+    Authors:
+        Uriah Baalke
+        Emily Fisher
+        Sebastian Mauchly
+        Ian O'hara       
+        Alice Yurechko        
+
+    Purpose:
+        A storque interfacing class and GUI for interacting with the
+        storque
+%}
+
+classdef storqueInterface < handle
+
+    properties
+        ser
+        serialPort
+        serialBaud
+        serialData
+        serialExists
+        logFile
+        stream
+        dataIn
+        errorCount
+        oldTheta
+    end
+    
+    methods        
+        %% Initialize Interface, currently user passes serialPort                
+        function self = storqueInterface(serialPort)
+                       
+            self.serialPort = serialPort;
+            self.serialBaud = 57600; % We will fix this for now
+            self.serialData = '';
+            self.logFile = makeLogFile();
+            self.errorCount = 0;
+            self.oldTheta = 0;
+            self.dataIn = [];
+            
+            if (isempty(self.serialPort))
+                self.serialExists = false;
+            else
+                self.serialExists = true;
+            end
+            
+            %Initialize Serial Connection
+            instrreset % Reset all connected instruments
+            if (self.serialExists)
+                self.ser = serial(self.serialPort);
+                self.ser.BaudRate = self.serialBaud;            
+                % Timeout can probably equal zero once we add more code
+                self.ser.Timeout = 0.005;
+                % Disable timout warning
+                warning('off', 'MATLAB:serial:fgets:unsuccessfulRead')            
+                fopen(self.ser);
+                disp(strcat('Serial Port ', self.serialPort, 'Initialized'));
+            else                                
+                disp('No Serial Initialized');
+            end
+            disp('Storque Interface Initialized')
+        end       
+        
+        %% Close Interface
+        function close(self)
+            disp('Storque Interface Shutting Down')
+            
+            % If serial Existed ... Close Serial
+            if (self.serialExists)                
+                fclose(self.ser);
+                delete(self.ser);
+                clear self.ser;
+            end
+            
+            % Close logFile
+            fclose(self.logFile);  
+            
+            % Re-enable Timoutwarning
+            warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
+            disp('Successful Shutdown');
+        end
+        
+        
+        %% Retrieve Serial Data and Parse It
+        function [angles pwms] = get_data(self)
+            
+            if (self.serialExists)
+                
+                %Initialize return values to 0 - if a full packet is found
+                %the appropriate return will be set.
+                angles = [];
+                pwms = [];
+                
+                temp_data = fgets(self.ser);
+                terminator_indices = strfind(temp_data, sprintf('\n'));
+                
+                %If the read detects no newlines, then simply add it to the
+                %existing read data.  We'll keep adding until we get a full
+                %packet, as indicated by the newline.
+                if (isempty(terminator_indices))
+                    self.dataIn = strcat(self.dataIn,temp_data,' ');
+
+                
+                %Otherwise, we have a complete packet.  Take in the
+                %appropriate data, parse it, and set this functions return
+                %values (angles, pwms, etc.).  Take the remaining data left
+                %after the first terminator and stick it in dataIn
+                else
+                    for i = 1:length(terminator_indices)
+                        next_terminator = terminator_indices(i);
+                        blah = self.dataIn;
+                        self.dataIn = strcat(self.dataIn,temp_data(1:next_terminator));
+
+                        %Parse It!!
+
+                        %IMU Packet
+                        if strcmp(self.dataIn(1:4),'IMU ')
+                            if self.dataIn(5) == 'd'
+                                %IMU Data Packet
+                                len = length(self.dataIn);
+                                self.dataIn(strfind(self.dataIn(10:len),'_')) = ' ';
+                 
+                                imu_data = str2num(self.dataIn(10:len));
+                                if (~isempty(imu_data))
+                                    angles = imu_data(1:3);
+                                    if max(angles-self.oldTheta)>10
+                                        disp(angles-self.oldTheta)
+                                    end
+                                    self.oldTheta = angles;
+                                else
+                                    self.errorCount = self.errorCount + 1;
+                                    %disp('Error woo')
+                                    %disp(blah)
+                                    %disp(temp_data(1:next_terminator))
+                                    %disp(self.dataIn)
+                                    disp(temp_data)
+                                end
+                            end
+
+                        %RC Input Packet
+                        elseif strcmp(self.dataIn(1:4),'RCI ')
+                            if self.dataIn(5) == 'd'
+                                %RC Input Data Packet
+                                %TODO: Parse this properly
+                            end
+                        end
+
+                        %Now we've used dataIn, so replace whatever is in there
+                        %with any of the extra data that was after the
+                        %terminator
+                        self.dataIn = temp_data(next_terminator+1:length(temp_data));
+                    end
+                end
+            end
+                    
+            
+        end
+        
+        %% Run Interface Main Loop
+        function stream_data(self,handle,handle2)
+            % This is just a little prototype
+            quit = false;
+            tic
+            if (self.stream && not(quit))
+                % If serialExists :
+                % Check to see if there is any serial data available
+                % Note: this assumes that there are no errors in data
+                %   transmission, which is probably a bad thing
+                if (self.serialExists)
+                    dataIn = fgetl(self.ser);
+                    %disp(size(dataIn));
+                    if (dataIn)
+                        %Here we should handle different types of data on a
+                        %case-wise basis.
+                        %dataIn
+                        if (length(dataIn) > 10)
+                            if (strcmp(dataIn(1:4),'IMU ') && (length(str2num(dataIn(10:length(dataIn)))) == 17))
+                                imu_angles = str2num(dataIn(10:length(dataIn)));
+                                quad_draw(imu_angles(1),imu_angles(2),imu_angles(3),handle,handle2);
+
+                                fprintf(self.logFile, dataIn);
+                                quit = true;  
+                            end
+                        end
+                    else
+                        if (toc > 1.1)
+                            % Eventually this will just be some sort of 
+                            % data link update
+                            %disp('No More Data to read')
+                            quit = true;
+                        end
+                    end
+                else
+                    % Just drop out of the loop
+                    disp('No Serial to read Data')
+                    quit = true;
+                end
+            end
+            %self.close
+        end
+                    
+    end
+    
+end
+
+%% Handle Log Directory and Creation of Log Files
+function logFile = makeLogFile()
+    
+    if not (isdir('log'))
+        mkdir ('log')
+    end
+    
+    % Get Current Time/Date and write that into a logfilename string
+    c = fix(clock);
+    dir_filename = 'log/logFile';
+    for n = 1:length(c)
+        dir_filename = strcat(dir_filename, '-', num2str(c(n)));
+    end
+        
+    % Create Log file with current time in name    
+    logFile = fopen(dir_filename, 'w');    
+end
