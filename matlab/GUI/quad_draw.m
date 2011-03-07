@@ -1,7 +1,11 @@
 function [] = quad_draw(angles,pwm,pos,h,h2,h_line)
 
-%Scale pwms to range from 0 to .4
-pwm = .6*pwm;
+
+
+%Scale pwms to range from 0 to 1
+kT = (1.5*9.81)/733.038;
+pwm = kT*(pwm);
+pwm = (1/(1.5*9.81))*pwm;
 
 %Scale Angles into Radians
 psi = (angles(1))*pi/180;
@@ -93,9 +97,10 @@ set(h2,'XData',Xw)
 set(h2,'YData',Yw)
 set(h2,'ZData',-ones(1,12))
 
-axis_m = 2*[-1 1 -1 1 -1 1] + [pos(1) pos(1) pos(2) pos(2) pos(3) pos(3)];
+axis_m = 2*[-1 1 -1 1 -1 1.9] + [pos(1) pos(1) pos(2) pos(2) pos(3) pos(3)];
 
 axis(axis_m)
+grid off
 
 drawnow();
 

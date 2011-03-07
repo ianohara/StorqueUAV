@@ -43,7 +43,7 @@ w4 = s(16);   % [rad/s]
 
 %----Constants, Function Definitions----%
 % Define physical system parameters
-mass = 5;        % [kg]
+mass = 3.76;        % [kg]
 armLen = 0.382;  % [m]
 Ixx = 0.2;       % [kg*m^2]
 Iyy = 0.2;       % [kg*m^2]
@@ -71,7 +71,6 @@ kdRoll = (6.2);
 kpYaw = 10;
 kdYaw = 6.2;
 
-kpZTrans = 10;
 kdZTrans = 10;
 
 % Define the function that will give us thrusts in the zb axis as a 
@@ -97,7 +96,7 @@ momCont(3) = (kpYaw *(  psi_com -   psi) - kdYaw *r) * Izz;  % Psi
 % Spatial Control
 thrustCont(1) = 0; % Thrust in x [N]
 thrustCont(2) = 0; % Thrust in y [N]
-thrustCont(3) = (kpZTrans*(0 - z) + kdZTrans*(zd_com - w))*mass ; %+ kdZTrans*world_vel(3))*mass*g; % Thrust in z [N]  <-- Not working properly right now
+thrustCont(3) = (kdZTrans*(zd_com - w))*mass ; %+ kdZTrans*world_vel(3))*mass*g; % Thrust in z [N]  <-- Not working properly right now
 
 % Define and calculate the vertical force and the three body-axis moments that we want
 forceZ   = forceZTrim   + thrustCont(3);
@@ -112,30 +111,40 @@ momPsi   = momPsiTrim   + momCont(3);
 % axes, up to the actual momPhi and momTheta values we've just calculated.
 % Finally, if the motors are still not max-ed or min-ed out, we can put a
 % yaw moment on the vehicle with any remaining thrust flexibility.
+fDes = (forceZ/4)*([1 1 1 1]');
+fDes = fDes - max( ((forceZ/4) - max_thrust), 0);
 
-clipped_moment_Phi   = min(abs(momPhi/(2*armLen)), (max_thrust/2));
-clipped_moment_Theta = min(abs(momTheta/(2*armLen)), (max_thrust/2));
-
-max_attitude_thrust_increase = max( clipped_moment_Phi,clipped_moment_Theta);
-
-fDes = max_attitude_thrust_increase* ([1 1 1 1]');
-
-fDes(1) = fDes(1) - clipped_moment_Phi*sign(momPhi); %<-- ???
-fDes(2) = fDes(2) + clipped_moment_Phi*sign(momPhi);
-fDes(3) = fDes(3) - clipped_moment_Theta*sign(momTheta);
-fDes(4) = fDes(4) + clipped_moment_Theta*sign(momTheta);
-
-%bleh = clipped_moment_Theta*sign(momPhi)
-%zoik = -(fDes(3)*armLen - fDes(4)*armLen)
-
-%Scale it up to the total thrust we want, or the most we can achieve
-cur_thrust = sum(fDes);
-max_possible_added = max_thrust - max(fDes);
-
-if ((forceZ - cur_thrust)/4 > max_possible_added)
-    fDes = fDes + max_possible_added;
+if max(0,forceZ) < (1.1*forceZTrim)
+    forceZCheck = forceZ;
 else
-    fDes = fDes + min((forceZ-cur_thrust)/4,0);
+    forceZCheck = 1.1*forceZTrim;
+end
+
+if forceZCheck > max_thrust*4
+    max_attitude_force_increase2 = max([abs(momPhi/(2*armLen)),abs(momTheta/(2*armLen))]);
+    max_attitude_force_increase = min(max_attitude_force_increase2, (max_thrust/2));
+    fDes = (max_thrust - max_attitude_force_increase)*([1 1 1 1]');
+end
+
+clip_force1 = max_thrust - fDes(1);
+clip_force2 = fDes(1) - 0;
+
+clip_force = min(clip_force1, clip_force2);
+
+if ((clip_force) < abs(momPhi/(2*armLen)))
+    fDes(1) = fDes(1) + (clip_force*sign(momPhi));
+    fDes(2) = fDes(2) - (clip_force*sign(momPhi));
+else
+    fDes(1) = fDes(1) + (momPhi/(2*armLen));
+    fDes(2) = fDes(2) - (momPhi/(2*armLen));
+end
+
+if ((clip_force) < abs(momTheta/(2*armLen)))
+    fDes(3) = fDes(3) + (clip_force*sign(momTheta));
+    fDes(4) = fDes(4) - (clip_force*sign(momTheta));
+else
+    fDes(3) = fDes(3) + (momTheta/(2*armLen));
+    fDes(4) = fDes(4) - (momTheta/(2*armLen));
 end
 
 ab = [3 4];
@@ -147,7 +156,7 @@ if sign(momPsi) > 0
 end
 
 yaw_clip1 = max_thrust - max(fDes(ab));
-yaw_clip2 = min(fDes(cd)) - 0;
+yaw_clip2 = max(fDes(cd)) - 0;
 
 yaw_clip = min(yaw_clip1, yaw_clip2);
 
@@ -211,14 +220,7 @@ Mtens = mass * eye(3,3); % Mass tensor
 linAccel = (Mtens)\([0 0 -mass*g]' + R*[0 0 (T(w1,kT)+T(w2,kT)+T(w3,kT)+T(w4,kT))]');
 
 % Angular Acceleration
-w1
-w2
-w3
-w4
--armLen*(T(w1,kT)-T(w2,kT)) 
--armLen*(T(w3,kT)-T(w4,kT))
-M(w1,kM)+M(w2,kM)-M(w3,kM)-M(w4,kM)
-omegaDot = (Itens)\([-armLen*(T(w1,kT)-T(w2,kT)) -armLen*(T(w3,kT)-T(w4,kT)) M(w1,kM)+M(w2,kM)-M(w3,kM)-M(w4,kM)]' - cross(s(10:12)', Itens*s(10:12)'))
+omegaDot = (Itens)\([armLen*(T(w1,kT)-T(w2,kT)) armLen*(T(w3,kT)-T(w4,kT)) M(w1,kM)+M(w2,kM)-M(w3,kM)-M(w4,kM)]' - cross(s(10:12)', Itens*s(10:12)'));
 
 % Matrix that brings you from your angular velocities to derivatives of euler
 % angles.

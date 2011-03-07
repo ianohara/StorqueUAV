@@ -13,9 +13,12 @@ axes_hand = axes;
 [h1 h2 h_lines] = init_quad_draw(axes_hand);
 
 %Initialize the quadrotor's 1x16 state s, as defined in StorqueStep
-old_state = [0 0 0 0 0 0 .7 .5 -.3 0 .4 -.1 1 1 1 1];
+%old_state = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 634.8297 634.8297];
+%old_state = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 634.8297 0];
+%old_state = [0 0 3 0 0 12 0 pi/2 0 5 0 0 634.8297 634.8297 634.8297 634.8297];
+old_state = [0 0 0 0 0 0 0 0 0 0 0 0 634.8297 634.8297 634.8297 634.8297];
 %Initialize the quadrotor's 1x6 control input u, as defined in StorqueStep
-control_input = [0 0 0 0 0 0];
+control_input = [0 0 2 0 0 0];
  
 kT = 1;
 
@@ -39,9 +42,10 @@ while(1)
     end
     
     dt = toc;
+    %pause(.1)
     new_state = rk4Step(old_state,control_input,@StorqueStep,dt);
     tic
-    
+
     %Enforce periodicity on the angular coordinates
     for j = 7:9
         if new_state(j) > pi
@@ -69,7 +73,7 @@ while(1)
     %   1 Handle to a "quadrotor's-shadow-looking" patch
     %   1 Vector of Handles to 4 Line Objects that will be drawn as the
     %     thrusts
-    quad_draw(180*new_state([9 7 8])/pi,kT*(new_state([13, 16, 14, 15]).^2),new_state(1:3),h1,h2,h_lines);
+    quad_draw(180*new_state([9 7 8])/pi,new_state([13, 16, 14, 15]),new_state(1:3),h1,h2,h_lines);
 
 end
 

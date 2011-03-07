@@ -1,0 +1,34 @@
+function [states, steps, simTime] = runSim(initState, controlVec, params, endTime, dt)
+% Run a storque simuation for a set amount of time returning the time
+% it took to run the simulation and the final state.
+% 
+% This is used in the testing script for the storque simulator.
+%
+% initState - [1x16] state vector
+% controlVec - [1x6] control vector
+% params - structure containing the physical system parameters
+%
+% endTime - Simulation will run from time 0 to endTime
+% dt - Timestep to use for the numerical integration.
+%
+%
+%
+%
+
+states = zeros(ceil(endTime/0.001),16);
+step = 1;
+
+% Record the initial conditions.
+states(step,:) = initState;
+
+tic;
+time = 0;
+while(time < endTime)
+   time = time + dt;
+   states(step+1,:) = rk4Step(states(step,:),controlVec, @StorqueStep, dt);
+   step = step + 1;
+end
+simTime = toc;
+steps = step;
+
+end

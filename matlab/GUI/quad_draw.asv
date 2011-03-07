@@ -1,14 +1,12 @@
-function [] = quad_draw(psi,phi,theta,pwm,h,h2,h_line)
+function [] = quad_draw(angles,pwm,pos,h,h2,h_line)
 
-pwm_max = 1650;
-pwm_min = 1100;
-
-pwm = (pwm - pwm_min)  / pwm_max;
+%Scale pwms to range from 0 to .4
+pwm = .6*pwm;
 
 %Scale Angles into Radians
-theta = theta*pi/180;
-phi = phi*pi/180;
-psi = psi*pi/180;
+psi = (angles(1))*pi/180;
+phi = (angles(2))*pi/180;
+theta = (angles(3))*pi/180;
 
 hl = h_line';
 
@@ -50,25 +48,25 @@ W2 = BRW*[XL2; YL2; ZL2;];
 W3 = BRW*[XL3; YL3; ZL3;];
 W4 = BRW*[XL4; YL4; ZL4;];
 
-Xw = W(1,:);
-Yw = W(2,:);
-Zw = W(3,:);
+Xw = W(1,:) + pos(1);
+Yw = W(2,:) + pos(2);
+Zw = W(3,:) + pos(3);
 
-Xw1 = W1(1,:);
-Yw1 = W1(2,:);
-Zw1 = W1(3,:);
+Xw1 = W1(1,:) + pos(1);
+Yw1 = W1(2,:) + pos(2);
+Zw1 = W1(3,:) + pos(3);
 
-Xw2 = W2(1,:);
-Yw2 = W2(2,:);
-Zw2 = W2(3,:);
+Xw2 = W2(1,:) + pos(1);
+Yw2 = W2(2,:) + pos(2);
+Zw2 = W2(3,:) + pos(3);
 
-Xw3 = W3(1,:);
-Yw3 = W3(2,:);
-Zw3 = W3(3,:);
+Xw3 = W3(1,:) + pos(1);
+Yw3 = W3(2,:) + pos(2);
+Zw3 = W3(3,:) + pos(3);
 
-Xw4 = W4(1,:);
-Yw4 = W4(2,:);
-Zw4 = W4(3,:);
+Xw4 = W4(1,:) + pos(1);
+Yw4 = W4(2,:) + pos(2);
+Zw4 = W4(3,:) + pos(3);
 
 
 set(h,'XData',Xw)
@@ -95,8 +93,10 @@ set(h2,'XData',Xw)
 set(h2,'YData',Yw)
 set(h2,'ZData',-ones(1,12))
 
-drawnow();
-%figure(curFigure);
+axis_m = 2*[-1 1 -1 1 -1 1] ;%+ [pos(1) pos(1) pos(2) pos(2) pos(3) pos(3)];
 
+axis(axis_m)
+
+drawnow();
 
 end
