@@ -53,14 +53,14 @@ g = 9.81;        % [m/s^2]
 % Physical system gains
 max_thrust = 1.5*g; % Maximum thrust we can get from a rotor [kg*m/s^2]
 max_mom    = 1.0*g;
-kM = max_mom    / 733.038;  % Gain for omega -> Moment               [kg*m^2]
-kT = max_thrust / 733.038;  % Gain for omega -> Thrust               [kg*m]
+kM = max_mom    / (5.1313e6);%(733.038^2);  % Gain for omega -> Moment               [kg*m^2]
+kT = max_thrust / (5.1313e6);  % Gain for omega -> Thrust               [kg*m]
 kMot = 5;           % Gain on first order motor delay        [1/s]
 kRatio = kM/kT;     % Ratio of how much Moment [kg*m^2] is exerted by a motor 
                     %  for every [kg*m] of Thrust that would be exerted by the
                     %  same motor speed w.  Units are [m]
 
-% Form the 3x3 Rotation matrix from body to world frame in the Z-X-Y system (Psi, Phi, Theta)
+% Form the 3x3 Rotation matrix from body to world frame in the Y-X-Z system (Theta, Phi, Psi)
 R = [ cos(psi)*cos(theta) - sin(phi)*sin(psi)*sin(theta), cos(theta)*sin(psi) + cos(psi)*sin(phi)*sin(theta), -cos(phi)*sin(theta);...
 -cos(phi)*sin(psi),  cos(phi)*cos(psi),  sin(phi);...
 cos(psi)*sin(theta) + cos(theta)*sin(phi)*sin(psi), sin(psi)*sin(theta) - cos(psi)*cos(theta)*sin(phi),  cos(phi)*cos(theta)];
@@ -72,40 +72,85 @@ kdRoll = (6.2);
 kpYaw = 10;
 kdYaw = 6.2;
 
+kdXTrans = 30;
+
+kdYTrans = 30;
+
 if (zd_com > 0)
     kpZTrans = 0;
 else
-    kpZTrans = 12.4;
+    kpZTrans = 0;%12.4;
 end
 kdZTrans = 30;
 
 % Define the function that will give us thrusts in the zb axis as a 
 % of w (omega)
-T = @(w,k)(k.*w);
-M = @(w,k)(k.*w);
+T = @(w,k)(k.*w.^2);
+M = @(w,k)(k.*w.^2);
 
 % Define the inverse of T(w,k)
-Ttow = @(T,k)((T./k));
+Ttow = @(T,k)(sqrt(T./k));
 
 % Calculate trim forces and moments needed to maintain hover
-forceZTrim =   mass*g / (cos(phi)*cos(theta));
-momPhiTrim =   0;
-momPsiTrim =   0;
-momThetaTrim = 0;
+forceWorldXTrim   = 0;
+forceWorldYTrim   = 0;
+forceWorldZTrim   = mass*g;
+forceZTrim        = mass*g / (cos(phi)*cos(theta));
+momPhiTrim        = 0;
+momPsiTrim        = 0;
+momThetaTrim      = 0;
 
 %----Dynamic Controls Calculations----%
+% Spatial Control
+thrustCont(1) = kdXTrans*(xd_com - u) * mass; % Thrust in x [N]
+thrustCont(2) = kdYTrans*(yd_com - v) * mass; % Thrust in y [N]
+thrustCont(3) = (kpZTrans*(0 - z) + kdZTrans*(zd_com - w))*mass ; %Thrust in z [N]
+
+
+forceWorldX = forceWorldXTrim + thrustCont(1);
+forceWorldY = forceWorldYTrim + thrustCont(2);
+forceWorldZ = forceWorldZTrim + thrustCont(3);
+forceZ      = forceZTrim      + thrustCont(3);
+
+if forceZ > max_thrust*4
+    forceZ = max_thrust*4;
+elseif forceZ < 0
+    forceZ = 0;
+end
+
+% We know the final z force that we need, and we know the magnitude of the
+% final vector.  We want to find the x and y components that are in the
+% proper proportion, and satisfy the magnitude constraint.  Thus, we can
+% say:
+% min(x,y) = a*max(x,y) = b
+% b^2 + a^2*b^2 = forceZ^2 - forceWorldZ^2
+% b = sqrt((forceZ^2 - forceWorldZ^2) / (1 + a^2))
+
+% Now we back out what angle is required for such lateral accelerations.
+% We do this by realizing that once we've selected a commanded angle, the
+% quad will converge on it, eventually stabilizing at the commanded angle
+% and powering all rotors equally such that their sum adds to the
+% forceZ value, assuming the angle is not so severe that this value is
+% greater than the maximum possible thrust.
+% R*(0 0 forceZ)' = (forceWorldX forceWorldY forceWorldZ)'
+
+% sin(phi)*forceZ = forceWorldY
+%phi_com = asin(forceWorldY/forceZ);
+
+% -cos(phi)*sin(theta) * forceZ = forceWorldX
+%theta_com = asin( -forceWorldX / (cos(phi_com)*forceZ) );
+
+% cos(phi)*cos(theta) * forceZ = (thrustCont(3))
+%psi_com = 0;
+
+
 % Moment = (Angular Accel Desired) * Moment of Inertia
 momCont(1) = (kpRoll*(  phi_com -   phi) - kdRoll*p) * Ixx;  % Phi 
 momCont(2) = (kpRoll*(theta_com - theta) - kdRoll*q) * Iyy;  % Theta
 momCont(3) = (kpYaw *(  psi_com -   psi) - kdYaw *r) * Izz;  % Psi
 
-% Spatial Control
-thrustCont(1) = 0; % Thrust in x [N]
-thrustCont(2) = 0; % Thrust in y [N]
-thrustCont(3) = (kpZTrans*(0 - z) + kdZTrans*(zd_com - w))*mass ; %+ kdZTrans*world_vel(3))*mass*g; % Thrust in z [N]  <-- Not working properly right now
-
-% Define and calculate the vertical force and the three body-axis moments that we want
-forceZ   = forceZTrim   + thrustCont(3);
+% Define and calculate the vertical force and the three body-axis moments
+% that we want
 momPhi   = momPhiTrim   + momCont(1);
 momTheta = momThetaTrim + momCont(2);
 momPsi   = momPsiTrim   + momCont(3);

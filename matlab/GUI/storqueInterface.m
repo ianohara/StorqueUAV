@@ -92,6 +92,7 @@ classdef storqueInterface < handle
                 rcis = [];
                 pwm_max = 1930;
                 pwm_min = 1050;
+                max_angle_com = .4;
                 
                 temp_data = fgets(self.ser);
                 terminator_indices = strfind(temp_data, sprintf('\n'));
@@ -144,9 +145,9 @@ classdef storqueInterface < handle
                                 rci_data = str2num(self.dataIn(10:len));
                                 if (~isempty(rci_data))
                                     disp(rci_data(1,:))
-                                    rcis = (rci_data([1 2 4])-pwm_min)/(pwm_max-pwm_min);
-                                    rcis(1) = rcis(1) * (180/pi);
-                                    rcis(2) = rcis(2) * (180/pi);
+                                    rcis = 2*((rci_data([1 2 4])-pwm_min)/(pwm_max-pwm_min)) - 1;
+                                    rcis(1) = rcis(1) * max_angle_com;% * (180/pi);
+                                    rcis(2) = rcis(2) * max_angle_com;% * (180/pi);
 
                                 else
                                     self.errorCount = self.errorCount + 1;

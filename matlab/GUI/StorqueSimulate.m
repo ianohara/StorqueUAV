@@ -7,20 +7,18 @@
 close all
 clear all
 
-%serial = storqueInterface('COM6');
+serial = storqueInterface('COM6');
 figure (1)
 axes_hand = axes;
 [h1 h2 h_lines] = init_quad_draw(axes_hand);
 
 %Initialize the quadrotor's 1x16 state s, as defined in StorqueStep
-%old_state = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 634.8297 634.8297];
+old_state = [0 0 0, 0 0 0, 0 0 0, 0 0 0, 634.8297 634.8297 634.8297 634.8297];
 %old_state = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 634.8297 0];
 %old_state = [0 0 3 0 0 12 0 pi/2 0 5 0 0 634.8297 634.8297 634.8297 634.8297];
-old_state = [0 0 0 0 0 0 0 0 0 0 0 0 634.8297 634.8297 634.8297 634.8297];
+%old_state = [0 0 0 3 -6 12 0 pi/2 pi/4 6 0 0 634.8297 634.8297 634.8297 634.8297];
 %Initialize the quadrotor's 1x6 control input u, as defined in StorqueStep
-control_input = [0 0 2 0 0 0];
- 
-kT = 1;
+control_input = [0 0 0 0 0 0];
 
 %Initialize the timer
 tic
@@ -34,15 +32,15 @@ while(1)
     % also need to uncomment "serial = storqueInterface('COM6') at the very
     % top.
     
-    %[angles rcis pwms] = serial.get_data();
-    rcis = [];
-    
+    [angles rcis pwms] = serial.get_data();
+
     if (~isempty(rcis))
         control_input(4:5) = rcis(1:2);
+        control_input(3) = rcis(3) + .5;
     end
     
     dt = toc;
-    %pause(.1)
+    %pause(1)
     new_state = rk4Step(old_state,control_input,@StorqueStep,dt);
     tic
 
