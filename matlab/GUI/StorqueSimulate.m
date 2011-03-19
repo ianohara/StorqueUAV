@@ -13,7 +13,7 @@ axes_hand = axes;
 [h1 h2 h_lines] = init_quad_draw(axes_hand);
 
 %Initialize the quadrotor's 1x16 state s, as defined in StorqueStep
-old_state = [0 0 0, 0 0 0, pi/8 0 0, 0 0 0, 634.8297 634.8297 634.8297 634.8297];
+old_state = [0 0 0, 0 0 0, pi/16 0 0, 0 0 0, (634.8297*2) (634.8297*2) (634.8297*2) (634.8297*2)];
 %old_state = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 634.8297 0];
 %old_state = [0 0 3 0 0 12 0 pi/2 0 5 0 0 634.8297 634.8297 634.8297 634.8297];
 %old_state = [0 0 0 3 -6 12 0 pi/2 pi/4 6 0 0 634.8297 634.8297 634.8297 634.8297];
@@ -35,8 +35,8 @@ while(1)
     %[angles rcis pwms] = serial.get_data();
     rcis = [];
     if (~isempty(rcis))
-        control_input(4:5) = [rcis(1) -rcis(2)];
-        control_input(3) = rcis(4) + .3;
+        control_input(1:2) = 3*[rcis(1) -rcis(2)];
+        control_input(3) = rcis(4) + .2;
         control_input(6) = rcis(3);
     end
     

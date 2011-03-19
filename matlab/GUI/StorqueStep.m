@@ -45,9 +45,16 @@ w4 = s(16);   % [rad/s]
 % Define physical system parameters
 mass = 5;        % [kg]
 armLen = 0.382;  % [m]
-Ixx = 0.2;       % [kg*m^2]
-Iyy = 0.2;       % [kg*m^2]
-Izz = 0.2;       % [kg*m^2]
+Ixx = 0.0974;       % [kg*m^2]
+Iyy = 0.0963;       % [kg*m^2]
+Izz = 0.1874;       % [kg*m^2]
+Ixy = 0.0113;
+Ixz = -0.0025;
+Iyx = 0.0113;
+Iyz = -0.0026;
+Izx = -.0025;
+Izy = -0.0026;
+
 g = 9.81;        % [m/s^2]
 
 % Physical system gains
@@ -72,9 +79,9 @@ kdRoll = (6.2);
 kpYaw = 10;
 kdYaw = 6.2;
 
-kdXTrans = 30;
+kdXTrans = 12;
 
-kdYTrans = 30;
+kdYTrans = 12;
 
 if (zd_com > 0)
     kpZTrans = 0;
@@ -127,9 +134,6 @@ end
 bigger = max(abs(forceWorldX),abs(forceWorldY));
 smaller = min(abs(forceWorldX),abs(forceWorldY));
 
-bigger
-smaller
-
 if bigger ~= 0
     big_small_ratio = abs(smaller) / abs(bigger);
 else
@@ -145,9 +149,9 @@ if most_xory > abs(bigger)
     most_xory = abs(bigger);
 end
 
-forceDesZ = sqrt(most_xory^2 + (big_small_ratio*most_xory)^2 + forceWorldZ^2)
+forceDesZ = sqrt(most_xory^2 + (big_small_ratio*most_xory)^2 + forceWorldZ^2);
 
-if forceWorldX >= forceWorldY
+if abs(forceWorldX) >= abs(forceWorldY)
     finalX = sign(forceWorldX)*most_xory;
     finalY = sign(forceWorldY)*most_xory*big_small_ratio;
 else
@@ -172,16 +176,19 @@ end
 % R*(0 0 forceZ)' = (forceWorldX forceWorldY forceWorldZ)'
 
 % sin(phi)*forceZ = forceWorldY
-phi_com = asin(finalY/forceDesZ);
+phi_com_des = asin(finalY/forceDesZ);
 
 % -cos(phi)*sin(theta) * forceZ = forceWorldX
-theta_com = asin( -finalX / (cos(phi_com)*forceDesZ) );
+theta_com_des = asin( -finalX / (cos(phi_com)*forceDesZ) );
 
 % cos(phi)*cos(theta) * forceZ = (thrustCont(3))
 %psi_com = 0;
 
-phi_com = sign(phi_com)*min(abs(phi_com),.5);
-theta_com = sign(theta_com)*min(abs(phi_com),.5);
+phi_com_des = sign(phi_com_des)*min(abs(phi_com_des),.5);
+theta_com_des = sign(theta_com_des)*min(abs(theta_com_des),.5);
+
+phi_com = phi_com + .19*(phi_com_des - phi_com);
+theta_com = phi_com + .19*(theta_com_des - theta_com);
 
 
 % Moment = (Angular Accel Desired) * Moment of Inertia
@@ -286,9 +293,9 @@ wDes = Ttow(fDes,kT);
 %% Physical Modeling Starts Here
 
 % Build the tensors that describe the quadrotor dynamics
-Itens = [Ixx 0  0;...  % Inertial tensor
-          0 Iyy 0;...
-          0  0 Izz];
+Itens = [Ixx Ixy Ixz;...  % Inertial tensor
+         Iyx Iyy Iyz;...
+         Izx Izy Izz];
  
 Mtens = mass * eye(3,3); % Mass tensor
 
