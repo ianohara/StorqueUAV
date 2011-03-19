@@ -181,15 +181,15 @@ void console_transmit_packet(){
       return;
     }
     if (console.tx.index == 3){
-      consolePrint(" ");
+      consolePrint("_");
       consolePrint(console.tx.cmd);
-      consolePrint(" ");
+      consolePrint("_");
       console.tx.index++;
       return;
     }
     if (console.tx.index == 4){
       consolePrint((uint16_t)console.tx.len);
-      consolePrint(" ");
+      consolePrint("_");
       console.tx.index++;
       return;
     }
@@ -205,7 +205,7 @@ void console_transmit_packet(){
         consolePrint(console.tx.data_char[console.tx.index - 5]);
       }  
       // A space to designate new data for host
-      consolePrint(" ");
+      consolePrint("_");
       console.tx.index++;
       return;
     }

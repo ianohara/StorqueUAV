@@ -135,33 +135,33 @@ void RC_Input_Print(uint8_t type){
 
          
                    
-         console.tx.data_char[0] = 'C';
-         console.tx.data_char[1] = '0';
-         console.tx.data_char[2] = ':';
+         console.tx.data_char[0] = '_';
+         console.tx.data_char[1] = '_';
+         console.tx.data_char[2] = '_';
          console.tx.data_uint[3] = rc_input.channel_0; 
-         console.tx.data_char[4] = 'C';
-         console.tx.data_char[5] = '1';
-         console.tx.data_char[6] = ':';
+         console.tx.data_char[4] = '_';
+         console.tx.data_char[5] = '_';
+         console.tx.data_char[6] = '_';
          console.tx.data_uint[7] = rc_input.channel_1;
-         console.tx.data_char[8] = 'C';
-         console.tx.data_char[9] = '2';
-         console.tx.data_char[10] = ':';
+         console.tx.data_char[8] = '_';
+         console.tx.data_char[9] = '_';
+         console.tx.data_char[10] = '_';
          console.tx.data_uint[11] = rc_input.channel_2;
-         console.tx.data_char[12] = 'C';
-         console.tx.data_char[13] = '3';
-         console.tx.data_char[14] = ':';
+         console.tx.data_char[12] = '_';
+         console.tx.data_char[13] = '_';
+         console.tx.data_char[14] = '_';
          console.tx.data_uint[15] = rc_input.channel_3;         
-         console.tx.data_char[16] = 'C';
-         console.tx.data_char[17] = '4';
-         console.tx.data_char[18] = ':';
+         console.tx.data_char[16] = '_';
+         console.tx.data_char[17] = '_';
+         console.tx.data_char[18] = '_';
          console.tx.data_uint[19] = rc_input.channel_4;
-         console.tx.data_char[20] = 'C';
-         console.tx.data_char[21] = '5';
-         console.tx.data_char[22] = ':';
+         console.tx.data_char[20] = '_';
+         console.tx.data_char[21] = '_';
+         console.tx.data_char[22] = '_';
          console.tx.data_uint[23] = rc_input.channel_5;
-         console.tx.data_char[24] = 'M';
-         console.tx.data_char[25] = 'A';
-         console.tx.data_char[26] = ':';
+         console.tx.data_char[24] = '_';
+         console.tx.data_char[25] = '_';
+         console.tx.data_char[26] = '_';
          console.tx.data_uint[27] = rc_input.motors_armed;
 
          

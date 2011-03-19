@@ -11,7 +11,7 @@ yd_com    = u(2);
 zd_com    = u(3);
 phi_com   = u(4);
 theta_com = u(5);
-psi_com   = u(6);
+r_com     = u(6);
 
 % Define all of the system variables
 x = s(1);   % World Position x [m]
@@ -53,8 +53,8 @@ g = 9.81;        % [m/s^2]
 % Physical system gains
 max_thrust = 1.5*g; % Maximum thrust we can get from a rotor [kg*m/s^2]
 max_mom    = 1.0*g;
-kM = max_mom    / (733.038^2;  % Gain for omega -> Moment               [kg*m^2]
-kT = max_thrust / 733.038;  % Gain for omega -> Thrust               [kg*m]
+kM = max_mom    / (5.1313e6);%(733.038^2);  % Gain for omega -> Moment               [kg*m^2]
+kT = max_thrust / (5.1313e6);  % Gain for omega -> Thrust               [kg*m]
 kMot = 5;           % Gain on first order motor delay        [1/s]
 kRatio = kM/kT;     % Ratio of how much Moment [kg*m^2] is exerted by a motor 
                     %  for every [kg*m] of Thrust that would be exerted by the
@@ -79,7 +79,7 @@ kdYTrans = 30;
 if (zd_com > 0)
     kpZTrans = 0;
 else
-    kpZTrans = 12.4;
+    kpZTrans = 0;%12.4;
 end
 kdZTrans = 30;
 
@@ -89,7 +89,7 @@ T = @(w,k)(k.*w.^2);
 M = @(w,k)(k.*w.^2);
 
 % Define the inverse of T(w,k)
-Ttow = @(T,k)((T./k));
+Ttow = @(T,k)(sqrt(T./k));
 
 % Calculate trim forces and moments needed to maintain hover
 forceWorldXTrim   = 0;
@@ -118,6 +118,27 @@ elseif forceZ < 0
     forceZ = 0;
 end
 
+bigger = max(forceWorldX,forceWorldY);
+smaller = min(forceWorldX,forceWorldY);
+
+big_small_ratio = abs(smaller) / abs(bigger);
+
+% u^2 + (big_small_ratio*u)^2 + forceWorldZ^2 = forceZ^2;
+
+%(1+ big_small_ratio^2) * u^2 + 0*u + (forceWorldZ^2 - forceZ^2)
+
+final = sqrt( - 4*(1+big_small_ratio^2)*(forceWorldZ^2 - forceZ^2)) / (2* (1+big_small_ratio^2));
+if imag(final) ~= 0
+    disp(final)
+end
+if forceWorldX >= forceWorldY
+    finalX = sign(forceWorldX)*final;
+    finalY = sign(forceWorldY)*final*big_small_ratio;
+else
+    finalX = sign(forceWorldX)*final*big_small_ratio;
+    finalY = sign(forceWorldY)*final;
+end
+
 % We know the final z force that we need, and we know the magnitude of the
 % final vector.  We want to find the x and y components that are in the
 % proper proportion, and satisfy the magnitude constraint.  Thus, we can
@@ -135,19 +156,22 @@ end
 % R*(0 0 forceZ)' = (forceWorldX forceWorldY forceWorldZ)'
 
 % sin(phi)*forceZ = forceWorldY
-%phi_com = asin(forceWorldY/forceZ);
+phi_com = asin(finalY/forceZ);
 
 % -cos(phi)*sin(theta) * forceZ = forceWorldX
-%theta_com = asin( -forceWorldX / (cos(phi_com)*forceZ) );
+theta_com = asin( -finalX / (cos(phi_com)*forceZ) );
 
 % cos(phi)*cos(theta) * forceZ = (thrustCont(3))
 %psi_com = 0;
+
+phi_com = sign(phi_com)*min(abs(phi_com),.5);
+theta_com = sign(theta_com)*min(abs(phi_com),.5);
 
 
 % Moment = (Angular Accel Desired) * Moment of Inertia
 momCont(1) = (kpRoll*(  phi_com -   phi) - kdRoll*p) * Ixx;  % Phi 
 momCont(2) = (kpRoll*(theta_com - theta) - kdRoll*q) * Iyy;  % Theta
-momCont(3) = (kpYaw *(  psi_com -   psi) - kdYaw *r) * Izz;  % Psi
+momCont(3) =  kdYaw *(    r_com -   r  ) * Izz;  %(kpYaw *(  psi_com -   psi) - kdYaw *(r_com - r) * Izz;  % Psi
 
 % Define and calculate the vertical force and the three body-axis moments
 % that we want

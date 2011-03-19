@@ -11,7 +11,7 @@ yd_com    = u(2);
 zd_com    = u(3);
 phi_com   = u(4);
 theta_com = u(5);
-psi_com   = u(6);
+r_com     = u(6);
 
 % Define all of the system variables
 x = s(1);   % World Position x [m]
@@ -110,12 +110,49 @@ thrustCont(3) = (kpZTrans*(0 - z) + kdZTrans*(zd_com - w))*mass ; %Thrust in z [
 forceWorldX = forceWorldXTrim + thrustCont(1);
 forceWorldY = forceWorldYTrim + thrustCont(2);
 forceWorldZ = forceWorldZTrim + thrustCont(3);
-forceZ      = forceZTrim      + thrustCont(3);
+forceZ      = forceZTrim      + thrustCont(3)/(cos(phi)*cos(theta));
 
 if forceZ > max_thrust*4
     forceZ = max_thrust*4;
 elseif forceZ < 0
     forceZ = 0;
+end
+
+if forceWorldZ > max_thrust*4
+    forceWorldZ = max_thrust*4;
+elseif forceWorldZ < 0
+    forceWorldZ = 0;
+end
+
+bigger = max(abs(forceWorldX),abs(forceWorldY));
+smaller = min(abs(forceWorldX),abs(forceWorldY));
+
+bigger
+smaller
+
+if bigger ~= 0
+    big_small_ratio = abs(smaller) / abs(bigger);
+else
+    big_small_ratio = 0;
+end
+
+% u^2 + (big_small_ratio*u)^2 + forceWorldZ^2 = forceZ^2;
+
+%(1+ big_small_ratio^2) * u^2 + 0*u + (forceWorldZ^2 - forceZ^2)
+most_xory = sqrt( - 4*(1+big_small_ratio^2)*(forceWorldZ^2 - (max_thrust*4)^2)) / (2* (1+big_small_ratio^2));
+
+if most_xory > abs(bigger)
+    most_xory = abs(bigger);
+end
+
+forceDesZ = sqrt(most_xory^2 + (big_small_ratio*most_xory)^2 + forceWorldZ^2)
+
+if forceWorldX >= forceWorldY
+    finalX = sign(forceWorldX)*most_xory;
+    finalY = sign(forceWorldY)*most_xory*big_small_ratio;
+else
+    finalX = sign(forceWorldX)*most_xory*big_small_ratio;
+    finalY = sign(forceWorldY)*most_xory;
 end
 
 % We know the final z force that we need, and we know the magnitude of the
@@ -135,19 +172,22 @@ end
 % R*(0 0 forceZ)' = (forceWorldX forceWorldY forceWorldZ)'
 
 % sin(phi)*forceZ = forceWorldY
-%phi_com = asin(forceWorldY/forceZ);
+phi_com = asin(finalY/forceDesZ);
 
 % -cos(phi)*sin(theta) * forceZ = forceWorldX
-%theta_com = asin( -forceWorldX / (cos(phi_com)*forceZ) );
+theta_com = asin( -finalX / (cos(phi_com)*forceDesZ) );
 
 % cos(phi)*cos(theta) * forceZ = (thrustCont(3))
 %psi_com = 0;
+
+phi_com = sign(phi_com)*min(abs(phi_com),.5);
+theta_com = sign(theta_com)*min(abs(phi_com),.5);
 
 
 % Moment = (Angular Accel Desired) * Moment of Inertia
 momCont(1) = (kpRoll*(  phi_com -   phi) - kdRoll*p) * Ixx;  % Phi 
 momCont(2) = (kpRoll*(theta_com - theta) - kdRoll*q) * Iyy;  % Theta
-momCont(3) = (kpYaw *(  psi_com -   psi) - kdYaw *r) * Izz;  % Psi
+momCont(3) =  kdYaw *(    r_com -   r  ) * Izz;  %(kpYaw *(  psi_com -   psi) - kdYaw *(r_com - r) * Izz;  % Psi
 
 % Define and calculate the vertical force and the three body-axis moments
 % that we want

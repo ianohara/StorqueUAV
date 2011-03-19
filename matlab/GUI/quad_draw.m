@@ -97,10 +97,10 @@ set(h2,'XData',Xw)
 set(h2,'YData',Yw)
 set(h2,'ZData',-ones(1,12))
 
-axis_m = 2*[-1 1 -1 1 -1 1.9] + [pos(1) pos(1) pos(2) pos(2) pos(3) pos(3)];
+axis_m = 2*[-1 1 -1 1 -.1 1.9] + [pos(1) pos(1) pos(2) pos(2) pos(3) pos(3)];
 
 axis(axis_m)
-grid off
+grid on
 
 drawnow();
 
