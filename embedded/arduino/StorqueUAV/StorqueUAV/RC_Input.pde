@@ -34,8 +34,13 @@ void RC_Input_Init(){
   rc_input.sample_period = 33;
   rc_input.flag = 0;
   
-  rc_input.motors_max = 2400;
+  rc_input.channel_max = 1930;
+  rc_input.channel_min = 1050;
+  rc_input.channel_range = rc_input.channel_max - rc_input.channel_min;
+  
+  rc_input.motors_max = 2100;
   rc_input.motors_min = 1000;
+  rc_input.motors_range = rc_input.motors_max - rc_input.motors_min;
   
   return;
 }

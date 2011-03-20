@@ -248,7 +248,7 @@ uint8_t console_write_packet(uint8_t command){
           console.tx.data_typecast[2] = UINT;
           console.tx.data_char[0] = 'd';
           console.tx.data_char[1] = ':';
-          console.tx.data_uint[2] = attitude_pid.dt;
+          console.tx.data_uint[2] = pid.dt;
           console.tx.index = 0;
           console.tx.chk = console.tx.transmit_type[0] + console.tx.transmit_type[1] + console.tx.transmit_type[2] \
                          + console.tx.cmd + console.tx.len;
