@@ -48,10 +48,10 @@ typedef struct attitude_pid_ {
 } attitude_pid_t;
 
 typedef struct rc_input_ {
-  float channel_0;
-  float channel_1;
-  float channel_2;
-  float channel_3;
+  int channel_0;
+  int channel_1;
+  int channel_2;
+  int channel_3;
   
   float channel_min;
   float channel_max;

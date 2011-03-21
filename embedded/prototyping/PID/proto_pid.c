@@ -6,8 +6,6 @@
 #include <string.h>
 #include "proto_pid.h"
 
-#define DEBUG
-
 
 /* INIT */
 void AttitudePID_Init(void){
@@ -46,7 +44,7 @@ void AttitudePID_Init(void){
 }
 
 /* AttitudePID function */
-void AttitudePID(float *angles, float *pqr){
+void AttitudePID(float *angles, float *pqr, int verbose){
   
 
   //Declaration and Initialization
@@ -84,19 +82,19 @@ void AttitudePID(float *angles, float *pqr){
   float max_possible_added;
   float des_added;
 
-  #ifdef DEBUG
-  printf("\n");
-  printf("Inputs: \n");
+  if (verbose){
+    printf("\n");
+    printf("Inputs: \n");
+    
+    printf("Psi: %f \n", psi);
+    printf("Phi: %f \n", phi);
+    printf("Theta: %f \n", theta);  
 
-  printf("Psi: %f \n", psi);
-  printf("Phi: %f \n", phi);
-  printf("Theta: %f \n", theta);  
-
-  printf("Channel_0: %d \n", rc_input.channel_0);
-  printf("Channel_1: %d \n", rc_input.channel_1);
-  printf("Channel_2: %d \n", rc_input.channel_2);
-  printf("Channel_3: %d \n", rc_input.channel_3);
-  #endif
+    printf("Channel_0: %d \n", rc_input.channel_0);
+    printf("Channel_1: %d \n", rc_input.channel_1);
+    printf("Channel_2: %d \n", rc_input.channel_2);
+    printf("Channel_3: %d \n", rc_input.channel_3);
+  }
 
   // Convert input angles and d_angles into radians
   psi = psi*PI/180;
@@ -106,16 +104,16 @@ void AttitudePID(float *angles, float *pqr){
   p = p*PI/180;
   q = q*PI/180;  
 
-  #ifdef DEBUG
-  printf("Radians \n");
-  printf("Psi: %f \n", psi);
-  printf("Phi: %f \n", phi);
-  printf("Theta: %f \n", theta);  
-  printf("r: %f \n", r);
-  printf("p: %f \n", p);
-  printf("q: %f \n", q);  
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Radians \n");
+    printf("Psi: %f \n", psi);
+    printf("Phi: %f \n", phi);
+    printf("Theta: %f \n", theta);  
+    printf("r: %f \n", r);
+    printf("p: %f \n", p);
+    printf("q: %f \n", q);  
+    printf("\n");
+  }
   
   //pid.current_time = micros();
   //pid.dt = pid.current_time - pid.previous_time;
@@ -126,64 +124,64 @@ void AttitudePID(float *angles, float *pqr){
   r_com      = pid.max_ang_rate   * 2 *(  ( (rc_input.channel_2 - rc_input.channel_min) / rc_input.channel_range ) - .5);
   thrust_com = pid.max_thrust_com * 2 *(  ( (rc_input.channel_3 - rc_input.channel_min) / rc_input.channel_range ) - .5);
 
-  #ifdef DEBUG
-  printf("\n");
-  printf("Scale RC commands: \n");
-  printf("phi_com: %f \n", phi_com);
-  printf("theta_com: %f \n", theta_com);
-  printf("r_com: %f \n", r_com);
-  printf("thrust_com: %f \n", thrust_com);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("\n");
+    printf("Scale RC commands: \n");
+    printf("phi_com: %f \n", phi_com);
+    printf("theta_com: %f \n", theta_com);
+    printf("r_com: %f \n", r_com);
+    printf("thrust_com: %f \n", thrust_com);
+    printf("\n");
+  }
   
   // Calculate desired restoring moments via PD control (and just P control on angular velocity for psi)
   momCont[0] = (pid.kpRoll * (  phi_com  -   phi) - pid.kdRoll * p) * pid.Ixx;
   momCont[1] = (pid.kpRoll * (theta_com  - theta) - pid.kdRoll * q) * pid.Iyy;
   momCont[2] = (pid.kdYaw  * (    r_com  -     r)                 ) * pid.Izz;
 
-  #ifdef DEBUG
-  printf("Calculate desired restoring moments: \n");
-  printf("momCont[0] %f \n", momCont[0]);
-  printf("momCont[1] %f \n", momCont[1]);
-  printf("momCont[2] %f \n", momCont[2]);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Calculate desired restoring moments: \n");
+    printf("momCont[0] %f \n", momCont[0]);
+    printf("momCont[1] %f \n", momCont[1]);
+    printf("momCont[2] %f \n", momCont[2]);
+    printf("\n");
+  }
   
   // Get final desired moments by adding control moments and trim
   momPhi   = pid.momPhiTrim   + momCont[0];
   momTheta = pid.momThetaTrim + momCont[1];
   momPsi   = pid.momPsiTrim   + momCont[2];
 
-  #ifdef DEBUG
-  printf("Get final desired moments by adding control moments and trim: \n");
-  printf("momCont[0] %f \n", momCont[0]);
-  printf("momCont[1] %f \n", momCont[1]);
-  printf("momCont[2] %f \n", momCont[2]);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Get final desired moments by adding control moments and trim: \n");
+    printf("momCont[0] %f \n", momCont[0]);
+    printf("momCont[1] %f \n", momCont[1]);
+    printf("momCont[2] %f \n", momCont[2]);
+    printf("\n");
+  }
 
   // Similarly find final desired collective thrust from instantaneous trim and commanded thrust
   thrust_trim = (pid.mass * pid.g) / (cosine(phi)*cosine(theta));
   thrust   = thrust_trim  + thrust_com;
 
-  #ifdef DEBUG
-  printf("Checking cosine function \n");
-  float cp = cosine(phi);
-  float ct = cosine(theta);
-  printf("cosine(phi): %f \n", cp);
-  printf("cosine(theta): %f \n", ct);
-  float sp = sine(phi);
-  float st = sine(theta);
-  printf("sine(phi): %f \n", sp);
-  printf("sine(theta): %f \n", st);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Checking cosine function \n");
+    float cp = cosine(phi);
+    float ct = cosine(theta);
+    printf("cosine(phi): %f \n", cp);
+    printf("cosine(theta): %f \n", ct);
+    float sp = sine(phi);
+    float st = sine(theta);
+    printf("sine(phi): %f \n", sp);
+    printf("sine(theta): %f \n", st);
+    printf("\n");
+  }
 
-  #ifdef DEBUG
-  printf("Similarly find final desired collective thrust from instantaneous trim and commanded thrust \n");
-  printf("Thrust: %f \n", thrust);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Similarly find final desired collective thrust from instantaneous trim and commanded thrust \n");
+    printf("Thrust: %f \n", thrust);
+    printf("\n");
+  }
   
   // Forces we can / want to add and subtract from opposite motors to produce moments, properly limited
   clippedForcePhi   = smaller(abso(momPhi/(2*pid.armLen)), (pid.max_thrust/2));
@@ -201,14 +199,14 @@ void AttitudePID(float *angles, float *pqr){
   fDes[2] = fDes[2] - clippedForceTheta * sign(momTheta);
   fDes[3] = fDes[3] + clippedForceTheta * sign(momTheta);
 
-  #ifdef DEBUG
-  printf("Attitude forces desires \n");
-  printf("fDes[0] %f \n", fDes[0]);
-  printf("fDes[1] %f \n", fDes[1]);
-  printf("fDes[2] %f \n", fDes[2]);
-  printf("fDes[3] %f \n", fDes[3]);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Attitude forces desires \n");
+    printf("fDes[0] %f \n", fDes[0]);
+    printf("fDes[1] %f \n", fDes[1]);
+    printf("fDes[2] %f \n", fDes[2]);
+    printf("fDes[3] %f \n", fDes[3]);
+    printf("\n");
+  }
   
   // Now we look at the total thrust we're outputting.  Add up all of the forces:
   float cur_thrust = 0;
@@ -260,23 +258,23 @@ void AttitudePID(float *angles, float *pqr){
     fDes[d] = fDes[d] - abso(des_added);
   }
 
-  #ifdef DEBUG
-  printf("Forces desired \n");
-  printf("fDes[0] %f \n", fDes[0]);
-  printf("fDes[1] %f \n", fDes[1]);
-  printf("fDes[2] %f \n", fDes[2]);
-  printf("fDes[3] %f \n", fDes[3]);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Forces desired \n");
+    printf("fDes[0] %f \n", fDes[0]);
+    printf("fDes[1] %f \n", fDes[1]);
+    printf("fDes[2] %f \n", fDes[2]);
+    printf("fDes[3] %f \n", fDes[3]);
+    printf("\n");
+  }
 
-  #ifdef DEBUG
-  printf("Forces desired over max thrust \n");
-  printf("f[0] %f \n", fDes[0]/pid.max_thrust);
-  printf("f[1] %f \n", fDes[1]/pid.max_thrust);
-  printf("f[2] %f \n", fDes[2]/pid.max_thrust);
-  printf("f[3] %f \n", fDes[3]/pid.max_thrust);
-  printf("\n");
-  #endif
+  if (verbose){
+    printf("Forces desired over max thrust \n");
+    printf("f[0] %f \n", fDes[0]/pid.max_thrust);
+    printf("f[1] %f \n", fDes[1]/pid.max_thrust);
+    printf("f[2] %f \n", fDes[2]/pid.max_thrust);
+    printf("f[3] %f \n", fDes[3]/pid.max_thrust);
+    printf("\n");
+  }
   
   pwmDes[0] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[0] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[1] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[1] / pid.max_thrust )) + rc_input.motors_min ;
@@ -284,10 +282,17 @@ void AttitudePID(float *angles, float *pqr){
   pwmDes[3] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[3] / pid.max_thrust )) + rc_input.motors_min ;
   
   /* Print motor outputs */
-  printf("pwmDes[0]: %i \n", (int)pwmDes[0]);
-  printf("pwmDes[1]: %i \n", (int)pwmDes[1]);
-  printf("pwmDes[2]: %i \n", (int)pwmDes[2]);
-  printf("pwmDes[3]: %i \n", (int)pwmDes[3]);
+  if (verbose){
+    printf("pwmDes[0]: %i \n", (int)pwmDes[0]);
+    printf("pwmDes[1]: %i \n", (int)pwmDes[1]);
+    printf("pwmDes[2]: %i \n", (int)pwmDes[2]);
+    printf("pwmDes[3]: %i \n", (int)pwmDes[3]);
+  }else{
+    printf("%i ", (int)pwmDes[0]);
+    printf("%i ", (int)pwmDes[1]);
+    printf("%i ", (int)pwmDes[2]);
+    printf("%i \n", (int)pwmDes[3]);
+  }
   
   /*
   if (rc_input.motors_armed){
@@ -400,15 +405,20 @@ int main(int argc, char *argv[]){
   imu_inputs = *fopen(filedir, "r");
   */
   /* Current data */
-
+  
+  int verbose = 0;
+  int input_arg_index = 0;
   if (argc > 11){
-    printf("too many arguments \n");
-    printf("Args in order: psi phi theta psi_cmd phi_cmd theta_cmd thrust \n");
-    return 0;   
+    if (strcmp(argv[input_arg_index++], "-v") && (argc < 13)){
+          printf("Verbose mode on \n");
+	  verbose = 1;
+    }else{
+      printf("too many arguments \n");
+      return 0;   
+    }
   }
   if (argc < 11){
     printf("too few arguments");
-    printf("Args in order: psi phi theta psi_cmd phi_cmd theta_cmd thrust \n");
     return 0;
   }
 
@@ -417,18 +427,18 @@ int main(int argc, char *argv[]){
   float rc_cmd[3];
   float thrust;
 
-  angles[0] = atof(argv[1]);
-  angles[1] = atof(argv[2]);
-  angles[2] = atof(argv[3]);
+  angles[0] = atof(argv[input_arg_index++]);
+  angles[1] = atof(argv[input_arg_index++]);
+  angles[2] = atof(argv[input_arg_index++]);
 
-  rpq[0] = atof(argv[4]);
-  rpq[1] = atof(argv[5]);
-  rpq[2] = atof(argv[6]);
+  rpq[0] = atof(argv[input_arg_index++]);
+  rpq[1] = atof(argv[input_arg_index++]);
+  rpq[2] = atof(argv[input_arg_index++]);
 
-  rc_input.channel_0 = atoi(argv[7]);
-  rc_input.channel_1 = atoi(argv[8]);
-  rc_input.channel_2 = atoi(argv[9]);
-  rc_input.channel_3 = atoi(argv[10]);
+  rc_input.channel_0 = atoi(argv[input_arg_index++]);
+  rc_input.channel_1 = atoi(argv[input_arg_index++]);
+  rc_input.channel_2 = atoi(argv[input_arg_index++]);
+  rc_input.channel_3 = atoi(argv[input_arg_index++]);
 
   /* Initialize RC stuffs */
   rc_input.channel_min = 1050;
@@ -440,7 +450,7 @@ int main(int argc, char *argv[]){
 
   /* Initialize Attitude Proto */
   AttitudePID_Init();
-  AttitudePID(angles, rpq);
+  AttitudePID(angles, rpq, verbose);
     
   return 1;
 }

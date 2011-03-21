@@ -64,7 +64,7 @@ typedef struct rc_input_ {
 
 /* Function declarations */
 void AtttitudePID_Init(void);
-void AtttitudePID(float *angles, float *pqr);
+void AtttitudePID(float *angles, float *pqr, int verbose);
 float limit(float value, float upper, float lower);
 float bigger(float v1, float v2);
 float smaller(float v1, float v2);

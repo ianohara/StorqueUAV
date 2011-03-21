@@ -92,10 +92,10 @@ void AttitudePID(float *angles, float *pqr){
   printf("Phi: %f \n", phi);
   printf("Theta: %f \n", theta);  
 
-  printf("Channel_0: %f \n", rc_input.channel_0);
-  printf("Channel_1: %f \n", rc_input.channel_1);
-  printf("Channel_2: %f \n", rc_input.channel_2);
-  printf("Channel_3: %f \n", rc_input.channel_3);
+  printf("Channel_0: %d \n", rc_input.channel_0);
+  printf("Channel_1: %d \n", rc_input.channel_1);
+  printf("Channel_2: %d \n", rc_input.channel_2);
+  printf("Channel_3: %d \n", rc_input.channel_3);
   #endif
 
   // Convert input angles and d_angles into radians
