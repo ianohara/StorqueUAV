@@ -81,6 +81,20 @@ void Read_Timers(){
     console.rangefinder_print_data_time = current_time;
   }
   
+  /* Check for Battery Voltage Reads */
+  if (((current_time - battery_voltage.sample_time) > battery_voltage.sample_period) && \
+       !(battery_voltage.sample_period == 0)){
+      battery_voltage.flag = 1;
+      battery_voltage.sample_time = current_time;
+  }
+  
+  /* Rate at which battery data is printed to console */
+  if (((current_time - console.battery_print_data_time) > console.battery_print_data_period) && \
+       !(console.battery_print_data_period == 0)){
+    console.battery_print_data_flag = 1;
+    console.battery_print_data_time = current_time;
+  }
+  
   return;
 }
       

@@ -137,8 +137,6 @@
 //#include <GPS_MTK.h>      // MediaTEK DIY Drones GPS. 
 #include <GPS_UBLOX.h>  // uBlox GPS
 
-#include <PropertyList.h>
-
 // EEPROM storage for user configurable values
 #include <EEPROM.h>
 #include "StorqueUAV.h"
@@ -151,6 +149,7 @@
 #include "IMU.h"
 #include "RangeFinder.h"
 #include "RC_Input.h"
+#include "BatteryVoltage.h"
 
 /* Software version */
 #define VER 0.2    // Current software version (only numeric values)
@@ -203,23 +202,8 @@ void setup()
   AttitudePID_Init();
   RangeFinder_Init();
   RC_Input_Init();
+  BatteryVoltage_Init();
   motorArmed = 0;
-  
-
-  /* Testing PropertyList */
-  PropertyList p(3);  
-
-  int a[3] = {1, 2, 3};
-  char b = 'b';
-  
-  p.Set(0, Int, 3, &a);
-  p.Set(1, Char, 1, &b);
-  
-  String output;
-  output = p.Get(0);
-  ftdiPrintln(output);
-  output = p.Get(1);
-  ftdiPrintln(output);
   
 } 
 
@@ -237,12 +221,12 @@ void loop(){
   }else{
     digitalWrite(LOOP_PIN, LOW);
   }
-  /*
+
   Read_Ports();
   Read_Timers();
   Manage_Tasks();
   Write_Ports();
-  */
+
 }   // End of void loop()
 
 // END of StorqueUAV.pde
