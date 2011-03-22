@@ -87,7 +87,8 @@ if (state == 1)
     set(hObject,'BackgroundColor','r')
     set(hObject,'String','Stop')
     
-    handles.serial_interface = storqueInterface('COM6');
+    %handles.serial_interface = storqueInterface('COM6');
+    handles.serial_interface = storqueInterface('/dev/tty.usbserial-A700eCpR');
     
     cla(handles.axes1)
     set(handles.axes1,'Visible','on')
