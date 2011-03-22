@@ -8,9 +8,10 @@ close all
 clear all
 
 %serial = storqueInterface('COM6');
-figure (1)
-axes_hand = axes;
-[h1 h2 h_lines] = init_quad_draw(axes_hand);
+
+%figure (1)
+%axes_hand = axes;
+%[h1 h2 h_lines] = init_quad_draw(axes_hand);
 
 %Initialize the quadrotor's 1x16 state s, as defined in StorqueStep
 % State values are: x y z u v w phi theta psi p q r initial_motor speeds
@@ -96,7 +97,8 @@ while(time(length(time)) < runtime)
     %   1 Handle to a "quadrotor's-shadow-looking" patch
     %   1 Vector of Handles to 4 Line Objects that will be drawn as the
     %     thrusts   
-    quad_draw(180*new_state([9 7 8])/pi,T(new_state([13, 16, 14, 15])/2.5, kT),new_state(1:3),h1,h2,h_lines);
+    
+    %quad_draw(180*new_state([9 7 8])/pi,T(new_state([13, 16, 14, 15])/2.5, kT),new_state(1:3),h1,h2,h_lines);
     stateMatrix = [stateMatrix; new_state];   
 
 end
@@ -128,6 +130,20 @@ xlabel('Time [sec]');
 ylabel('Position [m]');
 %}
 
-
+draw = 1;
+i = 1;
+figure();
+axes_hand = axes;
+[h1 h2 h_lines] = init_quad_draw(axes_hand);
+tic
+while(draw),    
+    if (toc > time(i + 1))
+        quad_draw(180*stateMatrix(i,[9 7 8])/pi,T(stateMatrix(i,[13, 16, 14, 15])/2.5, kT),stateMatrix(i,1:3),h1,h2,h_lines);
+        i = i + 1;        
+    end
+    if (i == length(time) - 1),
+        draw = 0;
+    end    
+end
 
 %serial.close();

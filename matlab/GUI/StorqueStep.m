@@ -64,7 +64,7 @@ max_thrust = 1.5*g; % Maximum thrust we can get from a rotor [kg*m/s^2]
 max_mom    = 1.0*g;
 kM = [3.53023e-7 7.97209e-5 -0.0068914];    %max_mom    / (5.1313e6);%(733.038^2);  % Gain for omega -> Moment               [kg*m^2]
 kT = [3.63737e-5 -0.00770417 0.63139];    %max_thrust / (5.1313e6);  % Gain for omega -> Thrust               [kg*m]
-kMot = 10;           % Gain on first order motor delay        [1/s]
+kMot = 5;           % Gain on first order motor delay        [1/s]
 kRatio = kM(1)./kT(1);     % Ratio of how much Moment [kg*m^2] is exerted by a motor 
                            %  for every [kg*m] of Thrust that would be exerted by the
                            %  same motor speed w.  Units are [m]
@@ -75,11 +75,11 @@ R = [ cos(psi)*cos(theta) - sin(phi)*sin(psi)*sin(theta), cos(theta)*sin(psi) + 
 cos(psi)*sin(theta) + cos(theta)*sin(phi)*sin(psi), sin(psi)*sin(theta) - cos(psi)*cos(theta)*sin(phi),  cos(phi)*cos(theta)];
 
 % Control gains
-kpRoll = 33;  
-kdRoll = 30;
+kpRoll = 5.0;  
+kdRoll = 2.25;
 
 kpYaw = 0;
-kdYaw = 100;
+kdYaw = 2.0;
 
 kdXTrans = 12;
 
@@ -91,10 +91,10 @@ else
     kpZTrans = 0;%12.4;
 end
 kdZTrans = 30;
-snr = 40;
+snr = 30;
 
 % Simulating control delay and noise 
-delay = 0.05;
+delay = 0.025;
 stateIndex = find(time < (time(length(time)) - delay), 1, 'last');
 if isempty(stateIndex),
     stateIndex = 1;
