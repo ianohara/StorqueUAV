@@ -21,7 +21,7 @@ z = 0;
 u = 0;
 v = 0;
 w = 0;
-phi = 0;
+phi = pi/16;
 theta = 0;
 psi = 0;
 p = 0;
@@ -38,7 +38,7 @@ control_input = [0 0 0 0 0 0];
 %Initialize the timer
 tic
 
-runtime = 3;
+runtime = 5;
 global time;
 global stateMatrix;
 time = 0;
