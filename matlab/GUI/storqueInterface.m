@@ -69,6 +69,7 @@ classdef storqueInterface < handle
                 fclose(self.ser);
                 delete(self.ser);
                 clear self.ser;
+                instrreset;
             end
             
             % Close logFile
@@ -81,7 +82,7 @@ classdef storqueInterface < handle
         
         
         %% Retrieve Serial Data and Parse It
-        function [angles  rcis pwms] = get_data(self)
+        function [angles rcis pwms batvs] = get_data(self)
             
             if (self.serialExists)
                 
@@ -90,6 +91,7 @@ classdef storqueInterface < handle
                 angles = [];
                 pwms = [];
                 rcis = [];
+                batvs = [];
                 pwm_max = 1930;
                 pwm_min = 1050;
                 max_angle_com = .4;
@@ -144,10 +146,10 @@ classdef storqueInterface < handle
                                 self.dataIn(strfind(self.dataIn(1,:),'_')) = ' ';
                                 rci_data = str2num(self.dataIn(10:len));
                                 if (~isempty(rci_data))
-                                    disp(rci_data(1,:))
-                                    rcis = 2*((rci_data(1:4)-pwm_min)/(pwm_max-pwm_min)) - 1;
-                                    rcis = rcis * max_angle_com;% * (180/pi);
-                                    rcis(3) = pi*rcis(3) / max_angle_com;
+                                    %disp(rci_data(1,:))
+                                    rcis = rci_data(1:4);%-pwm_min)/(pwm_max-pwm_min)) - 1;
+                                    %rcis = rcis * max_angle_com;% * (180/pi);
+                                    %rcis(3) = pi*rcis(3) / max_angle_com;
                                 else
                                     self.errorCount = self.errorCount + 1;
                                     disp('Errors: ')
@@ -156,20 +158,37 @@ classdef storqueInterface < handle
                             end
                         %PID Packet    
                         elseif strcmp(self.dataIn(1:4),'PID_')
-                            if self.dataIn(5) == 'm'
+                            if self.dataIn(5) == 'd'
                                 %PID PWMS Packet
                                 len = length(self.dataIn);
                                 
                                 self.dataIn(strfind(self.dataIn(1,:),'_')) = ' ';
                                 pid_data = str2num(self.dataIn(9:len));
                                 if (~isempty(pid_data))
-                                    pwms = (pid_data(1:4)-pwm_min)/(pwm_max-pwm_min);
+                                    pwms = (pid_data(1:4));%-pwm_min)/(pwm_max-pwm_min);
                                 else
                                     self.errorCount = self.errorCount + 1;
                                     disp('Errors: ')
                                     disp(self.errorCount)
                                 end
-                            end
+                            end                                                    
+                        % Battery Packet
+                        elseif strcmp(self.dataIn(1:4),'BAT_')
+                            if self.dataIn(5) == 'd'
+                                %PID PWMS Packet
+                                len = length(self.dataIn);
+                                
+                                self.dataIn(strfind(self.dataIn(1,:),'_')) = ' ';
+                                bat_data = str2num(self.dataIn(9:len));
+                                if (~isempty(bat_data))
+                                    battery_voltage_scale_factor = 2.44;
+                                    batvs = bat_data(1:4).*battery_voltage_scale_factor;
+                                else
+                                    self.errorCount = self.errorCount + 1;
+                                    disp('Errors: ')
+                                    disp(self.errorCount)
+                                end
+                            end                            
                         end
 
                         %Now we've used dataIn, so replace whatever is in there

@@ -3,9 +3,9 @@ function [] = quad_draw(angles,pwm,pos,h,h2,h_line)
 
 
 %Scale pwms to range from 0 to 1
-kT = (1.5*9.81)/(5.1313e6);
-pwm = kT*(pwm.^2);
-pwm = (1/(1.5*9.81))*pwm;
+%kT = (1.5*9.81)/(5.1313e6);
+%pwm = kT*(pwm.^2);
+%pwm = (1/(1.5*9.81))*pwm;
 
 %Scale Angles into Radians
 psi = (angles(1))*pi/180;

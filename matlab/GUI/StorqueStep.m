@@ -3,8 +3,10 @@ function [sdot] = StorqueStep(s,u)
 % sdot = derivative of state at current time
 % u = control input (6x1)
 
+global stateMatrix;
+global time;
 
-% u = [xd_com yd_com zd_com phi_com theta_com psi_com]
+% u = [xd_com; yd_com zd_com phi_com theta_com psi_com]
 % Where com = 'commanded'
 xd_com    = u(1);
 yd_com    = u(2);
@@ -43,7 +45,7 @@ w4 = s(16);   % [rad/s]
 
 %----Constants, Function Definitions----%
 % Define physical system parameters
-mass = 5;        % [kg]
+mass = 3.495;        % [kg]
 armLen = 0.382;  % [m]
 Ixx = 0.0974;       % [kg*m^2]
 Iyy = 0.0963;       % [kg*m^2]
@@ -60,12 +62,12 @@ g = 9.81;        % [m/s^2]
 % Physical system gains
 max_thrust = 1.5*g; % Maximum thrust we can get from a rotor [kg*m/s^2]
 max_mom    = 1.0*g;
-kM = max_mom    / (5.1313e6);%(733.038^2);  % Gain for omega -> Moment               [kg*m^2]
-kT = max_thrust / (5.1313e6);  % Gain for omega -> Thrust               [kg*m]
-kMot = 5;           % Gain on first order motor delay        [1/s]
-kRatio = kM/kT;     % Ratio of how much Moment [kg*m^2] is exerted by a motor 
-                    %  for every [kg*m] of Thrust that would be exerted by the
-                    %  same motor speed w.  Units are [m]
+kM = [3.53023e-7 7.97209e-5 -0.0068914];    %max_mom    / (5.1313e6);%(733.038^2);  % Gain for omega -> Moment               [kg*m^2]
+kT = [3.63737e-5 -0.00770417 0.63139];    %max_thrust / (5.1313e6);  % Gain for omega -> Thrust               [kg*m]
+kMot = 10;           % Gain on first order motor delay        [1/s]
+kRatio = kM(1)./kT(1);     % Ratio of how much Moment [kg*m^2] is exerted by a motor 
+                           %  for every [kg*m] of Thrust that would be exerted by the
+                           %  same motor speed w.  Units are [m]
 
 % Form the 3x3 Rotation matrix from body to world frame in the Y-X-Z system (Theta, Phi, Psi)
 R = [ cos(psi)*cos(theta) - sin(phi)*sin(psi)*sin(theta), cos(theta)*sin(psi) + cos(psi)*sin(phi)*sin(theta), -cos(phi)*sin(theta);...
@@ -73,11 +75,11 @@ R = [ cos(psi)*cos(theta) - sin(phi)*sin(psi)*sin(theta), cos(theta)*sin(psi) + 
 cos(psi)*sin(theta) + cos(theta)*sin(phi)*sin(psi), sin(psi)*sin(theta) - cos(psi)*cos(theta)*sin(phi),  cos(phi)*cos(theta)];
 
 % Control gains
-kpRoll = (10);  
-kdRoll = (6.2);
+kpRoll = 33;  
+kdRoll = 30;
 
-kpYaw = 10;
-kdYaw = 6.2;
+kpYaw = 0;
+kdYaw = 100;
 
 kdXTrans = 12;
 
@@ -89,14 +91,66 @@ else
     kpZTrans = 0;%12.4;
 end
 kdZTrans = 30;
+snr = 40;
+
+% Simulating control delay and noise 
+delay = 0.05;
+stateIndex = find(time < (time(length(time)) - delay), 1, 'last');
+if isempty(stateIndex),
+    stateIndex = 1;
+end
+
+psi_perceived = stateMatrix(stateIndex, 9) + awgn(stateMatrix(stateIndex, 9), snr);
+phi_perceived = stateMatrix(stateIndex, 7) + awgn(stateMatrix(stateIndex, 7), snr);
+theta_perceived = stateMatrix(stateIndex, 8) + awgn(stateMatrix(stateIndex, 8), snr);
+r_perceived = stateMatrix(stateIndex, 12) + awgn(stateMatrix(stateIndex, 12), snr);
+p_perceived = stateMatrix(stateIndex, 10) + awgn(stateMatrix(stateIndex, 10), snr);
+q_perceived = stateMatrix(stateIndex, 11) + awgn(stateMatrix(stateIndex, 11), snr);
+
+%% Run Storque PID controls code
+proto_pid = strcat('_', num2str(psi_perceived*180/pi),'_', ...
+                        num2str(phi_perceived*180/pi),'_', ...
+                        num2str(theta_perceived*180/pi), '_', ...
+                        num2str(r_perceived*180/pi), '_', ...
+                        num2str(p_perceived*180/pi), '_', ...
+                        num2str(q_perceived*180/pi), '_', ... 
+                        '1490', '_', '1490', '_', '1490', '_', '1515', '_', ...
+                        num2str(mass), '_', ...
+                        num2str(Ixx), '_', ...
+                        num2str(Iyy), '_', ...
+                        num2str(Izz), '_', ...
+                        num2str(kpRoll), '_', ...
+                        num2str(kdRoll), '_', ...
+                        num2str(kpYaw), '_', ...
+                        num2str(kdYaw));
+                    
+proto_pid = strrep(proto_pid, '_', ' ');
+proto_pid = strcat('./proto_pid', proto_pid);
+[success, pwm_out] = system(proto_pid);
+
+%disp(proto_pid);
+if (success == 0),
+    disp('proto_pid failure');
+else
+    %disp(pwm_out);
+end
+
+% Convert from pwm to forces and omegas
+pwm_out = str2num(pwm_out);
+
+%%
 
 % Define the function that will give us thrusts in the zb axis as a 
 % of w (omega)
-T = @(w,k)(k.*w.^2);
-M = @(w,k)(k.*w.^2);
+T = @(w,k)(k(1)*w.^2 + k(2).*w + k(3));
+M = @(w,k)(k(1)*w.^2 + k(2).*w + k(3));
 
 % Define the inverse of T(w,k)
-Ttow = @(T,k)(sqrt(T./k));
+Ttow = @(T,k)((-k(2) + sqrt(-4*k(1)*k(3) + 4*k(1)*T + k(2)^2))/(2*k(1)));
+%Ttow = @(T,k)(sqrt(T./k(1)));
+
+% Define pwm to force
+Tpwm = @(pwm)(22373.4*(pwm/20000).^2 - 2313*(pwm/20000) + 60);
 
 % Calculate trim forces and moments needed to maintain hover
 forceWorldXTrim   = 0;
@@ -109,6 +163,7 @@ momThetaTrim      = 0;
 
 %----Dynamic Controls Calculations----%
 % Spatial Control
+%{
 thrustCont(1) = kdXTrans*(xd_com - u) * mass; % Thrust in x [N]
 thrustCont(2) = kdYTrans*(yd_com - v) * mass; % Thrust in y [N]
 thrustCont(3) = (kpZTrans*(0 - z) + kdZTrans*(zd_com - w))*mass ; %Thrust in z [N]
@@ -282,7 +337,18 @@ for b = 1:4
 end
 
 %Convert the final desired thrusts into desired prop speeds
-wDes = Ttow(fDes,kT);
+%wDes = Ttow(fDes,kT);
+%}
+
+%% Using proto_pid code
+Tout = Tpwm(pwm_out');
+%disp('Tout');
+%disp(Tout);
+wDes = Ttow(Tout, kT);
+%disp('wDes');
+%disp(wDes);
+%disp('w1 w2 w3 w4');
+%disp([w1 w2 w3 w4]);
 
 %In the embedded code, we would now convert wDes to required PWM output, and
 %this would conclude the controls code.  The quadrotor's motors will not

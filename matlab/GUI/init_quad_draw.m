@@ -24,7 +24,7 @@ handle2 = patch(X,Y,Z_shad,'b');
 line_handle = line(XL,YL,ZL);
 set(line_handle,'LineWidth',2)
 
-axis_matrix = 10*[-1 1 -1 1 -1 1];
+axis_matrix = 2*[-1 1 -1 1 -1 1];
 
 axis(axis_matrix)
 grid on

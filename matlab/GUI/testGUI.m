@@ -87,7 +87,7 @@ if (state == 1)
     set(hObject,'BackgroundColor','r')
     set(hObject,'String','Stop')
     
-    handles.serial_interface = storqueInterface('COM6');
+    handles.serial_interface = storqueInterface('/dev/tty.usbserial-A700eCpR');
     
     cla(handles.axes1)
     set(handles.axes1,'Visible','on')
@@ -111,7 +111,7 @@ if (state == 1)
             break;
         end
         
-        [angles rcis pwms] = handles.serial_interface.get_data();
+        [angles rcis pwms bat] = handles.serial_interface.get_data();
         
         if (~isempty(angles))
             set(handles.psi,'String',num2str(angles(1)));
@@ -119,40 +119,40 @@ if (state == 1)
             set(handles.theta,'String',num2str(angles(3)));
             guidata(hObject,handles);
             
-            quad_draw(angles,old_pwms,h1,h2,h_lines)
+            quad_draw(angles,(old_pwms([2 3 1 4]) - 1000)/1100,[0 0 0],h1,h2,h_lines)
             old_angles = angles;
         end
         
         if (~isempty(pwms))
-            set(handles.PWM1,'String',strcat(num2str(100*pwms(1),'%3.0f'),'%'));
-            set(handles.PWM2,'String',strcat(num2str(100*pwms(2),'%3.0f'),'%'));
-            set(handles.PWM3,'String',strcat(num2str(100*pwms(3),'%3.0f'),'%'));
-            set(handles.PWM4,'String',strcat(num2str(100*pwms(4),'%3.0f'),'%'));
+            set(handles.PWM1,'String',strcat(num2str(pwms(1),'%4.3f'),'%'));
+            set(handles.PWM2,'String',strcat(num2str(pwms(2),'%4.3f'),'%'));
+            set(handles.PWM3,'String',strcat(num2str(pwms(3),'%4.3f'),'%'));
+            set(handles.PWM4,'String',strcat(num2str(pwms(4),'%4.3f'),'%'));
             guidata(hObject,handles);
-            
-            quad_draw(old_angles,pwms,h1,h2,h_lines)
+
+            quad_draw(old_angles,(pwms([2 3 1 4]) - 1000)/(1100),[0 0 0],h1,h2,h_lines);
             old_pwms = pwms;
         end
         
         if (~isempty(rcis))
-            control_input(4:5) = rcis(1:2);
+            control_input(4:6) = rcis([1, 2, 4]);
         end
         
-        dt = toc;
-        new_state = rk4Step(old_state,control_input,@StorqueStep,dt);
-        tic
+        %dt = toc;
+        %new_state = rk4Step(old_state,control_input,@StorqueStep,dt);
+        %tic
     
         %Enforce periodicity on the angular coordinates
-        for j = 7:9
-            if new_state(j) > pi
-                new_state(j) = new_state(j) - 2*pi;
-            elseif new_state(j) < -pi
-                new_state(j) = new_state(j) + 2*pi;
-            end
-        end
+        %for j = 7:9
+            %if new_state(j) > pi
+                %new_state(j) = new_state(j) - 2*pi;
+            %elseif new_state(j) < -pi
+                %new_state(j) = new_state(j) + 2*pi;
+            %end
+        %end
     
         %UPDATE THE OLD STATE, DAMNIT
-        old_state = new_state;
+        %old_state = new_state;
 
         % Draw our new quadrotor.  There's some really weird stuff going on
         % here, which should be carefully noted.  Due to some inconsistencies
@@ -169,7 +169,7 @@ if (state == 1)
         %   1 Handle to a "quadrotor's-shadow-looking" patch
         %   1 Vector of Handles to 4 Line Objects that will be drawn as the
         %     thrusts
-        quad_draw(180*new_state([9 7 8])/pi,kT*(new_state([13, 16, 14, 15]).^2),new_state(1:3),h1_sim,h2_sim,h_lines_sim);
+        %quad_draw(180*new_state([9 7 8])/pi,kT*(new_state([13, 16, 14, 15]).^2),new_state(1:3),h1,h2,h_lines);
 
     end
 

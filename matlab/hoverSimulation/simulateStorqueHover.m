@@ -22,12 +22,12 @@ x(3) = 0; %z
 x(4) = 0; %xdot
 x(5) = 0; %ydot
 x(6) = 0; %zdot
-x(7) = 0.8; %phi, roll
+x(7) = 0.1; %phi, roll
 x(8) = 0.0; %theta, pitch
 x(9) = 0.0; %psi, yaw
-x(10) = 8; %p
-x(11) = 3; %q
-x(12) = 7; %r
+x(10) = 0; %p
+x(11) = 0; %q
+x(12) = 0; %r
 
 endtime = 3.0;             % end of simulation in seconds
 deltat = .0005;            % time step of numerical integration
