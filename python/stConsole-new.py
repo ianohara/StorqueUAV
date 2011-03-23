@@ -199,6 +199,10 @@ class stoConsole(object):
             self.rx_msg_type = 'console'
         elif (serialInput[0:3] == 'RCI'):
             self.rx_msg_type = 'RC_Input'
+        elif (serialInput[0:3] == 'BAT'):
+	    self.rx_msg_type = 'battery'
+	elif (serialInput[0:3] == 'PID'):
+	    self.rx_msg_type = 'pid'
 
         # Do stuff with message (currently nothing really just some print options)
         
@@ -226,6 +230,14 @@ class stoConsole(object):
         if (self.rx_msg_type == 'RC_Input'):
             if (self.print_command == 'RC' or self.print_command == 'ALL'):
                 print serialInput
+
+        if (self.rx_msg_type == 'battery'):
+            if (self.print_command == 'BAT' or self.print_command == 'ALL'):
+                print serialInput
+  
+        if (self.rx_msg_type == 'pid'):
+  	    if (self.print_command == 'PID' or self.print_command == 'ALL'):
+	  	print serialInput
         
 # ----------------------------------------------------------------------------------
 # If stoConsole is called init and run
