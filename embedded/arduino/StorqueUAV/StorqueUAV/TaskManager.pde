@@ -62,6 +62,10 @@ void Manage_Tasks(){
   }else if (rc_input.flag){
     RC_Input_Read();
     rc_input.flag = 0;
+    return;  
+  }else if (battery_voltage.flag){
+    BatteryVoltage_Read();
+    battery_voltage.flag = 0;
     return;
     
   /* A bunch of other necessary
@@ -90,6 +94,12 @@ void Manage_Tasks(){
     }
     //read_RC_Input();
     //Print_RC_Input();
+    return;
+      
+  }else if (console.battery_print_data_flag){
+    if (console_write_packet(BATTERY_VOLTAGE_DATA)){
+      console.battery_print_data_flag = 0;
+    }
     return;
     
   }else if (console.rc_input_print_data_flag){

@@ -28,6 +28,8 @@
 #ifndef ATTITUDE_PID_H
 #define ATTITUDE_PID_H
 
+#define PI 3.1415926535898
+
 /* ------------------------------------------------------------------------------------ */
 /* Attitude PID struct for experimental attitude PID micros() dt */
 /* ------------------------------------------------------------------------------------ */
@@ -37,9 +39,39 @@ typedef struct attitude_pid_ {
   unsigned long previous_time;
   unsigned long current_time;
   unsigned long dt;
+  
+  float mass;
+  float g;
+  float armLen;
+  float max_thrust;
+  float max_mom;
+  float kT;
+  float kM;
+  float kRatio;
+  float kMot;
+  
+  float Ixx;
+  float Iyy;
+  float Izz;
+  
+  float kpRoll;
+  float kdRoll;
+  
+  float kpYaw;
+  float kdYaw;
+  
+  float momPhiTrim;
+  float momThetaTrim;
+  float momPsiTrim;
+  
+  float max_angle;
+  float max_ang_rate;
+  float max_thrust_com;
+
+  
 } attitude_pid_t;
 
 /* Instantiate */
-attitude_pid_t attitude_pid;
+attitude_pid_t pid;
 
 #endif

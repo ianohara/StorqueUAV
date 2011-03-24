@@ -33,9 +33,15 @@ void RC_Input_Init(){
   rc_input.sample_time = 0;
   rc_input.sample_period = 33;
   rc_input.flag = 0;
+  rc_input.printPWMdes = 0;
   
-  rc_input.motors_max = 2400;
+  rc_input.channel_max = 1930;
+  rc_input.channel_min = 1050;
+  rc_input.channel_range = rc_input.channel_max - rc_input.channel_min;
+
+  rc_input.motors_max = 2100;
   rc_input.motors_min = 1000;
+  rc_input.motors_range = rc_input.motors_max - rc_input.motors_min;
   
   return;
 }
@@ -96,73 +102,43 @@ void RC_Input_Print(uint8_t type){
   
   switch(type){
     case(DATA):
-         console.tx.transmit_type[0] = 'R';
-         console.tx.transmit_type[1] = 'C';
-         console.tx.transmit_type[2] = 'I';
-         console.tx.cmd = DATA;
-         console.tx.len = 27;
-         
-         
-         console.tx.data_typecast[0] = CHAR;
-         console.tx.data_typecast[1] = CHAR;
-         console.tx.data_typecast[2] = CHAR;
-         console.tx.data_typecast[3] = UINT;
-         console.tx.data_typecast[4] = CHAR;
-         console.tx.data_typecast[5] = CHAR;
-         console.tx.data_typecast[6] = CHAR;
-         console.tx.data_typecast[7] = UINT;
-         console.tx.data_typecast[8] = CHAR;
-         console.tx.data_typecast[9] = CHAR;
-         console.tx.data_typecast[10] = CHAR;
-         console.tx.data_typecast[11] = UINT;
-         console.tx.data_typecast[12] = CHAR;
-         console.tx.data_typecast[13] = CHAR;
-         console.tx.data_typecast[14] = CHAR;
-         console.tx.data_typecast[15] = UINT;
-         console.tx.data_typecast[16] = CHAR;
-         console.tx.data_typecast[17] = CHAR;
-         console.tx.data_typecast[18] = CHAR;
-         console.tx.data_typecast[19] = UINT;
-         console.tx.data_typecast[20] = CHAR;
-         console.tx.data_typecast[21] = CHAR;
-         console.tx.data_typecast[22] = CHAR;
-         console.tx.data_typecast[23] = UINT;
-         console.tx.data_typecast[24] = CHAR;
-         console.tx.data_typecast[25] = CHAR;
-         console.tx.data_typecast[26] = CHAR;
-         console.tx.data_typecast[27] = UINT;
-         
 
-         
-                   
-         console.tx.data_char[0] = 'C';
-         console.tx.data_char[1] = '0';
-         console.tx.data_char[2] = ':';
-         console.tx.data_uint[3] = rc_input.channel_0; 
-         console.tx.data_char[4] = 'C';
-         console.tx.data_char[5] = '1';
-         console.tx.data_char[6] = ':';
-         console.tx.data_uint[7] = rc_input.channel_1;
-         console.tx.data_char[8] = 'C';
-         console.tx.data_char[9] = '2';
-         console.tx.data_char[10] = ':';
-         console.tx.data_uint[11] = rc_input.channel_2;
-         console.tx.data_char[12] = 'C';
-         console.tx.data_char[13] = '3';
-         console.tx.data_char[14] = ':';
-         console.tx.data_uint[15] = rc_input.channel_3;         
-         console.tx.data_char[16] = 'C';
-         console.tx.data_char[17] = '4';
-         console.tx.data_char[18] = ':';
-         console.tx.data_uint[19] = rc_input.channel_4;
-         console.tx.data_char[20] = 'C';
-         console.tx.data_char[21] = '5';
-         console.tx.data_char[22] = ':';
-         console.tx.data_uint[23] = rc_input.channel_5;
-         console.tx.data_char[24] = 'M';
-         console.tx.data_char[25] = 'A';
-         console.tx.data_char[26] = ':';
-         console.tx.data_uint[27] = rc_input.motors_armed;
+         /* This is a really bad hack but I'm a slacker */
+         if (rc_input.printPWMdes){
+           console.tx.transmit_type[0] = 'P';
+           console.tx.transmit_type[1] = 'I';
+           console.tx.transmit_type[2] = 'D';
+           console.tx.data_uint[0] = rc_input.pwmDes0; 
+           console.tx.data_uint[1] = rc_input.pwmDes1;
+           console.tx.data_uint[2] = rc_input.pwmDes2;
+           console.tx.data_uint[3] = rc_input.pwmDes3;  
+           console.tx.data_uint[4] = rc_input.channel_4;
+           console.tx.data_uint[5] = rc_input.channel_5;
+           console.tx.data_uint[6] = rc_input.motors_armed;       
+           rc_input.printPWMdes = 0;
+         }else{
+           console.tx.transmit_type[0] = 'R';
+           console.tx.transmit_type[1] = 'C';
+           console.tx.transmit_type[2] = 'I';
+           console.tx.data_uint[0] = rc_input.channel_0; 
+           console.tx.data_uint[1] = rc_input.channel_1;
+           console.tx.data_uint[2] = rc_input.channel_2;
+           console.tx.data_uint[3] = rc_input.channel_3;         
+           console.tx.data_uint[4] = rc_input.channel_4;
+           console.tx.data_uint[5] = rc_input.channel_5;
+           console.tx.data_uint[6] = rc_input.motors_armed;
+
+         }
+         console.tx.cmd = DATA;
+         console.tx.len = 7;
+               
+         console.tx.data_typecast[0] = UINT;         
+         console.tx.data_typecast[1] = UINT;
+         console.tx.data_typecast[2] = UINT;
+         console.tx.data_typecast[3] = UINT;
+         console.tx.data_typecast[4] = UINT;
+         console.tx.data_typecast[5] = UINT;
+         console.tx.data_typecast[6] = UINT;                                    
 
          
          
