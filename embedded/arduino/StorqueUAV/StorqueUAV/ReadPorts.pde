@@ -82,7 +82,7 @@ void Read_Ports(){
   
   /* FTDI port (usb->host) */
   if (ftdiAvailable()){
-    receive_console_packet();
+    //receive_console_packet();
     //com_port.ftdi_rx_flag = true;       // note: remember to set flags to false after com
   }
   

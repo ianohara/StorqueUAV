@@ -74,11 +74,13 @@ void Manage_Tasks(){
   */ 
   
   /* Mid Priority Functions */
+  /*
   }else if (console.rx.packet_received_flag){
     console.rx.packet_received_flag = 0;   // set flag to zero
-    /* Run Console */
+    // Run Console 
     Console();
     return;
+  */
 
   /* A bunch of other necessary
     elseif (mid_magic_flag)
