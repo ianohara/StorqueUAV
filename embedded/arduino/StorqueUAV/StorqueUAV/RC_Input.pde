@@ -68,13 +68,13 @@ void RC_Input_Init(){
 /* This works, but we need 5v inputs (not 3.3v like the current controller =\ ) */
 void RC_Input_Read(){
   
+    /*
     rc_input.channel_0_old = rc_input.channel_0;
     rc_input.channel_1_old = rc_input.channel_1;
     rc_input.channel_2_old = rc_input.channel_2;
     rc_input.channel_3_old = rc_input.channel_3;
     rc_input.channel_4_old = rc_input.channel_4;
-    rc_input.channel_4_old = rc_input.channel_5;
-    rc_input.channel_4_old = rc_input.channel_6;
+    rc_input.channel_5_old = rc_input.channel_5;
   
     rc_input.channel_0 = channel_filter(APM_RC.InputCh(INPUT_0), rc_input.channel_0_old);
     rc_input.channel_1 = channel_filter(APM_RC.InputCh(INPUT_1), rc_input.channel_1_old);    
@@ -82,6 +82,7 @@ void RC_Input_Read(){
     rc_input.channel_3 = channel_filter(APM_RC.InputCh(INPUT_3), rc_input.channel_3_old);
     rc_input.channel_4 = APM_RC.InputCh(INPUT_4);
     rc_input.channel_5 = APM_RC.InputCh(INPUT_5);
+    */
     
     /*
     rc_input.channel_0 += rc_input.channel_0_trim;
@@ -92,6 +93,14 @@ void RC_Input_Read(){
     rc_input.channel_5 += rc_input.channel_5_trim;
     */
   
+    rc_input.channel_0 = APM_RC.InputCh(INPUT_0);
+    rc_input.channel_1 = APM_RC.InputCh(INPUT_1);
+    rc_input.channel_2 = APM_RC.InputCh(INPUT_2);
+    rc_input.channel_3 = APM_RC.InputCh(INPUT_3);
+    rc_input.channel_4 = APM_RC.InputCh(INPUT_4);
+    rc_input.channel_5 = APM_RC.InputCh(INPUT_5);
+                    
+    
     /* Arm motors */
     if (rc_input.channel_5 < 2000){              
       rc_input.motors_armed = 0;
