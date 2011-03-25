@@ -49,7 +49,9 @@ class stoConsole(object):
         self.rx_msg_chk = 0
 
         # Initialize serial
-        self.seri = serial.Serial(port, 57600, timeout=1)
+        self.seri = serial.Serial(port)
+        self.seri.baudrate = 57600
+        self.seri.timeout = 0.1
         print "Serial Initialized"
 
 
@@ -95,13 +97,13 @@ class stoConsole(object):
                     # Parse serial input
                     self.parseInput(serialIn)
                     # Log serial inputs to
-                    self.seri_log.write("IN: %s" %(serialIn))
+                    self.seri_log.write("IN: Time: %s %s" %(time.time(), serialIn))
                     
                 if sel == sys.stdin:
                     # Read in user input
                     userIn = sys.stdin.readline()
                     # Log user outputs
-                    self.seri_log.write("OUT: %s" %(userIn))
+                    self.seri_log.write("OUT: Time: %s %s" %(time.time(), userIn))
                     
                     if userIn == "\n":
                         print "User interface shutting down"
@@ -125,6 +127,13 @@ class stoConsole(object):
     # ------------------------------------------------------------------------------
     
     def parseCommand(self, input):
+
+        if (self.print_command == 'CSL'): 
+            print 'Printing %s' %(input)
+            out = bytearray(input)
+            self.seri.write(out)
+            newline = bytearray(['\n'])
+            self.seri.write(newline)
 
         input = input.upper()
 
@@ -203,6 +212,8 @@ class stoConsole(object):
 	    self.rx_msg_type = 'battery'
 	elif (serialInput[0:3] == 'PID'):
 	    self.rx_msg_type = 'pid'
+        elif (serialInput[0:3] == 'CSL'):
+	    self.rx_msg_type = 'csl'
 
         # Do stuff with message (currently nothing really just some print options)
         
@@ -237,6 +248,10 @@ class stoConsole(object):
   
         if (self.rx_msg_type == 'pid'):
   	    if (self.print_command == 'PID' or self.print_command == 'ALL'):
+	  	print serialInput
+
+        if (self.rx_msg_type == 'csl'):
+  	    if (self.print_command == 'CSL' or self.print_command == 'ALL'):
 	  	print serialInput
         
 # ----------------------------------------------------------------------------------
