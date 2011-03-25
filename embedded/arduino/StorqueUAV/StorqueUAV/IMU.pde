@@ -129,10 +129,28 @@
       modified
 */
 /* ------------------------------------------------------------------------ */
+void wait_for_successful_receive_of(int packet_type){
+  int complete = false;
+  while(!complete){
+    while(!imuAvailable());
+    if (receive_imu_packet() == packet_type){
+        ftdiPrintln("Successful transmission");
+        complete = true;
+    }
+  }
+}
+
 void IMU_soft_reset(){
+  transmit_imu_packet(AUTO_SET_ACCEL_REF);
+  wait_for_successful_receive_of(ACCEL_REF_VECTOR_REPORT);
+  transmit_imu_packet(AUTO_SET_MAG_REF);
+  wait_for_successful_receive_of(MAG_REF_VECTOR_REPORT);
+  //transmit_imu_packet(ZERO_RATE_GYROS);
+  //wait_for_successful_receive_of(COMMAND_COMPLETE);
   transmit_imu_packet(SET_ACTIVE_CHANNELS);
-  transmit_imu_packet(SET_BROADCAST_MODE);
-  transmit_imu_packet(ZERO_RATE_GYROS);
+  wait_for_successful_receive_of(COMMAND_COMPLETE);
+  transmit_imu_packet(SET_BROADCAST_MODE);  
+  wait_for_successful_receive_of(COMMAND_COMPLETE);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -145,10 +163,8 @@ void IMU_Init(){
   /* Currently I have halved out the IMU output rate opened 
      all channels. As we increase the load on the mcu
      we may need to optimize this */
-  imu.settings.broadcast_rate = 100;
+  imu.settings.broadcast_rate = 125;
   imu.settings.active_channels = 0b1111111111111110;  // All channels on
-  IMU_soft_reset();
-  delay(1000);
 } 
 
 /* ------------------------------------------------------------------------ */
@@ -522,7 +538,7 @@ uint8_t receive_imu_packet(){
             break;
           
           case COMMAND_COMPLETE:
-            SerPri("csl command complete \n \r");
+            SerPri("Command complete \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             while(!imuAvailable());
@@ -530,7 +546,7 @@ uint8_t receive_imu_packet(){
             break;
           
           case COMMAND_FAILED:
-            SerPri("csl command failed \n \r");
+            SerPri("Command failed \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             while(!imuAvailable());
@@ -538,11 +554,11 @@ uint8_t receive_imu_packet(){
             break;
           
           case BAD_CHECKSUM:
-            SerPri("csl bad checksum \n \r");
+            SerPri("Bad checksum \n \r");
             break;
           
           case BAD_DATA_LENGTH:
-            SerPri("csl bad data length \n \r");
+            SerPri("bad data length \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             while(!imuAvailable());
@@ -550,7 +566,7 @@ uint8_t receive_imu_packet(){
             break;
           
           case UNRECOGNIZED_PACKET:
-            SerPri("csl unrecognized packet \n \r");
+            SerPri("unrecognized packet \n \r");
             while(!imuAvailable());
             CHK += imuRead();
             break;
@@ -580,7 +596,8 @@ uint8_t receive_imu_packet(){
             break;
          
           case ACCEL_REF_VECTOR_REPORT:
-            // UNIMPLEMENTED
+            ftdiPrintln("ACCEL_REF_VECTOR_REPORT");
+            return PT;
             break;
          
           case MAG_COVARIANCE_REPORT:
@@ -608,7 +625,8 @@ uint8_t receive_imu_packet(){
             break;
          
           case MAG_REF_VECTOR_REPORT:
-            // UNIMPLEMENTED
+            ftdiPrintln("MAG_REF_VECTOR_REPORT");
+            return PT;
             break;
          
           case MAG_CAL_REPORT:
@@ -711,12 +729,16 @@ void transmit_imu_packet(uint8_t command){
       break;
     
     case AUTO_SET_ACCEL_REF:
-          /* UNIMPLEMENTED */
+      ftdiPrintln("Auto-setting Accelerometer Reference");
+      N = 0;
+      imuPrint((uint8_t)(N));
+      
       break;
     
     case ZERO_RATE_GYROS:
       SerPriln("Zeroing Rate Gyros");
-          /* UNIMPLEMENTED */
+      N = 0;
+      imuPrint((uint8_t)(N));
       break;
     
     case SELF_TEST:
@@ -756,7 +778,9 @@ void transmit_imu_packet(uint8_t command){
       break;
   
     case AUTO_SET_MAG_REF:
-          /* UNIMPLEMENTED */
+         ftdiPrintln("Auto-setting Magnetometer Reference");
+         N = 0;
+         imuPrint((uint8_t)(N));        
       break;
   
     case SET_MAG_CAL:

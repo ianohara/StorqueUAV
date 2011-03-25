@@ -77,5 +77,7 @@ typedef struct imu_ {
 
 imu_t imu;
 
+void wait_for_successful_receive_of(int packet_type);
+uint8_t receive_imu_packet();
 
 #endif

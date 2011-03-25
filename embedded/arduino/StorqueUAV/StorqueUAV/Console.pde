@@ -40,6 +40,10 @@
 /* ------------------------------------------------------------------------------------ */
 
 /* ------------------------------------------------------------------------------------ */
+/* Console Includes */
+/* ------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------ */
 /* Console Defines */
 /* ------------------------------------------------------------------------------------ */
 
@@ -73,11 +77,11 @@ void Console_Init(){
     console.rc_input_print_data_flag = false;
     console.battery_print_data_flag = false;
 
-    console.heartbeat_period = 1000;
-    console.rc_input_print_data_period = 166;
-    console.imu_print_data_period = 200; // real update rate is 125 Hz, this is 5 Hz
-    console.rangefinder_print_data_period = 500; //500; // half of current update rate
-    console.battery_print_data_period = 600; //500; // half of current update rate
+    console.heartbeat_period = 0;
+    console.rc_input_print_data_period = 300;
+    console.imu_print_data_period = 200;  // real update rate is 125 Hz, this is 5 Hz
+    console.rangefinder_print_data_period = 0; //500; //500; // half of current update rate
+    console.battery_print_data_period = 1500; //500; // half of current update rate
     
     return;
 }
@@ -97,70 +101,24 @@ void receive_console_packet(){
   uint8_t data = 0;
   
   // Read in a byte of data
-  console.rx.byte_in = consoleRead();
-  
-  // Parse data and write to buffers
-  if (console.rx.index == 0){
-    if (console.rx.byte_in == 'h'){
-      console.rx.index++;
-      consolePrintln((uint16_t)console.rx.index);
-      return;
-    }else{
-      console.rx.index = 0;
-      return;
-    }
-  }
-  if (console.rx.index == 1){
-    if (console.rx.byte_in == 's'){
-      console.rx.index++;
-      consolePrintln((uint16_t)console.rx.index);
-      return;
-    }else{
-      console.rx.index = 0;
-      return;
-    }
-  }
-  if (console.rx.index == 2){
-    if (console.rx.byte_in == 't'){
-      console.rx.index++;
-      consolePrintln((uint16_t)console.rx.index);
-      return;
-    }else{
-      console.rx.index = 0;
-      return;
-    }
-  }
-  if (console.rx.index == 3){
-    consolePrintln(console.rx.byte_in);
-    console.rx.cmd = console.rx.byte_in;
-    console.rx.index++;
-    return;
-  }
-  if (console.rx.index == 4){
-    console.rx.len = console.rx.byte_in - 48;  // ( - 48 ) becaues numerical values are sent in hex form
-    if (console.rx.len == 0 || console.rx.len > MAX_BUFFER_LENGTH){  // remember to set index to zero is length is zero.
-      console.rx.packet_received_flag = 1;
-      console.rx.index = 0;
-    }else{
-      console.rx.index++;
-    }
-    consolePrintln("Console length");
-    consolePrintln((uint16_t)console.rx.len);
-    return;
-  }
-  if ((console.rx.index > 4) && (console.rx.index < (/*console.rx.len+*/MAX_BUFFER_LENGTH))){
-    console.rx.data[console.rx.index - 4] = console.rx.byte_in;
-    console.rx.index++;
-    consolePrintln("Writing data \n \r");
-    consolePrintln((uint16_t)console.rx.index);
-  }
-  if (console.rx.index >= (console.rx.len + 5)){
-    consolePrintln("End of data \n \r");
-    console.rx.packet_received_flag = 1;
+  char input = ftdiRead();
+
+  /* If newline then message complete */
+  if (input == '\r'){
+    console.rx.buffer[console.rx.index] = input;
+    console.rx.buffer[console.rx.index + 1] = '\0';
     console.rx.index = 0;
-    return;
-  }
+    console.rx.packet_received_flag = true;
+  }else{
+    if (console.rx.index < MAX_RX_LENGTH){
+      console.rx.buffer[console.rx.index] = input;
+    }else{
+      /* Message receive fail */
+      console.rx.index = 0;
+    }
+  }          
   return;
+  
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -324,24 +282,39 @@ uint8_t console_write_packet(uint8_t command){
 
 void Console(){
   
-  switch(console.rx.cmd){
-    
-    case TEST:
-      consolePrint("csl");
-      consolePrint("Test Packet Received");
-      consolePrintln();
-      break;
-    
-    case IMU_RESET:
-      IMU_soft_reset();
-      break;
-    
-    case IMU_RATE:
-      consolePrint("csl IMU Rate Packet Received \n \r");
-      imu.settings.broadcast_rate = console.rx.data[0];
-      break; 
+  ftdiPrintln("Input Data Received");
+  ftdiPrintln(console.rx.buffer);
+  int len = strlen(console.rx.buffer);
+  ftdiPrintln("len");
+  ftdiPrintln(len);
+  
+  if (strcmp(console.rx.buffer, "+++")){
+    ftdiPrintln("OK");
+    console.rx.configure = true;
   }
   
+  if (console.rx.configure){
+    strncpy(console.rx.check, console.rx.buffer, 3);
+    ftdiPrintln("Check:");
+    ftdiPrintln(console.rx.check);
+    memmove(console.rx.val, console.rx.buffer + 3, len);
+    ftdiPrintln("Val:");
+    ftdiPrintln(console.rx.val);
+    if (strcmp(console.rx.check, "PT0")){
+        pid.pwm0_trim = atoi(console.rx.val);
+    }
+    if (strcmp(console.rx.check, "PT1")){
+        pid.pwm1_trim = atoi(console.rx.val);
+    }
+    if (strcmp(console.rx.check, "PT2")){
+        pid.pwm2_trim = atoi(console.rx.val);
+    }
+    if (strcmp(console.rx.check, "PT3")){
+        pid.pwm3_trim = atoi(console.rx.val);
+    }
+  }
+    
+  console.rx.index = 0;
   return; 
 }
 

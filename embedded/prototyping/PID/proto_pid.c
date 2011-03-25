@@ -13,25 +13,26 @@ void AttitudePID_Init(void){
   pid.previous_time = 0;
   pid.dt = 0;
   
-  pid.mass = 5;
+  //pid.mass = mass;
   pid.g = 9.81;
   pid.armLen = 0.382;
   pid.max_thrust = 14.715;
   pid.max_mom = 9.81;
   pid.kT = 0.0000019118;
   pid.kM = 0.0000028677;
-  pid.kRatio = 0.66667 ;
+  //  pid.kRatio = 0.66667 ;
+  pid.kRatio = 0.097;
   pid.kMot = 5;
   
-  pid.Ixx = .0974;
-  pid.Iyy = .0963;
-  pid.Izz = .1874;
+  //pid.Ixx = I[0];
+  //pid.Iyy = I[1];
+  //pid.Izz = I[2];
   
-  pid.kpRoll = 10;
-  pid.kdRoll = 6.2;
+  //pid.kpRoll = 10;
+  //pid.kdRoll = 6.2;
   
-  pid.kpYaw = 0;
-  pid.kdYaw = 6.2;
+  //pid.kpYaw = 0;
+  //pid.kdYaw = 6.2;
   
   pid.momPhiTrim = 0;
   pid.momThetaTrim = 0;
@@ -94,6 +95,17 @@ void AttitudePID(float *angles, float *pqr, int verbose){
     printf("Channel_1: %d \n", rc_input.channel_1);
     printf("Channel_2: %d \n", rc_input.channel_2);
     printf("Channel_3: %d \n", rc_input.channel_3);
+
+    printf("pid.mass: %f \n", pid.mass);
+    printf("Ixx: %f \n", pid.Ixx);
+    printf("Iyy: %f \n", pid.Iyy);
+    printf("Izz: %f \n", pid.Izz);
+
+    printf("kpRoll: %f \n", pid.kpRoll);
+    printf("kdRoll: %f \n", pid.kdRoll);
+    printf("kpYaw: %f \n", pid.kpYaw);
+    printf("kdYaw: %f \n", pid.kdYaw);
+
   }
 
   // Convert input angles and d_angles into radians
@@ -276,11 +288,23 @@ void AttitudePID(float *angles, float *pqr, int verbose){
     printf("\n");
   }
   
+  /*
   pwmDes[0] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[0] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[1] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[1] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[2] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[2] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[3] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[3] / pid.max_thrust )) + rc_input.motors_min ;
-  
+  */
+
+  pwmDes[0] = (20000/618.16)*(fDes[0] + 35.03);
+  pwmDes[1] = (20000/618.16)*(fDes[1] + 35.03);
+  pwmDes[2] = (20000/618.16)*(fDes[2] + 35.03);
+  pwmDes[3] = (20000/618.16)*(fDes[3] + 35.03);
+
+  /* Limit pwm outputs to min and max values */
+  for (i = 0; i < 4; ++i){
+    pwmDes[i] = limit(pwmDes[i], rc_input.motors_max, rc_input.motors_min);
+  }    
+
   /* Print motor outputs */
   if (verbose){
     printf("pwmDes[0]: %i \n", (int)pwmDes[0]);
@@ -407,18 +431,26 @@ int main(int argc, char *argv[]){
   /* Current data */
   
   int verbose = 0;
-  int input_arg_index = 0;
-  if (argc > 11){
-    if (strcmp(argv[input_arg_index++], "-v") && (argc < 13)){
+  int input_arg_index = 1;
+  /* This doesn't really work yet ... meh
+  if (strcmp(argv[1], "-h")){
+      printf("Inputs are in the following format \n");
+      printf("-v verbose option \n");
+      printf("psi phi theta r p q rc_input0 rc_input1 rc_input2 rc_input3 mass Ixx Iyy Izz kpRoll kdRoll kpYaw kdYaw \n");
+      return 0;
+      }*/
+  if (argc > 19){
+    if (strcmp(argv[2], "-v") && (argc < 21)){
           printf("Verbose mode on \n");
+	  input_arg_index++;
 	  verbose = 1;
     }else{
       printf("too many arguments \n");
       return 0;   
     }
   }
-  if (argc < 11){
-    printf("too few arguments");
+  if (argc < 19){
+    printf("too few arguments \n");
     return 0;
   }
 
@@ -439,6 +471,15 @@ int main(int argc, char *argv[]){
   rc_input.channel_1 = atoi(argv[input_arg_index++]);
   rc_input.channel_2 = atoi(argv[input_arg_index++]);
   rc_input.channel_3 = atoi(argv[input_arg_index++]);
+  
+  pid.mass = atof(argv[input_arg_index++]);
+  pid.Ixx = atof(argv[input_arg_index++]);
+  pid.Iyy = atof(argv[input_arg_index++]);
+  pid.Izz = atof(argv[input_arg_index++]);
+  pid.kpRoll = atof(argv[input_arg_index++]);
+  pid.kdRoll = atof(argv[input_arg_index++]);
+  pid.kpYaw = atof(argv[input_arg_index++]);
+  pid.kdYaw = atof(argv[input_arg_index++]);
 
   /* Initialize RC stuffs */
   rc_input.channel_min = 1050;

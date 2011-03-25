@@ -65,6 +65,15 @@ typedef struct rc_input_ {
   uint16_t channel_6;
   uint16_t channel_7;
   
+  uint16_t channel_0_old;
+  uint16_t channel_1_old;
+  uint16_t channel_2_old;
+  uint16_t channel_3_old;
+  uint16_t channel_4_old;
+  uint16_t channel_5_old;
+  uint16_t channel_6_old;
+  uint16_t channel_7_old;
+  
   uint16_t channel_0_trim;
   uint16_t channel_1_trim;
   uint16_t channel_2_trim;

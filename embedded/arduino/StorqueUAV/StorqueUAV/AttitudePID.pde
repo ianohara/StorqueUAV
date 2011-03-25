@@ -36,41 +36,44 @@
 */
 /* ------------------------------------------------------------------------------------ */
 
-/* See StorqueProperties.h for AttitudePID struct */
-
 /* INIT */
 void AttitudePID_Init(){
   pid.current_time = 0;
   pid.previous_time = 0;
   pid.dt = 0;
   
-  pid.mass = 5;
+  pid.mass = 3.495;
   pid.g = 9.81;
   pid.armLen = 0.382;
   pid.max_thrust = 14.715;
   pid.max_mom = 9.81;
   pid.kT = 0.0000019118;
   pid.kM = 0.0000028677;
-  pid.kRatio = 0.66667 ;
+  pid.kRatio = 0.097;
   pid.kMot = 5;
   
-  pid.Ixx = .0974;
-  pid.Iyy = .0963;
-  pid.Izz = .1874;
+  pid.Ixx = 0.0974;
+  pid.Iyy = 0.0963;
+  pid.Izz = 0.1874;
   
-  pid.kpRoll = 10;
-  pid.kdRoll = 6.2;
+  pid.kpRoll = 30; //DEBUG
+  pid.kdRoll = //2.25;
   
   pid.kpYaw = 0;
-  pid.kdYaw = 6.2;
+  pid.kdYaw = 2.0;
   
   pid.momPhiTrim = 0;
   pid.momThetaTrim = 0;
   pid.momPsiTrim = 0;
   
-  pid.max_angle = .5;
-  pid.max_ang_rate = 1;
+  pid.max_angle = 0.3;
+  pid.max_ang_rate = 0.4;
   pid.max_thrust_com = (pid.max_thrust*4) - (pid.mass * pid.g);
+  
+  pid.pwm0_trim = 100;
+  pid.pwm1_trim = 0;
+  pid.pwm2_trim = 0;
+  pid.pwm3_trim = 0;
 
 }
 
@@ -124,12 +127,12 @@ void AttitudePID(){
   //pid.current_time = micros();
   //pid.dt = pid.current_time - pid.previous_time;
   
-  // Scale RC commands ... note: remember to change channel number for proper response
+  // Scale RC commands
   phi_com    = pid.max_angle      * 2 *(  ( (rc_input.channel_0 - rc_input.channel_min) / rc_input.channel_range ) - .5);
   theta_com  = pid.max_angle      * 2 *(  ( (rc_input.channel_1 - rc_input.channel_min) / rc_input.channel_range ) - .5);
   r_com      = pid.max_ang_rate   * 2 *(  ( (rc_input.channel_2 - rc_input.channel_min) / rc_input.channel_range ) - .5);
   thrust_com = pid.max_thrust_com * 2 *(  ( (rc_input.channel_3 - rc_input.channel_min) / rc_input.channel_range ) - .5);
-  
+
   // Calculate desired restoring moments via PD control (and just P control on angular velocity for psi)
   momCont[0] = (pid.kpRoll * (  phi_com  -   phi) - pid.kdRoll * p) * pid.Ixx;
   momCont[1] = (pid.kpRoll * (theta_com  - theta) - pid.kdRoll * q) * pid.Iyy;
@@ -141,7 +144,7 @@ void AttitudePID(){
   momPsi   = pid.momPsiTrim   + momCont[2];
 
   // Similarly find final desired collective thrust from instantaneous trim and commanded thrust
-  thrust_trim = (pid.mass * pid.g) / (cosine(phi)*cosine(theta));
+  thrust_trim = (pid.mass * pid.g);// / (cosine(phi)*cosine(theta));
   thrust   = thrust_trim  + thrust_com;
   
   // Forces we can / want to add and subtract from opposite motors to produce moments, properly limited
@@ -159,7 +162,6 @@ void AttitudePID(){
   fDes[1] = fDes[1] + clippedForcePhi   * sign(momPhi);
   fDes[2] = fDes[2] - clippedForceTheta * sign(momTheta);
   fDes[3] = fDes[3] + clippedForceTheta * sign(momTheta);
-
   
   // Now we look at the total thrust we're outputting.  Add up all of the forces:
   float cur_thrust = 0;
@@ -211,32 +213,45 @@ void AttitudePID(){
     fDes[d] = fDes[d] - abso(des_added);
   }
   
+  /*
   pwmDes[0] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[0] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[1] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[1] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[2] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[2] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[3] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[3] / pid.max_thrust )) + rc_input.motors_min ;
-  
+  */
+
+  pwmDes[0] = (20000/618.16)*(fDes[0] + 35.03);
+  pwmDes[1] = (20000/618.16)*(fDes[1] + 35.03);
+  pwmDes[2] = (20000/618.16)*(fDes[2] + 35.03);
+  pwmDes[3] = (20000/618.16)*(fDes[3] + 35.03);
+
+  /* Limit pwm outputs to min and max values */
+  for (i = 0; i < 4; ++i){
+    pwmDes[i] = limit(pwmDes[i], rc_input.motors_max, rc_input.motors_min);
+  }    
+
   if (rc_input.motors_armed){
-    APM_RC.OutputCh(0, (int)pwmDes[0]);  // Motors armed
-    APM_RC.OutputCh(1, (int)pwmDes[1]);
-    APM_RC.OutputCh(2, (int)pwmDes[2]);
-    APM_RC.OutputCh(3, (int)pwmDes[3]);
+    APM_RC.OutputCh(0, (uint16_t)pwmDes[0] + pid.pwm0_trim);  // Motors armed
+    APM_RC.OutputCh(1, (uint16_t)pwmDes[1] + pid.pwm1_trim);
+    APM_RC.OutputCh(2, (uint16_t)pwmDes[2] + pid.pwm2_trim);
+    APM_RC.OutputCh(3, (uint16_t)pwmDes[3] + pid.pwm3_trim);
   }else{
-    APM_RC.OutputCh(0, (int)rc_input.motors_min);  // Motors not armed
-    APM_RC.OutputCh(1, (int)rc_input.motors_min);
-    APM_RC.OutputCh(2, (int)rc_input.motors_min);
-    APM_RC.OutputCh(3, (int)rc_input.motors_min);
+    APM_RC.OutputCh(0, (uint16_t)rc_input.motors_min - 100);  // Motors not armed
+    APM_RC.OutputCh(1, (uint16_t)rc_input.motors_min - 100);
+    APM_RC.OutputCh(2, (uint16_t)rc_input.motors_min - 100);
+    APM_RC.OutputCh(3, (uint16_t)rc_input.motors_min - 100);
   }
   
   // Quick hack so we can see the pwmDes instead of rc_input
-  rc_input.pwmDes0 = pwmDes[0];
-  rc_input.pwmDes1 = pwmDes[1];
-  rc_input.pwmDes2 = pwmDes[2];
-  rc_input.pwmDes3 = pwmDes[3];
-  rc_input.printPWMdes = 1;
+  rc_input.printPWMdes = true;
+  rc_input.pwmDes0 = (uint16_t)pwmDes[0];
+  rc_input.pwmDes1 = (uint16_t)pwmDes[1];
+  rc_input.pwmDes2 = (uint16_t)pwmDes[2];
+  rc_input.pwmDes3 = (uint16_t)pwmDes[3];
   
   // Update time ... not
   // pid.previous_time = pid.current_time;  
+  
 }
 
 float limit(float value, float upper, float lower) {
@@ -309,10 +324,9 @@ float cosine(float x)
 }
 
 
-
-
+/*
 #ifdef PID1
-/* AttitudePID function */
+// AttitudePID function 
 void AttitudePID(){
   
   //Declaration and Initialization
@@ -454,13 +468,11 @@ void AttitudePID(){
     APM_RC.OutputCh(3, rc_input.motors_min);
   }
   
-  /* Quick hack so we can see the pwmDes instead of rc_input */
-  rc_input.channel_0 = pwmDes[0];
-  rc_input.channel_1 = pwmDes[1];
-  rc_input.channel_2 = pwmDes[2];
-  rc_input.channel_3 = pwmDes[3];
-  rc_input.channel_4 = 0;
-  rc_input.channel_5 = 0;
+  // Quick hack so we can see the pwmDes instead of rc_input
+  rc_input.pwmDes0 = pwmDes[0];
+  rc_input.pwmDes1 = pwmDes[1];
+  rc_input.pwmDes2 = pwmDes[2];
+  rc_input.pwmDes3 = pwmDes[3];
   
   
   
@@ -536,7 +548,7 @@ float cosine(float x)
   return y;
 }
 #endif
-
+*/
 #ifdef PID2
 /*************************************************************************
 	Function: PID()

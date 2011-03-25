@@ -205,6 +205,10 @@ void setup()
   BatteryVoltage_Init();
   motorArmed = 0;
   
+  // Reset IMU values ... 
+  IMU_soft_reset();
+  delay(5000);
+  
 } 
 
 

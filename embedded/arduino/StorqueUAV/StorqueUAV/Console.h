@@ -43,6 +43,7 @@
 
 #define MAX_BUFFER_LENGTH 8
 #define MAX_TX_LENGTH 30
+#define MAX_RX_LENGTH 15
 
 /* Console tx data type defines */
 #define UINT  0x22     // uint16_t
@@ -71,9 +72,12 @@ typedef struct console_rx_ {
   uint8_t cmd;
   uint8_t len;
   uint8_t byte_in; // caps because byte is already taken ... lame
-  uint8_t data[16];
+  char    buffer[MAX_RX_LENGTH];
+  char    check[MAX_RX_LENGTH];
+  char    val[MAX_RX_LENGTH];
   uint8_t packet_received_flag;
   uint16_t chk;
+  uint8_t configure;
   
 } console_rx_t;
 

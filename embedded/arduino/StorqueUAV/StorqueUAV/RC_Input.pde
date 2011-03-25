@@ -35,13 +35,25 @@ void RC_Input_Init(){
   rc_input.flag = 0;
   rc_input.printPWMdes = 0;
   
-  rc_input.channel_max = 1930;
-  rc_input.channel_min = 1050;
+  // channel 0 and 1 have 920 - 2100 range
+  // channel 2       has  1040 - 1900 range
+  // channel 3       has  1060  - 1940 range
+  rc_input.channel_max = 2100;
+  rc_input.channel_min = 920;
   rc_input.channel_range = rc_input.channel_max - rc_input.channel_min;
 
   rc_input.motors_max = 2100;
-  rc_input.motors_min = 1000;
+  rc_input.motors_min = 950;
   rc_input.motors_range = rc_input.motors_max - rc_input.motors_min;
+  
+  rc_input.channel_0_trim = 0;
+  rc_input.channel_1_trim = 0;
+  rc_input.channel_2_trim = 0;
+  rc_input.channel_3_trim = 0;
+  rc_input.channel_4_trim = 0;
+  rc_input.channel_5_trim = 0;
+  rc_input.channel_6_trim = 0;
+  rc_input.channel_7_trim = 0;
   
   return;
 }
@@ -56,13 +68,29 @@ void RC_Input_Init(){
 /* This works, but we need 5v inputs (not 3.3v like the current controller =\ ) */
 void RC_Input_Read(){
   
-    rc_input.channel_0 = APM_RC.InputCh(INPUT_0);
-    rc_input.channel_1 = APM_RC.InputCh(INPUT_1);    
-    rc_input.channel_2 = APM_RC.InputCh(INPUT_2);
-    rc_input.channel_3 = APM_RC.InputCh(INPUT_3);
+    rc_input.channel_0_old = rc_input.channel_0;
+    rc_input.channel_1_old = rc_input.channel_1;
+    rc_input.channel_2_old = rc_input.channel_2;
+    rc_input.channel_3_old = rc_input.channel_3;
+    rc_input.channel_4_old = rc_input.channel_4;
+    rc_input.channel_4_old = rc_input.channel_5;
+    rc_input.channel_4_old = rc_input.channel_6;
+  
+    rc_input.channel_0 = channel_filter(APM_RC.InputCh(INPUT_0), rc_input.channel_0_old);
+    rc_input.channel_1 = channel_filter(APM_RC.InputCh(INPUT_1), rc_input.channel_1_old);    
+    rc_input.channel_2 = channel_filter(APM_RC.InputCh(INPUT_2), rc_input.channel_2_old);
+    rc_input.channel_3 = channel_filter(APM_RC.InputCh(INPUT_3), rc_input.channel_3_old);
     rc_input.channel_4 = APM_RC.InputCh(INPUT_4);
     rc_input.channel_5 = APM_RC.InputCh(INPUT_5);
-  
+    
+    /*
+    rc_input.channel_0 += rc_input.channel_0_trim;
+    rc_input.channel_1 += rc_input.channel_1_trim;
+    rc_input.channel_2 += rc_input.channel_2_trim;
+    rc_input.channel_3 += rc_input.channel_3_trim;
+    rc_input.channel_4 += rc_input.channel_4_trim;
+    rc_input.channel_5 += rc_input.channel_5_trim;
+    */
   
     /* Arm motors */
     if (rc_input.channel_5 < 2000){              
@@ -104,33 +132,31 @@ void RC_Input_Print(uint8_t type){
     case(DATA):
 
          /* This is a really bad hack but I'm a slacker */
-         if (rc_input.printPWMdes){
-           console.tx.transmit_type[0] = 'P';
-           console.tx.transmit_type[1] = 'I';
-           console.tx.transmit_type[2] = 'D';
-           console.tx.data_uint[0] = rc_input.pwmDes0; 
-           console.tx.data_uint[1] = rc_input.pwmDes1;
-           console.tx.data_uint[2] = rc_input.pwmDes2;
-           console.tx.data_uint[3] = rc_input.pwmDes3;  
-           console.tx.data_uint[4] = rc_input.channel_4;
-           console.tx.data_uint[5] = rc_input.channel_5;
-           console.tx.data_uint[6] = rc_input.motors_armed;       
-           rc_input.printPWMdes = 0;
-         }else{
-           console.tx.transmit_type[0] = 'R';
-           console.tx.transmit_type[1] = 'C';
-           console.tx.transmit_type[2] = 'I';
-           console.tx.data_uint[0] = rc_input.channel_0; 
-           console.tx.data_uint[1] = rc_input.channel_1;
-           console.tx.data_uint[2] = rc_input.channel_2;
-           console.tx.data_uint[3] = rc_input.channel_3;         
-           console.tx.data_uint[4] = rc_input.channel_4;
-           console.tx.data_uint[5] = rc_input.channel_5;
-           console.tx.data_uint[6] = rc_input.motors_armed;
+         console.tx.transmit_type[0] = 'P';
+         console.tx.transmit_type[1] = 'I';
+         console.tx.transmit_type[2] = 'D';
+         console.tx.data_uint[0] = rc_input.pwmDes0; 
+         console.tx.data_uint[1] = rc_input.pwmDes1;
+         console.tx.data_uint[2] = rc_input.pwmDes2;
+         console.tx.data_uint[3] = rc_input.pwmDes3;  
+         console.tx.data_uint[4] = rc_input.channel_4;
+         console.tx.data_uint[5] = rc_input.channel_5;
+         console.tx.data_uint[6] = rc_input.motors_armed;
+         console.tx.data_char[7] = '\n';
+         
+         console.tx.data_char[8] = 'R';
+         console.tx.data_char[9] = 'C';
+         console.tx.data_char[10] = 'I';
+         console.tx.data_uint[11] = rc_input.channel_0; 
+         console.tx.data_uint[12] = rc_input.channel_1;
+         console.tx.data_uint[13] = rc_input.channel_2;
+         console.tx.data_uint[14] = rc_input.channel_3;         
+         console.tx.data_uint[15] = rc_input.channel_4;
+         console.tx.data_uint[16] = rc_input.channel_5;
+         console.tx.data_uint[17] = rc_input.motors_armed;
 
-         }
          console.tx.cmd = DATA;
-         console.tx.len = 7;
+         console.tx.len = 18;
                
          console.tx.data_typecast[0] = UINT;         
          console.tx.data_typecast[1] = UINT;
@@ -138,7 +164,19 @@ void RC_Input_Print(uint8_t type){
          console.tx.data_typecast[3] = UINT;
          console.tx.data_typecast[4] = UINT;
          console.tx.data_typecast[5] = UINT;
-         console.tx.data_typecast[6] = UINT;                                    
+         console.tx.data_typecast[6] = UINT;
+         console.tx.data_typecast[7] = CHAR;
+         console.tx.data_typecast[8] = CHAR;
+         console.tx.data_typecast[9] = CHAR;
+         console.tx.data_typecast[10] = CHAR;         
+         console.tx.data_typecast[11] = UINT;
+         console.tx.data_typecast[12] = UINT;
+         console.tx.data_typecast[13] = UINT;
+         console.tx.data_typecast[14] = UINT;
+         console.tx.data_typecast[15] = UINT;
+         console.tx.data_typecast[16] = UINT;
+         console.tx.data_typecast[17] = UINT;
+     
 
          
          

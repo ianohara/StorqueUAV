@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------ */
-/* Storque UAV Attitude PID code                                            */
-/*                                                                          */
+/* Storque Battery Voltage Reading     code:                                */
+/*                       for reading voltages from BlueLipo 11v Batteries   */
 /*                                                                          */
 /* Authors :                                                                */
 /*           Storque UAV team:                                              */
@@ -25,58 +25,41 @@
 */
 /* ------------------------------------------------------------------------ */
 
-#ifndef ATTITUDE_PID_H
-#define ATTITUDE_PID_H
-
-#define PI 3.1415926535898
+#ifndef BATTERYVOLTAGE_H
+#define BATTERYVOLTAGE_H
 
 /* ------------------------------------------------------------------------------------ */
-/* Attitude PID struct for experimental attitude PID micros() dt */
+/* Range Finder Defines */
 /* ------------------------------------------------------------------------------------ */
 
-/* Declare */
-typedef struct attitude_pid_ {
-  unsigned long previous_time;
-  unsigned long current_time;
-  unsigned long dt;
-  
-  float mass;
-  float g;
-  float armLen;
-  float max_thrust;
-  float max_mom;
-  float kT;
-  float kM;
-  float kRatio;
-  float kMot;
-  
-  float Ixx;
-  float Iyy;
-  float Izz;
-  
-  float kpRoll;
-  float kdRoll;
-  
-  float kpYaw;
-  float kdYaw;
-  
-  float momPhiTrim;
-  float momThetaTrim;
-  float momPsiTrim;
-  
-  float max_angle;
-  float max_ang_rate;
-  float max_thrust_com;
-  
-  uint16_t pwm0_trim;
-  uint16_t pwm1_trim;
-  uint16_t pwm2_trim;
-  uint16_t pwm3_trim;
+#define BATTERY0_PIN 0
+#define BATTERY1_PIN 1
+#define BATTERY2_PIN 2
+#define BATTERY3_PIN 3
 
-  
-} attitude_pid_t;
+/* RangeFinder message types for RangeFinder_Print() */
+#define DATA 'd'
+#define PROPERTIES 'p'
 
-/* Instantiate */
-attitude_pid_t pid;
+/* ------------------------------------------------------------------------------------ */
+/* LV Ultrasonic Rangefinder struct:
+        - Holds all parameters for the Rangefinder
+*/        
+/* ------------------------------------------------------------------------------------ */
+
+typedef struct battery_voltage_ {
+
+  unsigned long sample_time;  
+  uint16_t sample_period;
+  uint8_t  flag;
+  
+  uint16_t v0;
+  uint16_t v1;
+  uint16_t v2;
+  uint16_t v3;
+  
+} battery_voltage_t;
+
+battery_voltage_t battery_voltage;
 
 #endif

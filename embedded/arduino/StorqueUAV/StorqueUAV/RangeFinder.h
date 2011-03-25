@@ -32,7 +32,7 @@
 /* Range Finder Defines */
 /* ------------------------------------------------------------------------------------ */
 
-#define RANGEFINDER_PIN 0
+#define RANGEFINDER_PIN 5
 
 /* RangeFinder message types for RangeFinder_Print() */
 #define DATA 'd'

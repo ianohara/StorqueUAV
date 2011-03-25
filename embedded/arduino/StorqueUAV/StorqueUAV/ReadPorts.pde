@@ -82,8 +82,8 @@ void Read_Ports(){
   
   /* FTDI port (usb->host) */
   if (ftdiAvailable()){
-    com_port.ftdi_rx_byte = ftdiAvailable();
-    com_port.ftdi_rx_flag = true;       // note: remember to set flags to false after com
+    receive_console_packet();
+    //com_port.ftdi_rx_flag = true;       // note: remember to set flags to false after com
   }
   
   /*
@@ -97,10 +97,8 @@ void Read_Ports(){
     // Note: receiving full SENSOR_DATA imu packet takes approx: 4[ms] to complete
     if (receive_imu_packet() == SENSOR_DATA){
       imu.rx.packet_received_flag = true;
-      //SerPriln("S");
     }else{
       imu.rx.packet_received_flag = false;
-      //SerPriln("F");
     }   
   }
   
@@ -108,7 +106,7 @@ void Read_Ports(){
      console
   */
   if (xbeeAvailable()){ 
-    receive_console_packet();
+    //receive_console_packet();
   }
   
   return;
