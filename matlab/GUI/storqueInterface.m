@@ -51,9 +51,9 @@ classdef storqueInterface < handle
                 % Timeout can probably equal zero once we add more code
                 self.ser.Timeout = 0.005;
                 % Disable timout warning
-                warning('off', 'MATLAB:serial:fgets:unsuccessfulRead')            
+                warning('off', 'MATLAB:serial:fgets:unsuccessfulRead')
                 fopen(self.ser);
-                disp(strcat('Serial Port ', self.serialPort, 'Initialized'));
+                disp(strcat('Serial Port', [' ', self.serialPort(1:4)], ' Initialized'));
             else                                
                 disp('No Serial Initialized');
             end
@@ -75,13 +75,13 @@ classdef storqueInterface < handle
             fclose(self.logFile);  
             
             % Re-enable Timoutwarning
-            warning('off', 'MATLAB:serial:fgetl:unsuccessfulRead')            
+            warning('on', 'MATLAB:serial:fgets:unsuccessfulRead')            
             disp('Successful Shutdown');
         end
         
         
         %% Retrieve Serial Data and Parse It
-        function [angles pwms] = get_data(self)
+        function [angles  rcis pwms] = get_data(self)
             
             if (self.serialExists)
                 
@@ -89,6 +89,9 @@ classdef storqueInterface < handle
                 %the appropriate return will be set.
                 angles = [];
                 pwms = [];
+                rcis = [];
+                pwm_max = 1930;
+                pwm_min = 1050;
                 
                 temp_data = fgets(self.ser);
                 terminator_indices = strfind(temp_data, sprintf('\n'));
@@ -97,7 +100,7 @@ classdef storqueInterface < handle
                 %existing read data.  We'll keep adding until we get a full
                 %packet, as indicated by the newline.
                 if (isempty(terminator_indices))
-                    self.dataIn = strcat(self.dataIn,temp_data,' ');
+                    self.dataIn = strcat(self.dataIn,temp_data);
 
                 
                 %Otherwise, we have a complete packet.  Take in the
@@ -132,10 +135,40 @@ classdef storqueInterface < handle
                             end
 
                         %RC Input Packet
-                        elseif strcmp(self.dataIn(1:4),'RCI ')
+                        elseif strcmp(self.dataIn(1:4),'RCI_')
                             if self.dataIn(5) == 'd'
                                 %RC Input Data Packet
-                                %TODO: Parse this properly
+                                len = length(self.dataIn);
+                                
+                                self.dataIn(strfind(self.dataIn(1,:),'_')) = ' ';
+                                rci_data = str2num(self.dataIn(10:len));
+                                if (~isempty(rci_data))
+                                    disp(rci_data(1,:))
+                                    rcis = (rci_data([1 2 4])-pwm_min)/(pwm_max-pwm_min);
+                                    rcis(1) = rcis(1) * (180/pi);
+                                    rcis(2) = rcis(2) * (180/pi);
+
+                                else
+                                    self.errorCount = self.errorCount + 1;
+                                    disp('Errors: ')
+                                    disp(self.errorCount)
+                                end
+                            end
+                        %PID Packet    
+                        elseif strcmp(self.dataIn(1:4),'PID_')
+                            if self.dataIn(5) == 'm'
+                                %PID PWMS Packet
+                                len = length(self.dataIn);
+                                
+                                self.dataIn(strfind(self.dataIn(1,:),'_')) = ' ';
+                                pid_data = str2num(self.dataIn(9:len));
+                                if (~isempty(pid_data))
+                                    pwms = (pid_data(1:4)-pwm_min)/(pwm_max-pwm_min);
+                                else
+                                    self.errorCount = self.errorCount + 1;
+                                    disp('Errors: ')
+                                    disp(self.errorCount)
+                                end
                             end
                         end
 

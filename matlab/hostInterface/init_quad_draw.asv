@@ -1,0 +1,14 @@
+function [] = init_quad_draw()
+
+L = .5;  %Arm Length [m]
+w = .05; %Arm Width [m]
+
+X = [ -w w w L L w w -w -w -L -L -w];
+Y = [  L L w w -w -w -L -L -w -w w w];
+Z = zeros(12);
+
+
+quad_patch_h = patch(X,Y,Z,'r');
+
+
+end
