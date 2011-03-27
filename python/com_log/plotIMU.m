@@ -1,5 +1,8 @@
 function success = plotIMU(log)
 % Plot IMU data from data logging
+% Input Arguments:
+%   log - the directory containing the .csv files (IMU.csv, PID.csv,
+%   RCI.csv,etc)
 
 close all;
 
@@ -43,7 +46,7 @@ rciChan2 = dataRCI(:,3)';
 rciChan3 = dataRCI(:,4)';
 
 % So we can plot RCI input as percentages of max
-rciRange = 2100-920;
+rciRange = 2100;
 
 rciTimeStep = max(time)/size(dataRCI,1);
 rciTime = rciTimeStep:rciTimeStep:size(dataRCI,1)*rciTimeStep;
@@ -77,13 +80,13 @@ grid on;
 subplot(3,1,2);
 hold on;
 
-plot(rciTime, rciChan0/rciRange,'.');
-plot(rciTime, rciChan1/rciRange, 'r.');
-plot(rciTime, rciChan2/rciRange, 'g.');
-plot(rciTime, rciChan3/rciRange, 'm.');
+plot(rciTime, (rciChan0/rciRange)*100,'.');
+plot(rciTime, (rciChan1/rciRange)*100, 'r.');
+plot(rciTime, (rciChan2/rciRange)*100, 'g.');
+plot(rciTime, (rciChan3/rciRange)*100, 'm.');
 
 title('Pilot Control Inputs','FontSize',14);
-legend('Roll Com', 'Pitch Com', 'Collective Thrust Com', 'Yaw Com', 'Location', 'SouthWest');
+legend('Roll Com', 'Pitch Com', 'Yaw Com', 'Collective Thrust Com', 'Location', 'SouthWest');
 xlabel('Time [s]','FontSize',13);
 ylabel('% of Max Command','FontSize',13);
 grid on;
