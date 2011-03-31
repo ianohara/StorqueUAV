@@ -1,0 +1,40 @@
+;; -*- mode: emacs-lisp; coding: emacs-mule; -*-
+;; --------------------------------------------------------------------------
+;; Desktop File for Emacs
+;; --------------------------------------------------------------------------
+;; Created Mon Mar 28 16:02:22 2011
+;; Desktop file format version 206
+;; Emacs version 23.2.1
+
+;; Global section:
+(setq desktop-missing-file-warning nil)
+(setq tags-file-name nil)
+(setq tags-table-list nil)
+(setq search-ring '("init_commmand" "init_command"))
+(setq regexp-search-ring nil)
+(setq register-alist nil)
+(setq file-name-history '("~/senior-design-git/embedded/maevarm/" "~/senior-design-git/embedded/maevarm/maevarm.h" "~/senior-design-git/embedded/maevarm/maevarm-usb.c" "~/senior-design-git/embedded/arduino/StorqueUAV/libraries/APM_RC/APM_RC.cpp" "~/senior-design-git/embedded/maevarm/maevarm.h" "~/senior-design-git/embedded/maevarm/motor_closed_loop.c"))
+
+;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 206
+  "/Users/Uriah/senior-design-git/embedded/maevarm/motor_closed_loop.c"
+  "motor_closed_loop.c"
+  'c-mode
+  '(abbrev-mode linum-mode ede-minor-mode senator-minor-mode semantic-idle-scheduler-mode semantic-idle-summary-mode semantic-mru-bookmark-mode)
+  11360
+  '(11237 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/Users/Uriah/senior-design-git/embedded/maevarm/maevarm.h"
+  "maevarm.h"
+  'c-mode
+  '(abbrev-mode linum-mode ede-minor-mode senator-minor-mode semantic-idle-scheduler-mode semantic-idle-summary-mode semantic-mru-bookmark-mode)
+  524
+  '(nil nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-dos)))
+

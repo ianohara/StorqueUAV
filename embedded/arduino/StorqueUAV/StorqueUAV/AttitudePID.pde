@@ -236,12 +236,14 @@ void AttitudePID(){
   pwmDes[2] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[2] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[3] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[3] / pid.max_thrust )) + rc_input.motors_min ;
   */
+  //Ttow = @(T,k)((-k(2) + sqrt(-4*k(1)*k(3) + 4*k(1)*T + k(2)^2))/(2*k(1)));
+  //kT = [3.63737e-5 -0.00770417 0.63139];
 
   pwmDes[0] = (20000/618.16)*(fDes[0] + 35.03);
   pwmDes[1] = (20000/618.16)*(fDes[1] + 35.03);
   pwmDes[2] = (20000/618.16)*(fDes[2] + 35.03);
   pwmDes[3] = (20000/618.16)*(fDes[3] + 35.03);
-
+  
   /* Limit pwm outputs to min and max values */
   for (int i = 0; i < 4; i++){
     pwmDes[i] = limit(pwmDes[i], rc_input.motors_max, rc_input.motors_min);
@@ -252,16 +254,33 @@ void AttitudePID(){
   pwmDes[3] += pid.pwm3_trim;
 
   if (rc_input.motors_armed){
-   
-    APM_RC.OutputCh(0, (uint16_t)pwmDes[0]);  // Motors armed
+    /*APM_RC.OutputCh(0, (uint16_t)pwmDes[0]);  // Motors armed
     APM_RC.OutputCh(1, (uint16_t)pwmDes[1]);
     APM_RC.OutputCh(2, (uint16_t)pwmDes[2]);
-    APM_RC.OutputCh(3, (uint16_t)pwmDes[3]);
+    APM_RC.OutputCh(3, (uint16_t)pwmDes[3]);*/
+
+    // For debugging
+    pwmDes[0] = rc_input.channel_3;
+    pwmDes[1] = rc_input.channel_3;
+    pwmDes[2] = rc_input.channel_3;
+    pwmDes[3] = rc_input.channel_3;
+
+    // Transmit to esc    
+    transmit_esc_packet((uint16_t)pwmDes[0], \
+                        (uint16_t)pwmDes[1], \
+                        (uint16_t)pwmDes[2], \
+                        (uint16_t)pwmDes[3]);
+    
   }else{
-    APM_RC.OutputCh(0, (uint16_t)rc_input.motors_min - 100);  // Motors not armed
+    transmit_esc_packet((uint16_t)rc_input.motors_min - 100, \
+                        (uint16_t)rc_input.motors_min - 100, \
+                        (uint16_t)rc_input.motors_min - 100, \
+                        (uint16_t)rc_input.motors_min - 100);
+
+/*    APM_RC.OutputCh(0, (uint16_t)rc_input.motors_min - 100);  // Motors not armed
     APM_RC.OutputCh(1, (uint16_t)rc_input.motors_min - 100);
     APM_RC.OutputCh(2, (uint16_t)rc_input.motors_min - 100);
-    APM_RC.OutputCh(3, (uint16_t)rc_input.motors_min - 100);
+    APM_RC.OutputCh(3, (uint16_t)rc_input.motors_min - 100);*/
   }
   
   // Quick hack so we can see the pwmDes instead of rc_input

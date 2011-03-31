@@ -100,6 +100,16 @@
 #define SerBegin ftdiInit
 #define SerPor ftdiPort
 
+/* ESC */
+#define escBau 250000
+#define escPrint Serial1.print
+#define escPrintln Serial1.println
+#define escFlush Serial1.flush
+#define escAvailable Serial1.available
+#define escRead Serial1.read
+#define escInit Serial1.begin
+#define escPort "ESC MAEVARM"
+
 /* IMU */
 #define imuBau 115200
 #define imuPrint Serial2.print
@@ -150,6 +160,7 @@
 #include "RangeFinder.h"
 #include "RC_Input.h"
 #include "BatteryVoltage.h"
+#include "ESC.h"
 
 /* Software version */
 #define VER 0.2    // Current software version (only numeric values)
@@ -203,6 +214,7 @@ void setup()
   RangeFinder_Init();
   RC_Input_Init();
   BatteryVoltage_Init();
+  esc_init();
   motorArmed = 0;
   
   // Reset IMU values ... 

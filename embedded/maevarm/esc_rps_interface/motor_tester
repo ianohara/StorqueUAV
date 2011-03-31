@@ -1,0 +1,61 @@
+# This code reads in serial from the maevarm in the format it sends to the 
+#   ardupilot mega
+
+import serial
+ser = serial.Serial('/dev/tty.usbserial-A600dOJy')
+ser.baudrate = 38400
+ser.timeout = 0.1
+while(1):
+  if (ser.read() == 'r'):
+    if (ser.read() == 'p'):
+      if (ser.read() == 's'):
+	chk_exp = 0
+        num = ord(ser.read())
+	msb = ord(ser.read())
+	lsb = ord(ser.read())
+	chk_exp += msb + lsb
+	m0 = (msb<<8) | lsb
+	msb = ord(ser.read())
+        lsb = ord(ser.read())
+        chk_exp += msb + lsb
+        m1 = (msb<<8) | lsb
+	msb = ord(ser.read())
+        lsb = ord(ser.read())
+        chk_exp += (msb<<8) + lsb
+        m2 = msb | lsb
+	msb = ord(ser.read())
+        lsb = ord(ser.read())
+        chk_exp += msb + lsb
+        m3 = (msb<<8) | lsb
+        chk = (ord(ser.read()))
+	chk_exp = chk_exp % 256
+        print 'num: %d m0: %d m1: %d m2: %d m3 %d chk: %d chkE: %d' %(num, m0, m1, m2, m3, chk, chk_exp)
+
+
+ser.baudrate = 76800
+ser.timeout = 0.1
+while(1):
+  if (ser.read() == 'c'):
+    chk_exp = 0 
+    msb = ord(ser.read())
+    lsb = ord(ser.read())
+    chk_exp += msb + lsb
+    m0 = (msb<<8) | lsb
+    msb = ord(ser.read())
+    lsb = ord(ser.read())
+    chk_exp += msb + lsb
+    m1 = (msb<<8) | lsb
+    msb = ord(ser.read())
+    lsb = ord(ser.read())
+    chk_exp += msb + lsb
+    m2 = (msb<<8) | lsb
+    msb = ord(ser.read())
+    lsb = ord(ser.read())
+    chk_exp += msb + lsb
+    m3 = (msb<<8) | lsb
+    chk = (ord(ser.read()))
+    chk_exp = chk_exp % 256
+    print 'm0: %d m1: %d m2: %d m3 %d chk: %d chkE: %d' %(m0, m1, m2, m3, chk, chk_exp)
+
+
+

@@ -49,7 +49,7 @@ void Com_Init(){
   /* Initialize Serial */
   /* ------------------------------------------------------------------------------------ */
   ftdiInit(ftdiBau);                      // Initialize SerialXX.port, IsXBEE define declares which port
-  Serial1.begin(SerBau);
+  escInit(escBau);
   imuInit(imuBau);
   xbeeInit(xbeeBau);
 
@@ -86,11 +86,6 @@ void Read_Ports(){
     //com_port.ftdi_rx_flag = true;       // note: remember to set flags to false after com
   }
   
-  /*
-  if (Serial1.available()){
-    // UNIMPLEMENTED
-  }*/
-  
   /* Receive IMU data. */
   if (imuAvailable()){
     
@@ -100,6 +95,9 @@ void Read_Ports(){
     }else{
       imu.rx.packet_received_flag = false;
     }   
+  }
+  
+  if (escAvailable()){           
   }
   
   /* Receive data from XBee, which is currently the main port for the 
