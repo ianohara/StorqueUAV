@@ -116,6 +116,16 @@ for my $file (@files) {
 	
 		$line =~ s/^IN:\s*//i;  # Strip leading IN: and whitespace
 	
+		# A Time tag of format 'Time: <seconds> ' was added on a later
+		# version of data logging.  If this tag exists, it will be
+		# appended as the last column of data for each different <com_tag>.
+		# If it doesn't exist, this column will be filled with '-1'.
+		my $time = -1;
+
+		if ($line =~ m/^\s*Time:\s*(\d+\.\d+)\s*/) {
+			$time = $1;
+			$line =~ s/^\s*Time:\s*\d+\.\d+\s*//;
+		}
 		 # Fix the RCI Tag.  It is formatted _R_C_I in the raw logs.
 		$line =~ s/$delimeter\s*R$delimeter\s*C\s*$delimeter\s*I/RCI/;
 	
@@ -133,6 +143,7 @@ for my $file (@files) {
 		#print join(' ', @data);
 		#print "\n";
 		# Add a row of data to this <com_Tag>'s array of data.
+		push @data, $time;
 		push @{$data{$comTag}}, \@data;
 	}
 	print "Done!\n" if $verbose;
@@ -147,7 +158,7 @@ for my $file (@files) {
 
 	for my $comTag (keys %data) {
 		my $comLogFile = "$logDir/$file/$comTag" . '.csv';
-		open (my $comFh, '>', $comLogFile) or (warn "$0: Cannot open '$comLogFile' for logging.\n" && (next FILES) && ($verbose && print("\n")));
+		open (my $comFh, '>', $comLogFile) or (warn "$0: Cannot open '$comLogFile' for logging.\n" && ($verbose && print("Failed!\n")) && (next FILES));
 	
 		for my $dataRow (@{$data{$comTag}}) {
 			for my $dataPiece (@{$dataRow}) {
@@ -156,8 +167,10 @@ for my $file (@files) {
 			}
 			print $comFh "\n";
 		}
+		close($comFh);
 	}
 	print "Done!\n" if $verbose;
+	close($logFh);
 	
 	$lastCsvDir = "$logDir/$file/";
 }
