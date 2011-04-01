@@ -49,6 +49,9 @@ typedef struct attitude_pid_ {
   float kM;
   float kRatio;
   float kMot;
+  float k1;
+  float k2;
+  float k3;
   
   float Ixx;
   float Iyy;

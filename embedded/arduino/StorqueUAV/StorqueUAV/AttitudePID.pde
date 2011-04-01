@@ -51,6 +51,9 @@ void AttitudePID_Init(){
   pid.kM = 0.0000028677;
   pid.kRatio = 0.097;
   pid.kMot = 5;
+  pid.k1 = .00003637;
+  pid.k2 = -0.00770417;
+  pid.k3 = 0.63139;
   
   pid.Ixx = 0.0974;
   pid.Iyy = 0.0963;
@@ -70,10 +73,10 @@ void AttitudePID_Init(){
   pid.max_ang_rate = 0.4;
   pid.max_thrust_com = (pid.max_thrust*4) - (pid.mass * pid.g);
   
-  pid.pwm0_trim = 100;
+  pid.pwm0_trim = 0;
   pid.pwm1_trim = 0;
   pid.pwm2_trim = 0;
-  pid.pwm3_trim = 100;
+  pid.pwm3_trim = 0;
 
 }
 
@@ -94,6 +97,7 @@ void AttitudePID(){
   float momCont[3] = {0, 0, 0};
   float fDes[4] = {0, 0, 0, 0};
   float pwmDes[4] = {0, 0, 0, 0};
+  uint16_t propSpeedDes[4] = {0, 0, 0, 0};
   
   float thrust_trim;
   float thrust;
@@ -236,63 +240,45 @@ void AttitudePID(){
   pwmDes[2] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[2] / pid.max_thrust )) + rc_input.motors_min ;
   pwmDes[3] = ((rc_input.motors_max - rc_input.motors_min) *  ( fDes[3] / pid.max_thrust )) + rc_input.motors_min ;
   */
-  //Ttow = @(T,k)((-k(2) + sqrt(-4*k(1)*k(3) + 4*k(1)*T + k(2)^2))/(2*k(1)));
-  //kT = [3.63737e-5 -0.00770417 0.63139];
 
-  pwmDes[0] = (20000/618.16)*(fDes[0] + 35.03);
-  pwmDes[1] = (20000/618.16)*(fDes[1] + 35.03);
-  pwmDes[2] = (20000/618.16)*(fDes[2] + 35.03);
-  pwmDes[3] = (20000/618.16)*(fDes[3] + 35.03);
-  
-  /* Limit pwm outputs to min and max values */
-  for (int i = 0; i < 4; i++){
-    pwmDes[i] = limit(pwmDes[i], rc_input.motors_max, rc_input.motors_min);
-  }    
-  pwmDes[0] += pid.pwm0_trim;
-  pwmDes[1] += pid.pwm1_trim;
-  pwmDes[2] += pid.pwm2_trim;
-  pwmDes[3] += pid.pwm3_trim;
-
-  if (rc_input.motors_armed){
-    /*APM_RC.OutputCh(0, (uint16_t)pwmDes[0]);  // Motors armed
-    APM_RC.OutputCh(1, (uint16_t)pwmDes[1]);
-    APM_RC.OutputCh(2, (uint16_t)pwmDes[2]);
-    APM_RC.OutputCh(3, (uint16_t)pwmDes[3]);*/
-
-    // For debugging
-    pwmDes[0] = rc_input.channel_3;
-    pwmDes[1] = rc_input.channel_3;
-    pwmDes[2] = rc_input.channel_3;
-    pwmDes[3] = rc_input.channel_3;
-
-    // Transmit to esc    
-    transmit_esc_packet((uint16_t)pwmDes[0], \
-                        (uint16_t)pwmDes[1], \
-                        (uint16_t)pwmDes[2], \
-                        (uint16_t)pwmDes[3]);
-    
-  }else{
-    transmit_esc_packet((uint16_t)rc_input.motors_min - 100, \
-                        (uint16_t)rc_input.motors_min - 100, \
-                        (uint16_t)rc_input.motors_min - 100, \
-                        (uint16_t)rc_input.motors_min - 100);
-
-/*    APM_RC.OutputCh(0, (uint16_t)rc_input.motors_min - 100);  // Motors not armed
-    APM_RC.OutputCh(1, (uint16_t)rc_input.motors_min - 100);
-    APM_RC.OutputCh(2, (uint16_t)rc_input.motors_min - 100);
-    APM_RC.OutputCh(3, (uint16_t)rc_input.motors_min - 100);*/
+  // Now we need to transform desired forces to desired rotor speeds
+  int l;
+  for (int l = 0; l < 4; l++){
+    propSpeedDes[l] = ftow(fDes[l],pid.k1,pid.k2,pid.k3)*100; // rev-per-sec times 100 for great res
   }
+  
+  // Transmit the desired rotor speeds to the maevarm for prop control
+  if (rc_input.motors_armed){
+    // Transmit to esc    
+    transmit_esc_packet((uint16_t)propSpeedDes[0], \
+                        (uint16_t)propSpeedDes[1], \
+                        (uint16_t)propSpeedDes[2], \
+                        (uint16_t)propSpeedDes[3]);  
+  }else{
+    transmit_esc_packet(0, \
+                        0, \
+                        0, \
+                        0);
+  }
+  
   
   // Quick hack so we can see the pwmDes instead of rc_input
   rc_input.printPWMdes = true;
-  rc_input.pwmDes0 = (uint16_t)pwmDes[0];
-  rc_input.pwmDes1 = (uint16_t)pwmDes[1];
-  rc_input.pwmDes2 = (uint16_t)pwmDes[2];
-  rc_input.pwmDes3 = (uint16_t)pwmDes[3];
+  rc_input.pwmDes0 = (uint16_t)propSpeedDes[0];
+  rc_input.pwmDes1 = (uint16_t)propSpeedDes[1];
+  rc_input.pwmDes2 = (uint16_t)propSpeedDes[2];
+  rc_input.pwmDes3 = (uint16_t)propSpeedDes[3];
   
   // Update time ... not
   // pid.previous_time = pid.current_time;  
   
+}
+
+uint16_t ftow(float fDes, float k1, float k2, float k3) {
+   
+  uint16_t w = (uint16_t)((k2 + sqrt(-4*k1*k3 + 4*k1*fDes + k2*k2)) / (2*k1) ); // rad/s
+  w = w / (2*PI); // rev/s
+  return w;
 }
 
 float limit(float value, float upper, float lower) {
