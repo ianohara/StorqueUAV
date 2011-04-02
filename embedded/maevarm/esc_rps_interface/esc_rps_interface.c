@@ -1,4 +1,3 @@
-
 /* ------------------------------------------------------------------------ */
 /* maevarm motor rps interface ... like motor_closed_loop, except it        */
 /* streams the data to the Storque.                                         */
@@ -45,15 +44,17 @@
 #define MOTOR_MAX 2000
 #define MOTOR_MIN 1000
 #define MOTOR_POLES 14
-#define MOTOR_MAX_COUNT UINT32_MAX
+#define MOTOR_MAX_COUNT UINT16_MAX
 #define NUM_MOTORS 4
 
 #define MOTOR_READ_TIMEOUT 40000
 
 #define TIMER0_MAX_COUNT 250
 
+#define GLOBAL_TIMER_MAX UINT16_MAX
+
 //#define DEBUG_RPS
-#define DEBUG_PID
+//#define DEBUG_PID
 /* ------------------------------------------------------------------------ */
 /* Struct Prototypes */
 /* ------------------------------------------------------------------------ */
@@ -71,8 +72,9 @@ typedef struct pid_ {
   float KP;
   float KI;
   float KD;
-  int32_t err;
-  uint32_t time;
+  int16_t err;
+  uint16_t prev_time_count;
+  uint16_t current_time_count;
 } pid_t;
 
 typedef struct motor_ {
@@ -80,6 +82,7 @@ typedef struct motor_ {
   uint16_t pwm;
   uint16_t last_timer_count;
   uint16_t current_timer_count;
+  uint16_t interrupt_count;
   uint16_t timer_diff;
   uint16_t timer_diff_old;
   uint16_t update_time;
@@ -90,15 +93,25 @@ typedef struct motor_ {
 } motor_t;
 
 typedef struct log_ {
-  uint32_t time;
+  uint16_t time;
 } log_t;
+
+typedef struct main_timer_ {
+  volatile uint16_t time;
+} main_timer_t;
 
 /* ------------------------------------------------------------------------ */
 /* Declarations */
 /* ------------------------------------------------------------------------ */
 serial_t serial;
 motor_t motor[4];
+main_timer_t main_time;
 log_t print_log;
+
+void init_time(void);
+uint16_t tic(void);
+uint16_t dtic(uint16_t current_time, uint16_t previous_time);
+
 
 /* ------------------------------------------------------------------------ */
 /* Init Timer0 */
@@ -111,17 +124,17 @@ void init_timer0(void){
 
   clear(TCCR0B,CS02);	   // Set timer prescaler at /1
   clear(TCCR0B,CS01);
-  set(TCCR0B,CS00);    
+  set(TCCR0B,CS00); 
 
   clear(TCCR0A, COM0B1);
   set(TCCR0A, COM0B0);
 
   TCNT0 = 0;
   OCR0A = TIMER0_MAX_COUNT;
-  // Call Timer overflow interrupt */
+  // Call Timer overflow interrupt 
   set(TIMSK0, OCIE0A);
   return;
-}  
+}
 
 /* ------------------------------------------------------------------------ */
 /* Set up Timer1 (16 bit) */
@@ -163,6 +176,8 @@ void init_timer1(void){
   OCR1A = MOTOR_MIN;
   OCR1B = MOTOR_MIN;
   OCR1C = MOTOR_MIN;
+  
+  set(TIMSK1, TOIE1);
   return;
 };
 
@@ -298,10 +313,11 @@ void init_motor_pid(void){
     motor[i].pid.P = 0;
     motor[i].pid.I = 0;
     motor[i].pid.D = 0;
-    motor[i].pid.KP = 0.66;
-    motor[i].pid.KI = 2.0; 
+    motor[i].pid.KP = 0.66; 
+    motor[i].pid.KI = 4.0; 
     motor[i].pid.KD = 0;
-    motor[i].pid.time = 0;
+    motor[i].pid.current_time_count = 0;
+    motor[i].pid.prev_time_count = 0;
   }
   return;
 }
@@ -318,22 +334,21 @@ void update_motor_frequency(motor_t *motor){
     
     motor->update_time = 0;
 
-    uint32_t current_timer_count = motor->current_timer_count + TCNT0;
+    //uint32_t current_timer_count = motor->current_timer_count + TCNT0;
+    /* Use time value from interrupt */
+    uint32_t current_timer_count = motor->interrupt_count;
+    motor->timer_diff = dtic(current_timer_count, motor->last_timer_count);
     
-    if ((current_timer_count + TCNT0) > motor->last_timer_count){
-      motor->timer_diff = current_timer_count - motor->last_timer_count;
-    }else{
-      motor->timer_diff = current_timer_count + MOTOR_MAX_COUNT - motor->last_timer_count;
-    }
 
     /* 
        16 Infinite Horizon Filter ... we don't want to big of a beta because it leads to too 
                                       much time delay 
     */
-    uint16_t beta = 100;
+    /*uint16_t beta = 100;
     motor->timer_diff = ((motor->timer_diff_old - (motor->timer_diff_old/beta) + \
 			 (motor->timer_diff/beta))); 
-    motor->timer_diff_old = motor->timer_diff;       
+			 motor->timer_diff_old = motor->timer_diff;       */
+    
     
     /* Convert to rps */
     motor->rps = (uint16_t)(((uint32_t)(100*CLK_FRQ))/  		       \
@@ -377,25 +392,6 @@ float limit_f(float input, float min, float max){
 } 
 
 /* ------------------------------------------------------------------------ */
-/* Update Timers */
-/* ------------------------------------------------------------------------ */
-volatile uint8_t timer_update_flag;
-void update_timers(void){
-  if (timer_update_flag){
-    uint16_t cnt = OCR0A + TCNT0;
-    uint8_t i;
-    for (i = 0; i < NUM_MOTORS; ++i){
-      motor[i].current_timer_count += cnt;
-      motor[i].update_time += cnt;
-      motor[i].pid.time += cnt;
-    }    
-    print_log.time += cnt;
-    timer_update_flag = 0;
-  }
-  return;
-}
-
-/* ------------------------------------------------------------------------ */
 /* Motor Control Loop ... update motor values */
 /* ------------------------------------------------------------------------ */
 void update_motor_loop(serial_t *serial){
@@ -404,25 +400,29 @@ void update_motor_loop(serial_t *serial){
     
     /* If motor rps less than min and cmd less than min motor stable command */
     float rps_cmd;
-    if (motor[0].rps > 3500 && motor[0].cmd > 1250){
-      float dt = ((float)(motor[0].pid.time)/CLK_FRQ); // This is actual dt
-      motor[0].pid.time = 0;
+    if (motor[0].cmd > 3500){
+      uint32_t current_time_count = tic();
+      float dtime = ((float)(dtic(current_time_count, motor[0].pid.prev_time_count))/CLK_FRQ); // This is actual dt
+      motor[0].pid.prev_time_count = current_time_count;
+      motor[0].pid.current_time_count = 0;
       motor[0].pid.err = (int32_t)motor[0].cmd - (int32_t)motor[0].rps; // cmd must be in rps
       motor[0].pid.P = motor[0].pid.err;
-      motor[0].pid.I += motor[0].pid.err*dt;  // This isn't updateing for some reason...FIX
-      /*if (motor[0].pid.KI != 0){
-	motor[0].pid.I = limit_f(motor[0].pid.KI*motor[0].pid.I, -40, 40)/motor[0].pid.KI;
-	}*/
+      motor[0].pid.I += motor[0].pid.err*dtime;  // This isn't updateing for some reason...FIX
+      if (motor[0].pid.KI != 0){
+	motor[0].pid.I = limit_f(motor[0].pid.I, -1000, 1000);
+      }
       rps_cmd = motor[0].pid.KP*motor[0].pid.P +			\
-	        motor[0].pid.KI*motor[0].pid.I +			\
-	        motor[0].cmd; //PID with feedforward
+	        motor[0].pid.KI*motor[0].pid.I; 
+                /*+								\
+					  motor[0].cmd; //PID with feedforward*/
     }else{
         rps_cmd = motor[0].cmd; // input command
-	motor[0].pid.time = 0;  // Make sure dt isn't winding up
+	motor[0].pid.current_time_count = 0;  // Make sure dt isn't winding up
+	motor[0].pid.prev_time_count = 0;
 	motor[0].rps = 0;  // Don't bother with rps values until motor has stabilized
     };
     // Convert rps to pwm command
-    uint16_t pwm_cmd = (uint16_t)((((53*(uint32_t)rps_cmd)/10)/100) + 1000); // With some transformation from rps to pwm    
+    uint16_t pwm_cmd = (uint16_t)((((53*(uint32_t)motor[0].cmd)/10)/100) + 1000); // With some transformation from rps to pwm    
     pwm_cmd = limit(pwm_cmd, MOTOR_MIN, MOTOR_MAX);
     
     if (motor[0].cmd == 0){
@@ -431,7 +431,7 @@ void update_motor_loop(serial_t *serial){
     motor[0].pwm = pwm_cmd;
     OCR1A = pwm_cmd;
           
-    toggle(PORTD, 7);
+    //    toggle(PORTD, 7);
 
 
     motor[0].updated_flag = 0;
@@ -461,6 +461,32 @@ void update_motor_loop(serial_t *serial){
   
 
 /* ------------------------------------------------------------------------ */
+/* Calculate current time */
+/* ------------------------------------------------------------------------ */
+void init_tic(void){
+  main_time.time = 0;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Calculate current time */
+/* ------------------------------------------------------------------------ */
+uint16_t tic(void){
+  return (main_time.time + TCNT0);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Calculate dt */
+/* ------------------------------------------------------------------------ */
+uint16_t dtic(uint16_t current_time, uint16_t previous_time){
+  if (current_time > previous_time){
+    return (current_time - previous_time);
+  }else{
+    return (current_time + (GLOBAL_TIMER_MAX - previous_time));
+  }
+  return 0;
+}
+
+/* ------------------------------------------------------------------------ */
 /* Main Init */
 /* ------------------------------------------------------------------------ */
 volatile uint8_t pcint0_state;
@@ -486,29 +512,23 @@ void init_main(void){
   /* Initialize Serial */
   init_serial(&serial);
   
-  timer_update_flag = 0;
-  
   /* This is a hack variable so that the pcint0 returns with the same 
      period as int0-3
   */
   pcint0_state = 0;
-
-  /* Enable global interrupts */
-  sei();
+  
+  /* Initialize Time */
+  //init_tic();
 
   // Debugging toggle pin
   set(DDRD, 7);
   clear(PORTD, 7);
-  
-  // Set up usb communications 
-  #ifdef DEBUG_INPUT
-  usb_init();
-  while(!usb_configured());
-  #endif
 
-  usb_init();
-  while(!usb_configured());
+  //usb_init();
+  //while(!usb_configured());
 
+  /* Enable global interrupts */
+  sei();
   return;
 };
 
@@ -518,18 +538,19 @@ void init_main(void){
 int main(void){
   init_main();
   while(1){
-    update_timers();
-    read_cmd(&serial);    
+    /*read_cmd(&serial);    
     update_motor_frequency(&motor[0]);
     update_motor_frequency(&motor[1]);
     update_motor_frequency(&motor[2]);
     update_motor_frequency(&motor[3]);
     update_motor_loop(&serial);
+    */
+    // Log output ... 10 times per sec
+    if (dtic(tic(), print_log.time) > 20000){
+      print_log.time = tic();
+      toggle(PORTD, 7);
 
-    /* Log output ... 10 times per sec*/
-    if (print_log.time > 800000){
-      print_log.time = 0;
-      #ifdef DEBUG_PID
+      /*#ifdef DEBUG_PID
       usb_tx_decimal(motor[0].pid.P);
       usb_tx_char(' ');
       usb_tx_decimal(motor[0].pid.I);
@@ -537,16 +558,13 @@ int main(void){
       usb_tx_char('\r');
       #endif
 
-      //OCR1A = motor[0].cmd; 
       #ifdef DEBUG_RPS
       usb_tx_decimal(motor[0].cmd);
-      usb_tx_char(' ');
-      usb_tx_decimal(motor[0].pwm);
       usb_tx_char(' ');
       usb_tx_decimal(motor[0].rps);
       usb_tx_char('\n');
       usb_tx_char('\r');
-      #endif
+      #endif*/
     }
   }
 };
@@ -556,42 +574,33 @@ int main(void){
 /* ------------------------------------------------------------------------ */
 /* Interrupts */
 /* ------------------------------------------------------------------------ */
-
+/*
 // Get Motor0 frequency timestamp
 ISR(INT0_vect){
-  cli();
   motor[0].timer_update_flag = 1;
-  sei();
+  motor[0].interrupt_count = tic();
 }
 
 // Get Motor1 frequency timestamp
 ISR(INT1_vect){
-  cli();
   motor[1].timer_update_flag = 1;
-  sei();
 }
 
 // Get Motor2 frequency timestamp 
 ISR(INT6_vect){
-  cli();
   motor[2].timer_update_flag = 1;
-  sei();
 }
 
 // Get Motor3 frequency timestamp 
 ISR(PCINT0_vect){
-  cli();
   pcint0_state++;
   if (pcint0_state == 2){
     motor[3].timer_update_flag = 1;
     pcint0_state = 0;
   }
-  sei();
 }
-
+*/
 /* Update Motor compare values using Timer0 Interrupt */
 ISR(TIMER0_COMPA_vect){
-  cli();
-  timer_update_flag = 1;
-  sei();
+  main_time.time += OCR0A;
 }

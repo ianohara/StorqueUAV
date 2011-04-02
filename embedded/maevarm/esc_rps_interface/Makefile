@@ -1,5 +1,5 @@
-# Name: MaEvArM Default Makefile
-# Author: Jonathan Bohren
+# Name: ESC Interface Makefile
+# Author: Uriah Baalke
 # License: BSD
 
 MCU     = atmega32u4
